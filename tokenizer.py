@@ -10,7 +10,7 @@ MATCHING = {
 		(r' ', '!sp', None, None),
 		(r'->|[\[\]:()]', 'op', None, None),
 		(r'[a-zA-Z_][a-zA-Z0-9_]*', 'name', None, None),
-		(r"'.*?'", 'str', None, None),
+		(r"'(.*?)'", 'str', None, None),
 	],
 	'indent': [
 		(r'[ \t]', 'indent', None, None),
@@ -34,6 +34,10 @@ def do(src):
 			pos = m.end()
 			# print 'MATCHED', repr(m.group())
 			
+			val = m.group()
+			if m.groups():
+				val = m.groups()[0]
+			
 			if g:
 				grammar.append(g)
 				buffer.append((r, []))
@@ -48,7 +52,7 @@ def do(src):
 				buf = buffer.pop()
 				res = list(buf[0](buf[1]))
 			else:
-				res = [(t, m.group())]
+				res = [(t, val)]
 			
 			if buffer:
 				# print 'BUFFER', res
