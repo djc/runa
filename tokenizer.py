@@ -68,15 +68,15 @@ def do(src):
 			return
 
 def indented(src):
-	level, hold = 0, []
+	level, future, hold = 0, None, []
 	for t, v in do(src):
 		if t == 'nl':
 			hold = [(t, v, None)]
 			continue
 		elif t != 'indent':
+			if future:
+				level, future = future, None
 			for x in hold:
-				if x[2] is not None:
-					level = x[2]
 				yield x[:2]
 			hold = []
 			yield t, v
