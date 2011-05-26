@@ -71,19 +71,22 @@ def indented(gen):
 	level, future, hold = 0, None, []
 	for t, v in gen:
 		if t == 'nl':
-			hold = [(t, v, None)]
+			future = None
+			hold = [(t, v)]
 			continue
 		elif t != 'indent':
-			if future:
+			if future is not None:
 				level, future = future, None
 			for x in hold:
-				yield x[:2]
+				yield x
 			hold = []
 			yield t, v
 		elif v > level:
-			hold.append(('indent', 1, v))
+			future = v
+			hold.append(('indent', 1))
 		elif v < level:
-			hold.append(('indent', -1, v))
+			future = v
+			hold.append(('indent', -1))
 		elif v == level:
 			continue
 
