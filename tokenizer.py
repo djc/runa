@@ -22,7 +22,7 @@ REGEX = {}
 for k, v in MATCHING.iteritems():
 	REGEX[k] = [(re.compile(e), t, g, r) for (e, t, g, r) in v]
 
-def do(src):
+def tokenize(src):
 	pos = 0
 	grammar = [None]
 	buffer = []
@@ -67,9 +67,9 @@ def do(src):
 		else:
 			return
 
-def indented(src):
+def indented(gen):
 	level, future, hold = 0, None, []
-	for t, v in do(src):
+	for t, v in gen:
 		if t == 'nl':
 			hold = [(t, v, None)]
 			continue
@@ -88,7 +88,7 @@ def indented(src):
 			continue
 
 def show(src):
-	for x in indented(src):
+	for x in indented(tokenize(src)):
 		print x
 
 if __name__ == '__main__':
