@@ -89,6 +89,8 @@ def indented(gen):
 			hold.append(('indent', -1))
 		elif v == level:
 			continue
+	for x in hold:
+		yield x
 
 def show(src):
 	for x in indented(tokenize(src)):
