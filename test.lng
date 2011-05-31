@@ -1,11 +1,2 @@
 def __main__(args: list[str]) -> int:
 	print('test')
-	for x in stuffy:
-		print(x)
-
-	print('foo')
-	
-	print('bar')
-
-def test(x):
-	pass
