@@ -143,13 +143,14 @@ class Suite(Node):
 
 class Function(Node):
 	
-	def __init__(self, args, rtype, code):
+	def __init__(self, name, args, rtype, code):
+		self.name = name
 		self.args = args
 		self.rtype = rtype
 		self.code = code
 	
 	@classmethod
-	def parse(cls, tokens):
+	def parse(cls, name, tokens):
 		
 		cur = next(tokens)
 		args = []
@@ -172,7 +173,7 @@ class Function(Node):
 		
 		assert cur == ('indent', 1)
 		code = Suite.parse(tokens)
-		return cls(args, rtype, code)
+		return cls(name, args, rtype, code)
 
 
 class Module(Node):
@@ -182,13 +183,13 @@ class Module(Node):
 	
 	@classmethod
 	def parse(cls, tokens):
-		values = {}
+		values = []
 		cur = next(tokens)
 		while cur:
 			if cur[0] == 'name' and cur[1] == 'def':
 				cur = next(tokens)
 				assert cur[0] == 'name'
-				values[cur[1]] = Function.parse(tokens)
+				values.append(Function.parse(cur[1], tokens))
 			else:
 				assert False, 'unknown token ' + str(cur)
 			try:
