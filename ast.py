@@ -158,7 +158,7 @@ class Function(Node):
 			cur = next(tokens)
 			assert next(tokens) == ('op', ':')
 			type = TypeExpr.parse(tokens)
-			args.append((cur[0], type))
+			args.append((cur[1], type))
 			cur = next(tokens)
 		
 		assert cur == ('op', ')')
