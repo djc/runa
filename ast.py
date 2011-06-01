@@ -4,7 +4,7 @@
 class Node(object):
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
-		contents = ','.join(('%s=%s' % (k, v) for (k, v) in contents))
+		contents = ', '.join(('%s=%s' % (k, v) for (k, v) in contents))
 		return '<%s(%s)>' % (self.__class__.__name__, contents)
 
 # Expression-level
