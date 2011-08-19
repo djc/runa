@@ -1,0 +1,19 @@
+Running C through Clang to learn by example, compiling bitcode with LLVM
+------------------------------------------------------------------------
+
+- Compile: ./clang -emit-llvm -O0 -c -v hello.c
+- Disassemble to bitcode: ./llvm-dis hello.o
+- Compiling from bitcode: ./llvmc hello.o.ll
+
+Standard streams
+----------------
+
+- stdin: 0 (unistd.h: STDIN_FILENO)
+- stdout: 1 (unistd.h: STDOUT_FILENO)
+- stderr: 2 (unistd.h: STDERR_FILENO)
+
+Context managers
+----------------
+
+def __enter__(self)
+def __exit__(self, type, value, traceback)
