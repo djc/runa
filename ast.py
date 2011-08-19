@@ -87,6 +87,8 @@ class Pratt(object):
 
 class TypeExpr(Node):
 	
+	fields = ()
+	
 	def __init__(self, base, over=None):
 		self.base = base
 		self.over = over
@@ -111,6 +113,8 @@ class TypeExpr(Node):
 
 class Call(Node):
 	
+	fields = ('args',)
+	
 	def __init__(self, name, args):
 		self.name = name
 		self.args = args
@@ -128,6 +132,8 @@ class Statement(Node):
 
 class Suite(Node):
 	
+	fields = ('stmts',)
+	
 	def __init__(self, stmts):
 		self.stmts = stmts
 	
@@ -142,6 +148,8 @@ class Suite(Node):
 		return cls(stmts)
 
 class Function(Node):
+	
+	fields = 'rtype', 'code'
 	
 	def __init__(self, name, args, rtype, code):
 		self.name = name
@@ -177,6 +185,8 @@ class Function(Node):
 
 
 class Module(Node):
+	
+	fields = ('values',)
 	
 	def __init__(self, values):
 		self.values = values
