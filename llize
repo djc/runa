@@ -1,0 +1,1 @@
+clang -emit-llvm -c $1 $2 && llvm-dis ${2/.c/.o} && cat ${2/.c/.o}.ll && rm ${2/.c/.o} ${2/.c/.o}.ll
