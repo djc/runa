@@ -6,6 +6,9 @@ class Node(object):
 		contents = sorted(self.__dict__.iteritems())
 		contents = ', '.join(('%s=%s' % (k, v) for (k, v) in contents))
 		return '<%s(%s)>' % (self.__class__.__name__, contents)
+	def __hash__(self):
+		values = tuple(sorted((k, v) for (k, v) in self.__dict__.iteritems()))
+		return hash((self.__class__.__name__,) + values)
 
 # Expression-level
 
