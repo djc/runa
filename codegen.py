@@ -30,6 +30,7 @@ class ConstantFinder(object):
 	
 	def __init__(self, node):
 		self.data = {}
+		self.table = {}
 		self.next = 0
 		self.lines = []
 		self.visit(node)
@@ -43,6 +44,7 @@ class ConstantFinder(object):
 		
 		id = self.id('str')
 		self.data[id] = node
+		self.table[node] = id
 		l = len(node.value)
 		type = '[%i x i8]' % l
 		
@@ -71,25 +73,6 @@ class ConstantFinder(object):
 			else:
 				self.visit(attr)
 
-BUILTIN = {'print'}
-
-TYPES = {
-	'struct.str': '{ i64, i8* }',
-}
-
-def transform(call, consts):
-	meta = META[sys.platform]
-	if call.name == 'print':
-		lines = [
-			'%lenptr = getelementptr %struct.str* @str0, i32 0, i32 0',
-			'%len = load i64* %lenptr',
-			'%dataptr = getelementptr %struct.str* @str0, i32 0, i32 1',
-			'%data = load i8** %dataptr',
-			'call i64 ' + meta['lib']['write'] + '(i32 1, i8* %data, i64 %len)', 
-			'ret i32 0',
-		]
-		return '\t' + '\n\t'.join(lines)
-
 class CodeGen(object):
 	
 	def __init__(self):
@@ -110,8 +93,9 @@ class CodeGen(object):
 				self.visit(attr)
 	
 	def Call(self, node):
-		if node.name in BUILTIN:
-			self.lines.append(transform(node, self.const))
+		x = 'call void @' + node.name + '('
+		x += '%struct.str* ' + self.const.table[node.args] + ')'
+		self.lines.append(x)
 	
 	def Suite(self, node):
 		for stmt in node.stmts:
@@ -127,6 +111,7 @@ class CodeGen(object):
 		self.lines.append(' '.join(['define i32 @main(i32 %argc,',
 									'i8** %argv) nounwind ssp {']))
 		self.visit(main.code)
+		self.lines.append('ret i32 0')
 		self.lines.append('}')
 		
 		return self.lines
@@ -144,24 +129,13 @@ def prologue(mod):
 	lines.append('target triple = "%s"' % meta['triple'])
 	return lines
 
-def externals():
-	lines = []
-	meta = META[sys.platform]
-	for name, alias in sorted(meta['lib'].iteritems()):
-		lines.append('declare i64 %s(i32, i8*, i64)' % alias)
-	return lines
-
-def types():
-	lines = []
-	for k, v in sorted(TYPES.iteritems()):
-		lines.append('%%%s = type %s' % (k, v))
-	return lines
+def stdlib():
+	return open('std.ll').read().splitlines() + ['']
 
 def source(mod):
 	lines = prologue(mod) + ['']
-	lines += types() + ['']
+	lines += stdlib()
 	lines += CodeGen().Module(mod) + ['']
-	lines += externals()
 	return '\n'.join(lines)
 
 if __name__ == '__main__':
