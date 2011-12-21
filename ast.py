@@ -199,14 +199,21 @@ class Module(Node):
 		values = []
 		cur = next(tokens)
 		while cur:
+			
+			if cur[0] == 'nl':
+				cur = next(tokens)
+				continue
+			
 			if cur[0] == 'name' and cur[1] == 'def':
 				cur = next(tokens)
 				assert cur[0] == 'name'
 				values.append(Function.parse(cur[1], tokens))
 			else:
 				assert False, 'unknown token ' + str(cur)
+			
 			try:
 				cur = next(tokens)
 			except StopIteration:
 				break
+			
 		return cls(values)
