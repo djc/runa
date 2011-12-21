@@ -1,1 +1,3 @@
-clang -emit-llvm -c $1 -o $2.o $2 && llvm-dis $2.o && cat $2.o.ll && rm $2.o $2.o.ll
+clang -emit-llvm -S -c $1 -o $2.ll
+cat $2.ll
+rm $2.ll
