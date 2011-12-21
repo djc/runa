@@ -1,19 +1,66 @@
-Running C through Clang to learn by example, compiling bitcode with LLVM
-------------------------------------------------------------------------
+Basics
+======
 
-- Compile: ./clang -emit-llvm -O0 -c -v hello.c
-- Disassemble to bitcode: ./llvm-dis hello.o
-- Compiling from bitcode: ./llvmc hello.o.ll
+Goal: a Python-like static language, i.e. doing away with much of the C noise.
+To do this, I'd like to get rid of explicit pointer syntax; all mutable types
+whose size is larger than a word will be passed by reference. To make that
+possible, I need to get rid of outparams. To enable that, I need multiple
+return values.
 
-Standard streams
-----------------
+More C noise elimination: return on errors by default, i.e. exception flow.
+Also, limit the amount of explicit types. Use local type inference for most
+declarations, with types for function signatures (and possibly generics).
 
-- stdin: 0 (unistd.h: STDIN_FILENO)
-- stdout: 1 (unistd.h: STDOUT_FILENO)
-- stderr: 2 (unistd.h: STDERR_FILENO)
+Integration: should make it *very* easy to call into C (preferably also C++).
 
-Context managers
-----------------
 
-def __enter__(self)
-def __exit__(self, type, value, traceback)
+Secondary goals
+===============
+
+ * Definitely need operator overloading
+ * Optional, but inclusive standard library
+ * Fully deterministic memory management (with RAII/context managers)
+ * Manual management of cycles would be okay
+ * Exception handling should be very light-weight
+ * Want generics for stdlib container types: tup, list, map
+
+
+Sample code
+===========
+
+This actually works right now! Uses PEP 3107-like type annotations.
+
+def __main__(name: str, args: list[str]) -> int:
+    print('test')
+
+
+Inspiration
+===========
+
+Avery Pennarun
+Three bad things: threads, garbage collection, and nondeterministic destructors
+http://apenwarr.ca/log/?m=201008#10
+
+Avery Pennarun
+How to design a replacement for C++
+http://apenwarr.ca/log/?m=201007#21
+
+Collin Winter e.a.
+Function annotations
+http://www.python.org/dev/peps/pep-3107/
+
+
+Implementation notes
+====================
+
+Standard streams:
+
+ - stdin: 0 (unistd.h: STDIN_FILENO)
+ - stdout: 1 (unistd.h: STDOUT_FILENO)
+ - stderr: 2 (unistd.h: STDERR_FILENO)
+
+Context managers:
+
+ - def __enter__(self)
+ - def __exit__(self, type, value, traceback)
+
