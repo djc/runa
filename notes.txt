@@ -49,6 +49,10 @@ Collin Winter e.a.
 Function annotations
 http://www.python.org/dev/peps/pep-3107/
 
+Shawn O. Pearce
+Why Git is so fast (Java vs C)
+http://marc.info/?l=git&m=124111702609723&w=2
+
 
 Implementation notes
 ====================
