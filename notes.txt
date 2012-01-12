@@ -53,6 +53,12 @@ Shawn O. Pearce
 Why Git is so fast (Java vs C)
 http://marc.info/?l=git&m=124111702609723&w=2
 
+Is Fortran faster than C?
+http://stackoverflow.com/questions/146159/is-fortran-faster-than-c
+
+Languages faster than C++
+http://stackoverflow.com/questions/610396/languages-faster-than-c
+
 
 Implementation notes
 ====================
