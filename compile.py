@@ -1,4 +1,4 @@
-import sys, parser, codegen, os
+import sys, parser, codegen, subprocess, os
 
 def llir(fn):
 	return codegen.source(parser.fromfile(fn))
@@ -10,8 +10,7 @@ def compile(fn):
 		f.write(llir(fn))
 	
 	cmd = 'clang', '-o', fn.rsplit('.', 1)[0], llfn
-	proc = os.popen(' '.join(cmd))
-	proc.read()
+	subprocess.check_call(cmd)
 	os.unlink(llfn)
 
 if __name__ == '__main__':
