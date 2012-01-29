@@ -95,6 +95,8 @@ class CodeGen(object):
 	
 	def __init__(self):
 		self.buf = []
+		self.level = 0
+		self.start = True
 	
 	def visit(self, node):
 		
@@ -110,17 +112,31 @@ class CodeGen(object):
 			else:
 				self.visit(attr)
 	
+	def tabs(self):
+		return '\t' * self.level
+	
+	def indent(self, num=1):
+		self.level += num
+	
+	def dedent(self, num=1):
+		self.level -= num
+		assert self.level >= 0
+	
 	def newline(self):
 		self.buf.append('\n')
+		self.start = True
 	
 	def write(self, data):
-		self.buf.append(data)
+		prefix = self.tabs() if self.start else ''
+		self.buf.append(prefix + data)
+		self.start = False
 	
 	def writeline(self, ln):
-		self.buf.append(ln + '\n')
+		self.write(ln + '\n')
+		self.start = True
 	
 	def writelines(self, lines):
-		self.buf.append('\n'.join(lines))
+		self.buf.append(('\n' + self.tabs()).join(lines))
 	
 	def Call(self, node):
 		x = 'call void @' + node.name + '('
@@ -137,12 +153,15 @@ class CodeGen(object):
 		defined = {i.name: i for i in node.values}
 		self.writelines(self.const.lines)
 		self.newline()
+		self.newline()
 		
 		if '__main__' in defined:
 			decl = 'define i32 @main(i32 %argc, i8** %argv) nounwind ssp {'
 			self.writeline(decl)
+			self.indent()
 			self.visit(defined['__main__'].code)
 			self.writeline('ret i32 0')
+			self.dedent()
 			self.writeline('}')
 		
 		return ''.join(self.buf).split('\n')
