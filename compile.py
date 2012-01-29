@@ -9,7 +9,7 @@ def compile(fn):
 	with open(llfn, 'w') as f:
 		f.write(llir(fn))
 	
-	cmd = 'llvmc', '-o', fn.rsplit('.', 1)[0], llfn
+	cmd = 'clang', '-o', fn.rsplit('.', 1)[0], llfn
 	proc = os.popen(' '.join(cmd))
 	proc.read()
 	os.unlink(llfn)
