@@ -20,8 +20,10 @@ class Buffer(object):
 		else:
 			return next(self.gen)
 
-if __name__ == '__main__':
-	src = open(sys.argv[1]).read()
+def fromfile(fn):
+	src = open(fn).read()
 	tokens = tokenizer.indented(tokenizer.tokenize(src))
-	mod = ast.Module.parse(Buffer(tokens))
-	print mod
+	return ast.Module.parse(Buffer(tokens))
+
+if __name__ == '__main__':
+	print fromfile(sys.argv[1])

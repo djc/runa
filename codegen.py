@@ -186,7 +186,4 @@ def source(mod):
 	return '\n'.join(lines)
 
 if __name__ == '__main__':
-	src = open(sys.argv[1]).read()
-	tokens = tokenizer.indented(tokenizer.tokenize(src))
-	mod = ast.Module.parse(parser.Buffer(tokens))
-	print source(mod)
+	print source(parser.fromfile(sys.argv[1]))
