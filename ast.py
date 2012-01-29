@@ -1,11 +1,13 @@
 
 # Base class
 
+HIDE = {'left', 'right'}
+
 class Node(object):
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
-		contents = ', '.join(('%s=%s' % (k, v) for (k, v) in contents))
-		return '<%s(%s)>' % (self.__class__.__name__, contents)
+		show = ('%s=%s' % (k, v) for (k, v) in contents if k not in HIDE)
+		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	def __hash__(self):
 		values = tuple(sorted((k, v) for (k, v) in self.__dict__.iteritems()))
 		return hash((self.__class__.__name__,) + values)
@@ -15,6 +17,12 @@ class Node(object):
 class Name(Node):
 	def __init__(self, name):
 		self.name = name
+	def nud(self, parser):
+		return self
+
+class Number(Node):
+	def __init__(self, num):
+		self.val = num
 	def nud(self, parser):
 		return self
 
@@ -36,13 +44,19 @@ class BinaryOp(Node):
 		self.left = left
 		self.right = parser.expr(self.lbp)
 
-class LeftPar(BinaryOp):
+class Call(BinaryOp, Node):
+	
 	op = '('
 	lbp = 20
+	fields = ('args',)
+	
 	def led(self, parser, left):
 		self.left = left
+		self.name = left
 		self.right = parser.expr()
+		self.args = self.right
 		return self
+	
 	def nud(self, parser):
 		expr = parser.expr()
 		assert parser.token.op == ')'
@@ -63,8 +77,10 @@ class Pratt(object):
 		for t, v in tokens:
 			if t == 'name':
 				yield Name(v)
+			elif t == 'num':
+				yield Number(v)
 			elif v == '(':
-				yield LeftPar()
+				yield Call()
 			elif v == ')':
 				yield RightPar()
 			elif t == 'str':
@@ -114,24 +130,17 @@ class TypeExpr(Node):
 		assert cur == ('op', ']')
 		return cls(base, over)
 
-class Call(Node):
-	
-	fields = ('args',)
-	
-	def __init__(self, name, args):
-		self.name = name
-		self.args = args
-
 class Statement(Node):
 	
 	@classmethod
 	def parse(cls, tokens):
 		ast = Pratt().parse(tokens)
-		if isinstance(ast, LeftPar):
-			stmt = Call(ast.left.name, ast.right)
+		if isinstance(ast, Call):
 			cur = next(tokens)
+			if cur == ('op', ')'):
+				cur = next(tokens)
 			assert cur == ('nl', '\n')
-			return stmt
+			return ast
 
 class Suite(Node):
 	
