@@ -173,11 +173,8 @@ def layout(data):
 	return '-'.join(bits)
 
 def prologue(mod):
-	lines = ["; ModuleID = 'test'"]
 	meta = META[sys.platform]
-	lines.append('target datalayout = "%s"' % layout(meta['layout']))
-	lines.append('target triple = "%s"' % meta['triple'])
-	return lines
+	return ['target triple = "%s"' % meta['triple']]
 
 def stdlib():
 	return open('std.ll').read().splitlines() + ['']
