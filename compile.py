@@ -3,14 +3,14 @@ import sys, parser, codegen, subprocess, os
 def llir(fn):
 	return codegen.source(parser.fromfile(fn))
 
-def compile(fn):
+def compile(fn, outfn=None):
 	
 	llfn = fn + '.ll'
 	with open(llfn, 'w') as f:
 		f.write(llir(fn))
 	
-	cmd = 'clang', '-o', fn.rsplit('.', 1)[0], llfn
-	subprocess.check_call(cmd)
+	outfn = outfn if outfn else fn.rsplit('.', 1)[0]
+	subprocess.check_call(('clang', '-o', outfn, llfn))
 	os.unlink(llfn)
 
 if __name__ == '__main__':
