@@ -1,6 +1,5 @@
 syntax: glob
 **.pyc
 test.c
-
-syntax: re
-tests/(?!.(out|lng))
+tests/*.test
+tests/*.ll

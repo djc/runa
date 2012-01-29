@@ -11,10 +11,11 @@ TESTS = [
 def run(self, key):
 	
 	fullname = os.path.join(TESTS_DIR, key + '.lng')
-	compile.compile(fullname)
 	base = fullname.rsplit('.lng', 1)[0]
-	out = subprocess.check_output([base])
+	bin = base + '.test'
 	
+	compile.compile(fullname, bin)
+	out = subprocess.check_output([bin])
 	if os.path.exists(base + '.out'):
 		expected = open(base + '.out').read()
 	else:
