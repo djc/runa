@@ -94,7 +94,7 @@ class ConstantFinder(object):
 class CodeGen(object):
 	
 	def __init__(self):
-		pass
+		self.buf = []
 	
 	def visit(self, node):
 		
@@ -110,10 +110,22 @@ class CodeGen(object):
 			else:
 				self.visit(attr)
 	
+	def newline(self):
+		self.buf.append('\n')
+	
+	def write(self, data):
+		self.buf.append(data)
+	
+	def writeline(self, ln):
+		self.buf.append(ln + '\n')
+	
+	def writelines(self, lines):
+		self.buf.append('\n'.join(lines))
+	
 	def Call(self, node):
 		x = 'call void @' + node.name + '('
 		x += '%struct.str* ' + self.const.table[node.args] + ')'
-		self.lines.append(x)
+		self.writeline(x)
 	
 	def Suite(self, node):
 		for stmt in node.stmts:
@@ -123,16 +135,17 @@ class CodeGen(object):
 		
 		self.const = ConstantFinder(node)
 		defined = {i.name: i for i in node.values}
-		main = defined['__main__']
+		self.writelines(self.const.lines)
+		self.newline()
 		
-		self.lines = self.const.lines + ['']
-		self.lines.append(' '.join(['define i32 @main(i32 %argc,',
-									'i8** %argv) nounwind ssp {']))
-		self.visit(main.code)
-		self.lines.append('ret i32 0')
-		self.lines.append('}')
+		if '__main__' in defined:
+			decl = 'define i32 @main(i32 %argc, i8** %argv) nounwind ssp {'
+			self.writeline(decl)
+			self.visit(defined['__main__'].code)
+			self.writeline('ret i32 0')
+			self.writeline('}')
 		
-		return self.lines
+		return ''.join(self.buf).split('\n')
 
 def layout(data):
 	bits = []
