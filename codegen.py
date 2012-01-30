@@ -44,6 +44,12 @@ META = {
 	}
 }
 
+TYPES = {
+	'void': 'void',
+	'int': 'i64',
+	'str': '%struct.str*',
+}
+
 class ConstantFinder(object):
 	
 	def __init__(self, node):
@@ -71,7 +77,7 @@ class ConstantFinder(object):
 		self.lines.append(' '.join(bits))
 		
 		data = type, id
-		bits = [id, '=', 'internal', 'constant', '%struct.str']
+		bits = [id, '=', 'internal', 'constant', TYPES['str'][:-1]]
 		bits.append('{ i64 %s,' % l)
 		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)' % data)
 		bits.append('}, align 8')
