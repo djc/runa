@@ -54,7 +54,7 @@ class Call(BinaryOp, Node):
 		self.left = left
 		self.name = left
 		self.right = parser.expr()
-		self.args = self.right
+		self.args = (self.right,)
 		return self
 	
 	def nud(self, parser):
