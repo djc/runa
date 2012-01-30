@@ -1,47 +1,8 @@
 import sys, ast, tokenizer, parser
 
-META = {
-	'darwin': {
-		'triple': 'x86_64-apple-darwin11.0.0',
-		'layout': [
-			('e',),
-			('p', 64, 64, 64),
-			('i1', 8, 8),
-			('i8', 8, 8),
-			('i16', 16, 16),
-			('i32', 32, 32),
-			('i64', 64, 64),
-			('f32', 32, 32),
-			('f64', 64, 64),
-			('v64', 64, 64),
-			('v128', 128, 128),
-			('a0', 0, 64),
-			('s0', 64, 64),
-			('f80', 128, 128),
-			('n8', 16, 32, 64),
-		],
-	},
-	'linux2': {
-		'triple': 'x86_64-pc-linux-gnu',
-		'layout': [
-			('e',),
-			('p', 64, 64, 64),
-			('i1', 8, 8),
-			('i8', 8, 8),
-			('i16', 16, 16),
-			('i32', 32, 32),
-			('i64', 64, 64),
-			('f32', 32, 32),
-			('f64', 64, 64),
-			('v64', 64, 64),
-			('v128', 128, 128),
-			('a0', 0, 64),
-			('s0', 64, 64),
-			('f80', 128, 128),
-			('n8', 16, 32, 64),
-			('S128',)
-		],
-	}
+TRIPLES = {
+	'darwin': 'x86_64-apple-darwin11.0.0',
+	'linux2': 'x86_64-pc-linux-gnu',
 }
 
 TYPES = {
@@ -214,8 +175,7 @@ def layout(data):
 	return '-'.join(bits)
 
 def prologue(mod):
-	meta = META[sys.platform]
-	return ['target triple = "%s"' % meta['triple']]
+	return ['target triple = "%s"' % TRIPLES[sys.platform]]
 
 def stdlib():
 	return open('std.ll').read().splitlines() + ['']
