@@ -85,7 +85,7 @@ class ConstantFinder(object):
 		
 		for k in node.fields:
 			attr = getattr(node, k)
-			if isinstance(attr, list):
+			if isinstance(attr, list) or isinstance(attr, tuple):
 				for v in attr:
 					self.visit(v)
 			else:
@@ -139,8 +139,8 @@ class CodeGen(object):
 		self.buf.append(('\n' + self.tabs()).join(lines))
 	
 	def Call(self, node):
-		x = 'call void @' + node.name + '('
-		x += '%struct.str* ' + self.const.table[node.args] + ')'
+		x = 'call void @' + node.name.name + '('
+		x += '%struct.str* ' + self.const.table[node.args[0]] + ')'
 		self.writeline(x)
 	
 	def Suite(self, node):
