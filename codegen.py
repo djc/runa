@@ -101,8 +101,7 @@ class CodeGen(object):
 	def visit(self, node):
 		
 		if hasattr(self, node.__class__.__name__):
-			getattr(self, node.__class__.__name__)(node)
-			return
+			return getattr(self, node.__class__.__name__)(node)
 		
 		for k in node.fields:
 			attr = getattr(node, k)
