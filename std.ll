@@ -7,13 +7,13 @@ declare i32 @asprintf(i8**, i8*, ...)
 @fmt_INT = constant [2 x i8] c"%d"
 
 define void @print(%struct.str* %str) {
-	%1 = getelementptr inbounds %struct.str* %str, i64 0, i32 1
-	%2 = load i8** %1
-	%3 = getelementptr inbounds %struct.str* %str, i64 0, i32 0
-	%4 = load i64* %3
-	call i64 @write(i32 1, i8* %2, i64 %4)
-	%6 = getelementptr inbounds [1 x i8]* @str_NL, i64 0, i64 0
-	call i64 @write(i32 1, i8* %6, i64 1)
+	%s.data.ptr = getelementptr inbounds %struct.str* %str, i64 0, i32 1
+	%s.data = load i8** %s.data.ptr
+	%s.len.ptr = getelementptr inbounds %struct.str* %str, i64 0, i32 0
+	%s.len = load i64* %s.len.ptr
+	call i64 @write(i32 1, i8* %s.data, i64 %s.len)
+	%nl.ptr = getelementptr inbounds [1 x i8]* @str_NL, i64 0, i64 0
+	call i64 @write(i32 1, i8* %nl.ptr, i64 1)
 	ret void
 }
 
