@@ -136,14 +136,16 @@ class CodeGen(object):
 				self.writeline('%s = load %s* %s' % bits)
 				args.append(TYPES['int'] + ' ' + bits[0])
 		
+		store, start = None, 'call'
 		void = LIBRARY[node.name.name][0] == 'void'
-		store = self.varname()
-		start = 'call' if void else ('%s = call' % store)
+		if not void:
+			store = self.varname()
+			start = '%s = call' % store
 		
 		rtype = TYPES[LIBRARY[node.name.name][0]]
 		call = '@' + node.name.name + '(' + ', '.join(args) + ')'
 		self.writeline(' '.join((start, rtype, call)))
-		return (rtype, None if void else store)
+		return rtype, store
 	
 	def Suite(self, node):
 		for stmt in node.stmts:
