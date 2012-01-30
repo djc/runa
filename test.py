@@ -21,7 +21,7 @@ def run(self, key):
 	else:
 		expected = ''
 	
-	return out == expected
+	self.assertEquals(out, expected)
 
 def testfunc(key):
 	def do(self):
