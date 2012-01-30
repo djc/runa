@@ -43,10 +43,9 @@ class ConstantFinder(object):
 		self.lines.append(' '.join(bits))
 		
 		data = type, id
-		bits = [id, '=', 'internal', 'constant', TYPES['str'][:-1]]
+		bits = [id, '=', 'constant', TYPES['str'][:-1]]
 		bits.append('{ i64 %s,' % l)
-		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)' % data)
-		bits.append('}, align 8')
+		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}' % data)
 		self.lines.append(' '.join(bits))
 	
 	def Number(self, node):
