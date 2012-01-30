@@ -50,6 +50,11 @@ TYPES = {
 	'str': '%struct.str*',
 }
 
+LIBRARY = {
+	'print': ('void', 'str'),
+	'str': ('str', 'int'),
+}
+
 class ConstantFinder(object):
 	
 	def __init__(self, node):
@@ -83,6 +88,13 @@ class ConstantFinder(object):
 		bits.append('}, align 8')
 		self.lines.append(' '.join(bits))
 	
+	def Number(self, node):
+		id = self.id('num')
+		self.data[id] = node
+		self.table[node] = id
+		bits = id, TYPES['int'], node.val
+		self.lines.append('%s = constant %s %s' % bits)
+		
 	def visit(self, node):
 		
 		if hasattr(self, node.__class__.__name__):
@@ -103,6 +115,11 @@ class CodeGen(object):
 		self.buf = []
 		self.level = 0
 		self.start = True
+		self.var = 1
+	
+	def varname(self):
+		self.var += 1
+		return '%%%i' % (self.var - 1)
 	
 	def visit(self, node):
 		
@@ -144,9 +161,28 @@ class CodeGen(object):
 		self.buf.append(('\n' + self.tabs()).join(lines))
 	
 	def Call(self, node):
-		x = 'call void @' + node.name.name + '('
-		x += '%struct.str* ' + self.const.table[node.args[0]] + ')'
-		self.writeline(x)
+		
+		args = []
+		for arg in node.args:
+			if isinstance(arg, ast.Call):
+				res = self.visit(arg)
+				assert res
+				args.append('%s %s' % res)
+			elif isinstance(arg, ast.String):
+				args.append(TYPES['str'] + ' ' + self.const.table[arg])
+			elif isinstance(arg, ast.Number):
+				bits = self.varname(), TYPES['int'], self.const.table[arg]
+				self.writeline('%s = load %s* %s' % bits)
+				args.append(TYPES['int'] + ' ' + bits[0])
+		
+		void = LIBRARY[node.name.name][0] == 'void'
+		store = self.varname()
+		start = 'call' if void else ('%s = call' % store)
+		
+		rtype = TYPES[LIBRARY[node.name.name][0]]
+		call = '@' + node.name.name + '(' + ', '.join(args) + ')'
+		self.writeline(' '.join((start, rtype, call)))
+		return (rtype, None if void else store)
 	
 	def Suite(self, node):
 		for stmt in node.stmts:
