@@ -184,7 +184,7 @@ def stdlib():
 def source(mod):
 	lines = prologue(mod) + ['']
 	lines += stdlib()
-	lines += CodeGen().Module(mod) + ['']
+	lines += CodeGen().Module(mod)
 	return '\n'.join(lines)
 
 if __name__ == '__main__':
