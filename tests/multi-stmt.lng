@@ -1,0 +1,4 @@
+def __main__(name: str, args: list[str]) -> int:
+	print('Asara')
+	print(str(16384))
+	print('thunderstorm')
