@@ -4,7 +4,7 @@ declare i32 @asprintf(i8**, i8*, ...)
 
 %struct.str = type { i64, i8* }
 @str_NL = constant [1 x i8] c"\0a"
-@fmt_INT = constant [2 x i8] c"%d"
+@fmt_INT = constant [4 x i8] c"%ld\00"
 
 define void @print(%struct.str* %str) {
 	%s.data.ptr = getelementptr inbounds %struct.str* %str, i64 0, i32 1
@@ -21,7 +21,7 @@ define %struct.str* @str(i64 %n) {
 	%s.ptr.tmp = call i8* @malloc(i64 16)
 	%s.ptr = bitcast i8* %s.ptr.tmp to %struct.str*
 	%s.data = getelementptr %struct.str* %s.ptr, i32 0, i32 1
-	%fmt = getelementptr inbounds [2 x i8]* @fmt_INT, i32 0, i32 0
+	%fmt = getelementptr inbounds [4 x i8]* @fmt_INT, i32 0, i32 0
 	%fmt.len = call i32 (i8**, i8*, ...)* @asprintf(i8** %s.data, i8* %fmt, i64 %n)
 	%fmt.len64 = sext i32 %fmt.len to i64
 	%s.len = getelementptr inbounds %struct.str* %s.ptr, i32 0, i32 0
