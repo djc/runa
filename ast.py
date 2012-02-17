@@ -65,6 +65,10 @@ class RightPar(Node):
 	op = ')'
 	lbp = 0
 
+class Add(BinaryOp):
+	op = '+'
+	lbp = 15
+
 class Pratt(object):
 	
 	def __init__(self):
@@ -81,6 +85,8 @@ class Pratt(object):
 				yield Call()
 			elif v == ')':
 				yield RightPar()
+			elif v == '+':
+				yield Add()
 			elif t == 'str':
 				yield String(v)
 			elif t == 'nl':
