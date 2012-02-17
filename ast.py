@@ -89,6 +89,11 @@ class Pratt(object):
 				yield End()
 		yield End()
 	
+	def advance(self, id):
+		if not isinstance(self.token, id):
+			raise Exception('expected %r' % id)
+		self.token = self.next()
+	
 	def expr(self, rbp=0):
 		t, self.token = self.token, self.next()
 		left = t.nud(self)
