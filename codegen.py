@@ -128,6 +128,17 @@ class CodeGen(object):
 		self.writeline('%s = load %s* %s' % bits)
 		return TYPES['int'], bits[0]
 	
+	def Add(self, node):
+		
+		args = []
+		for arg in [node.left, node.right]:
+			args.append(self.visit(arg))
+		
+		store = self.varname()
+		bits = store, TYPES['int'], args[0][1], args[1][1]
+		self.writeline('%s = add %s %s, %s' % bits)
+		return TYPES['int'], store
+	
 	def Call(self, node):
 		
 		args = []
