@@ -63,7 +63,7 @@ class Call(BinaryOp, Node):
 		parser.token = parser.next()
 		return expr
 
-class RightPar(BinaryOp):
+class RightPar(Node):
 	op = ')'
 	lbp = 0
 
