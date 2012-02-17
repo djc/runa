@@ -68,6 +68,7 @@ class RightPar(Node):
 class Add(BinaryOp):
 	op = '+'
 	lbp = 15
+	fields = 'left', 'right'
 
 class Pratt(object):
 	
