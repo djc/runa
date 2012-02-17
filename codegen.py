@@ -120,20 +120,19 @@ class CodeGen(object):
 	def writelines(self, lines):
 		self.buf.append(('\n' + self.tabs()).join(lines))
 	
+	def String(self, node):
+		return TYPES['str'], self.const.table[node]
+	
+	def Number(self, node):
+		bits = self.varname(), TYPES['int'], self.const.table[node]
+		self.writeline('%s = load %s* %s' % bits)
+		return TYPES['int'], bits[0]
+	
 	def Call(self, node):
 		
 		args = []
 		for arg in node.args:
-			if isinstance(arg, ast.Call):
-				res = self.visit(arg)
-				assert res
-				args.append('%s %s' % res)
-			elif isinstance(arg, ast.String):
-				args.append(TYPES['str'] + ' ' + self.const.table[arg])
-			elif isinstance(arg, ast.Number):
-				bits = self.varname(), TYPES['int'], self.const.table[arg]
-				self.writeline('%s = load %s* %s' % bits)
-				args.append(TYPES['int'] + ' ' + bits[0])
+			args.append('%s %s' % self.visit(arg))
 		
 		store, start = None, 'call'
 		void = LIBRARY[node.name.name][0] == 'void'
