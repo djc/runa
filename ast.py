@@ -104,6 +104,14 @@ class Pratt(object):
 
 # Higher-level
 
+class Statement(Node):
+	
+	@classmethod
+	def parse(cls, tokens):
+		ast = Pratt().parse(tokens)
+		if isinstance(ast, Call):
+			return ast
+
 class TypeExpr(Node):
 	
 	fields = ()
@@ -129,18 +137,6 @@ class TypeExpr(Node):
 		cur = next(tokens)
 		assert cur == ('op', ']')
 		return cls(base, over)
-
-class Statement(Node):
-	
-	@classmethod
-	def parse(cls, tokens):
-		ast = Pratt().parse(tokens)
-		if isinstance(ast, Call):
-			cur = next(tokens)
-			if cur == ('op', ')'):
-				cur = next(tokens)
-			assert cur == ('nl', '\n')
-			return ast
 
 class Suite(Node):
 	
