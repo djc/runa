@@ -1,12 +1,10 @@
 
 # Base class
 
-HIDE = {'left', 'right'}
-
 class Node(object):
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%s' % (k, v) for (k, v) in contents if k not in HIDE)
+		show = ('%s=%s' % (k, v) for (k, v) in contents)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	def __hash__(self):
 		values = tuple(sorted((k, v) for (k, v) in self.__dict__.iteritems()))
@@ -48,14 +46,13 @@ class BinaryOp(Node):
 class Call(BinaryOp, Node):
 	
 	op = '('
-	lbp = 20
+	lbp = 150
 	fields = ('args',)
 	
 	def led(self, parser, left):
-		self.left = left
 		self.name = left
-		self.right = parser.expr()
-		self.args = (self.right,)
+		self.args = (parser.expr(),)
+		parser.advance(RightPar)
 		return self
 	
 	def nud(self, parser):
