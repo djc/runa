@@ -43,6 +43,7 @@ class BinaryOp(Node):
 	def led(self, parser, left):
 		self.left = left
 		self.right = parser.expr(self.lbp)
+		return self
 
 class Call(BinaryOp, Node):
 	
