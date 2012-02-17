@@ -59,6 +59,10 @@ http://stackoverflow.com/questions/146159/is-fortran-faster-than-c
 Languages faster than C++
 http://stackoverflow.com/questions/610396/languages-faster-than-c
 
+Paul McGuire
+A sample of a pyparsing grammar using indentation for grouping
+http://pyparsing.wikispaces.com/file/view/indentedGrammarExample.py
+
 
 Implementation notes
 ====================
