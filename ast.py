@@ -125,9 +125,7 @@ class Statement(Node):
 	
 	@classmethod
 	def parse(cls, tokens):
-		ast = Pratt().parse(tokens)
-		if isinstance(ast, Call):
-			return ast
+		return Pratt().parse(tokens)
 
 class TypeExpr(Node):
 	
