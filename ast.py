@@ -70,6 +70,11 @@ class Add(BinaryOp):
 	lbp = 15
 	fields = 'left', 'right'
 
+class Assign(BinaryOp):
+	op = '='
+	lbp = 10
+	fields = 'left', 'right'
+
 class Pratt(object):
 	
 	def __init__(self):
@@ -88,6 +93,8 @@ class Pratt(object):
 				yield RightPar()
 			elif v == '+':
 				yield Add()
+			elif v == '=':
+				yield Assign()
 			elif t == 'str':
 				yield String(v)
 			elif t == 'nl':
