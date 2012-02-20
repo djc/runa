@@ -69,30 +69,34 @@ class ConstantFinder(object):
 			else:
 				self.visit(attr)
 
+class Frame(object):
+	
+	def __init__(self):
+		self.var = 1
+	
+	def varname(self):
+		self.var += 1
+		return '%%%i' % (self.var - 1)
+
 class CodeGen(object):
 	
 	def __init__(self):
 		self.buf = []
 		self.level = 0
 		self.start = True
-		self.var = 1
 	
-	def varname(self):
-		self.var += 1
-		return '%%%i' % (self.var - 1)
-	
-	def visit(self, node):
+	def visit(self, node, frame):
 		
 		if hasattr(self, node.__class__.__name__):
-			return getattr(self, node.__class__.__name__)(node)
+			return getattr(self, node.__class__.__name__)(node, frame)
 		
 		for k in node.fields:
 			attr = getattr(node, k)
 			if isinstance(attr, list):
 				for v in attr:
-					self.visit(v)
+					self.visit(v, frame)
 			else:
-				self.visit(attr)
+				self.visit(attr, frame)
 	
 	def tabs(self):
 		return '\t' * self.level
@@ -120,35 +124,35 @@ class CodeGen(object):
 	def writelines(self, lines):
 		self.buf.append(('\n' + self.tabs()).join(lines))
 	
-	def String(self, node):
+	def String(self, node, frame):
 		return TYPES['str'], self.const.table[node]
 	
-	def Number(self, node):
-		bits = self.varname(), TYPES['int'], self.const.table[node]
+	def Number(self, node, frame):
+		bits = frame.varname(), TYPES['int'], self.const.table[node]
 		self.writeline('%s = load %s* %s' % bits)
 		return TYPES['int'], bits[0]
 	
-	def Add(self, node):
+	def Add(self, node, frame):
 		
 		args = []
 		for arg in [node.left, node.right]:
-			args.append(self.visit(arg))
+			args.append(self.visit(arg, frame))
 		
-		store = self.varname()
+		store = frame.varname()
 		bits = store, TYPES['int'], args[0][1], args[1][1]
 		self.writeline('%s = add %s %s, %s' % bits)
 		return TYPES['int'], store
 	
-	def Call(self, node):
+	def Call(self, node, frame):
 		
 		args = []
 		for arg in node.args:
-			args.append('%s %s' % self.visit(arg))
+			args.append('%s %s' % self.visit(arg, frame))
 		
 		store, start = None, 'call'
 		void = LIBRARY[node.name.name][0] == 'void'
 		if not void:
-			store = self.varname()
+			store = frame.varname()
 			start = '%s = call' % store
 		
 		rtype = TYPES[LIBRARY[node.name.name][0]]
@@ -156,11 +160,11 @@ class CodeGen(object):
 		self.writeline(' '.join((start, rtype, call)))
 		return rtype, store
 	
-	def Suite(self, node):
+	def Suite(self, node, frame):
 		for stmt in node.stmts:
-			self.visit(stmt)
+			self.visit(stmt, frame)
 	
-	def Module(self, node):
+	def Module(self, node, frame=None):
 		
 		self.const = ConstantFinder(node)
 		defined = {i.name: i for i in node.values}
@@ -172,7 +176,8 @@ class CodeGen(object):
 			decl = 'define i32 @main(i32 %argc, i8** %argv) nounwind ssp {'
 			self.writeline(decl)
 			self.indent()
-			self.visit(defined['__main__'].code)
+			frame = Frame()
+			self.visit(defined['__main__'].code, frame)
 			self.writeline('ret i32 0')
 			self.dedent()
 			self.writeline('}')
