@@ -54,7 +54,7 @@ class ConstantFinder(object):
 		self.table[node] = id
 		bits = id, TYPES['int'], node.val
 		self.lines.append('%s = constant %s %s' % bits)
-		
+	
 	def visit(self, node):
 		
 		if hasattr(self, node.__class__.__name__):
