@@ -30,6 +30,9 @@ class ConstantFinder(object):
 		self.next += 1
 		return s
 	
+	def Name(self, node):
+		pass
+	
 	def String(self, node):
 		
 		id = self.id('str')
@@ -73,6 +76,7 @@ class Frame(object):
 	
 	def __init__(self):
 		self.var = 1
+		self.defined = {}
 	
 	def varname(self):
 		self.var += 1
@@ -132,6 +136,9 @@ class CodeGen(object):
 		self.writeline('%s = load %s* %s' % bits)
 		return TYPES['int'], bits[0]
 	
+	def Name(self, node, frame):
+		return frame.defined[node.name]
+	
 	def Add(self, node, frame):
 		
 		args = []
@@ -142,6 +149,10 @@ class CodeGen(object):
 		bits = store, TYPES['int'], args[0][1], args[1][1]
 		self.writeline('%s = add %s %s, %s' % bits)
 		return TYPES['int'], store
+	
+	def Assign(self, node, frame):
+		res = self.visit(node.right, frame)
+		frame.defined[node.left.name] = res
 	
 	def Call(self, node, frame):
 		
