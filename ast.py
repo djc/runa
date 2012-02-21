@@ -90,6 +90,16 @@ class Assign(BinaryOp):
 	lbp = 10
 	fields = 'left', 'right'
 
+OPERATORS = {
+	'(': Call,
+	')': RightPar,
+	'+': Add,
+	'-': Sub,
+	'*': Mul,
+	'/': Div,
+	'=': Assign,
+}
+
 class Pratt(object):
 	
 	def __init__(self):
@@ -102,22 +112,10 @@ class Pratt(object):
 				yield Name(v)
 			elif t == 'num':
 				yield Number(v)
-			elif v == '(':
-				yield Call()
-			elif v == ')':
-				yield RightPar()
-			elif v == '+':
-				yield Add()
-			elif v == '-':
-				yield Sub()
-			elif v == '*':
-				yield Mul()
-			elif v == '/':
-				yield Div()
-			elif v == '=':
-				yield Assign()
 			elif t == 'str':
 				yield String(v)
+			elif t == 'op':
+				yield OPERATORS[v]()
 			elif t == 'nl':
 				yield End()
 		yield End()
