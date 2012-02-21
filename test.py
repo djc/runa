@@ -6,6 +6,7 @@ TESTS_DIR = os.path.join(DIR, 'tests')
 
 TESTS = [
 	'hello', 'print-int', 'multi-stmt', 'int-add', 'var-hello', 'int-var',
+	'int-mul',
 ]
 
 def run(self, key):
