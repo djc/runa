@@ -128,6 +128,9 @@ class CodeGen(object):
 	def writelines(self, lines):
 		self.buf.append(('\n' + self.tabs()).join(lines))
 	
+	def args(self, nodes, frame):
+		return [self.visit(i, frame) for i in nodes]
+	
 	def String(self, node, frame):
 		return TYPES['str'], self.const.table[node]
 	
@@ -140,44 +143,28 @@ class CodeGen(object):
 		return frame.defined[node.name]
 	
 	def Add(self, node, frame):
-		
-		args = []
-		for arg in [node.left, node.right]:
-			args.append(self.visit(arg, frame))
-		
+		args = self.args((node.left, node.right), frame)
 		store = frame.varname()
 		bits = store, TYPES['int'], args[0][1], args[1][1]
 		self.writeline('%s = add %s %s, %s' % bits)
 		return TYPES['int'], store
 	
 	def Sub(self, node, frame):
-		
-		args = []
-		for arg in [node.left, node.right]:
-			args.append(self.visit(arg, frame))
-		
+		args = self.args((node.left, node.right), frame)
 		store = frame.varname()
 		bits = store, TYPES['int'], args[0][1], args[1][1]
 		self.writeline('%s = sub %s %s, %s' % bits)
 		return TYPES['int'], store
 	
 	def Mul(self, node, frame):
-		
-		args = []
-		for arg in [node.left, node.right]:
-			args.append(self.visit(arg, frame))
-		
+		args = self.args((node.left, node.right), frame)
 		store = frame.varname()
 		bits = store, TYPES['int'], args[0][1], args[1][1]
 		self.writeline('%s = mul %s %s, %s' % bits)
 		return TYPES['int'], store
 	
 	def Div(self, node, frame):
-		
-		args = []
-		for arg in [node.left, node.right]:
-			args.append(self.visit(arg, frame))
-		
+		args = self.args((node.left, node.right), frame)
 		store = frame.varname()
 		bits = store, TYPES['int'], args[0][1], args[1][1]
 		self.writeline('%s = sdiv %s %s, %s' % bits)
@@ -189,10 +176,7 @@ class CodeGen(object):
 	
 	def Call(self, node, frame):
 		
-		args = []
-		for arg in node.args:
-			args.append('%s %s' % self.visit(arg, frame))
-		
+		args = ['%s %s' % a for a in self.args(node.args, frame)]
 		store, start = None, 'call'
 		void = LIBRARY[node.name.name][0] == 'void'
 		if not void:
