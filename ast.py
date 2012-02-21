@@ -80,6 +80,11 @@ class Mul(BinaryOp):
 	lbp = 20
 	fields = 'left', 'right'
 
+class Div(BinaryOp):
+	op = '/'
+	lbp = 20
+	fields = 'left', 'right'
+
 class Assign(BinaryOp):
 	op = '='
 	lbp = 10
@@ -107,6 +112,8 @@ class Pratt(object):
 				yield Sub()
 			elif v == '*':
 				yield Mul()
+			elif v == '/':
+				yield Div()
 			elif v == '=':
 				yield Assign()
 			elif t == 'str':

@@ -172,6 +172,17 @@ class CodeGen(object):
 		self.writeline('%s = mul %s %s, %s' % bits)
 		return TYPES['int'], store
 	
+	def Div(self, node, frame):
+		
+		args = []
+		for arg in [node.left, node.right]:
+			args.append(self.visit(arg, frame))
+		
+		store = frame.varname()
+		bits = store, TYPES['int'], args[0][1], args[1][1]
+		self.writeline('%s = sdiv %s %s, %s' % bits)
+		return TYPES['int'], store
+	
 	def Assign(self, node, frame):
 		res = self.visit(node.right, frame)
 		frame.defined[node.left.name] = res
