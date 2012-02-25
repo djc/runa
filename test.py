@@ -1,4 +1,4 @@
-import parser, codegen, compile
+import codegen, compile
 import sys, os, unittest, subprocess
 
 DIR = os.path.dirname(__file__)
