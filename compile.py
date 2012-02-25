@@ -1,7 +1,8 @@
-import sys, parser, codegen, subprocess, os
+import ast, codegen
+import sys, subprocess, os
 
 def llir(fn):
-	return codegen.source(parser.fromfile(fn))
+	return codegen.source(ast.fromfile(fn))
 
 def compile(fn, outfn=None):
 	

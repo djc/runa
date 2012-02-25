@@ -1,4 +1,4 @@
-import sys, ast, tokenizer, parser
+import sys, ast, tokenizer
 
 TRIPLES = {
 	'darwin': 'x86_64-apple-darwin11.0.0',
@@ -231,4 +231,4 @@ def source(mod):
 	return '\n'.join(lines)
 
 if __name__ == '__main__':
-	print source(parser.fromfile(sys.argv[1]))
+	print source(ast.fromfile(sys.argv[1]))
