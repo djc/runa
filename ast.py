@@ -244,7 +244,7 @@ class Module(Node):
 				cur = next(tokens)
 				continue
 			
-			if cur[0] == 'name' and cur[1] == 'def':
+			if cur[0] == 'kw' and cur[1] == 'def':
 				cur = next(tokens)
 				assert cur[0] == 'name'
 				values.append(Function.parse(cur[1], tokens))
