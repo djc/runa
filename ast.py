@@ -30,7 +30,6 @@ class End(Terminal):
 	op = 'end'
 
 class String(Terminal):
-	op = 'str'
 	def __init__(self, value):
 		self.value = value
 
