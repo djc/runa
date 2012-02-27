@@ -13,31 +13,26 @@ class Node(object):
 
 # Expression-level
 
-class Name(Node):
+class Terminal(Node):
 	lbp = 0
+	def nud(self, parser):
+		return self
+
+class Name(Terminal):
 	def __init__(self, name):
 		self.name = name
-	def nud(self, parser):
-		return self
 
-class Int(Node):
-	lbp = 0
+class Int(Terminal):
 	def __init__(self, num):
 		self.val = num
-	def nud(self, parser):
-		return self
 
-class End(Node):
+class End(Terminal):
 	op = 'end'
-	lbp = 0
 
-class String(Node):
+class String(Terminal):
 	op = 'str'
-	lbp = 0
 	def __init__(self, value):
 		self.value = value
-	def nud(self, parser):
-		return self
 
 class BinaryOp(Node):
 	def led(self, parser, left):
@@ -45,11 +40,8 @@ class BinaryOp(Node):
 		self.right = parser.expr(self.lbp)
 		return self
 
-class RightPar(Node):
+class RightPar(Terminal):
 	op = ')'
-	lbp = 0
-	def nud(self, parser):
-		return self
 
 class Elem(BinaryOp):
 	
@@ -63,9 +55,8 @@ class Elem(BinaryOp):
 		parser.advance(ElemEnd)
 		return self
 
-class ElemEnd(Node):
+class ElemEnd(Terminal):
 	op = ']'
-	lbp = 0
 
 class Add(BinaryOp):
 	op = '+'
@@ -92,37 +83,25 @@ class Assign(BinaryOp):
 	lbp = 10
 	fields = 'left', 'right'
 
-class Colon(Node):
+class Colon(Terminal):
 	op = ':'
-	lbp = 0
 	fields = 'left', 'right'
-	def nud(self, parser):
-		return self
 
 class Comma(BinaryOp):
 	op = ','
 	lbp = 0
 
-class RType(Node):
+class RType(Terminal):
 	op = '->'
-	lbp = 0
-	def nud(self, parser):
-		return self
 
-class Indent(Node):
-	lbp = 0
-	def nud(self, parser):
-		return self
+class Indent(Terminal):
+	pass
 
-class Dedent(Node):
-	lbp = 0
-	def nud(self, parser):
-		return self
+class Dedent(Terminal):
+	pass
 
-class NL(Node):
-	lbp = 0
-	def nud(self, parser):
-		return self
+class NL(Terminal):
+	pass
 
 class Call(BinaryOp, Node):
 	
