@@ -3,3 +3,4 @@ def __main__(name: str, args: list[str]) -> int:
 	print(str(x))
 	y = 'birthday'
 	print(y)
+	print(name)

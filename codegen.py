@@ -51,7 +51,7 @@ class ConstantFinder(object):
 		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}' % data)
 		self.lines.append(' '.join(bits))
 	
-	def Number(self, node):
+	def Int(self, node):
 		id = self.id('num')
 		self.data[id] = node
 		self.table[node] = id
@@ -131,10 +131,22 @@ class CodeGen(object):
 	def args(self, nodes, frame):
 		return [self.visit(i, frame) for i in nodes]
 	
+	def binop(self, node, frame, op):
+		
+		args = self.args((node.left, node.right), frame)
+		if op == 'div':
+			op = 'sdiv'
+		
+		rtype = args[0][0]
+		store = frame.varname()
+		bits = store, op, rtype, args[0][1], args[1][1]
+		self.writeline('%s = %s %s %s, %s' % bits)
+		return rtype, store
+	
 	def String(self, node, frame):
 		return TYPES['str'], self.const.table[node]
 	
-	def Number(self, node, frame):
+	def Int(self, node, frame):
 		bits = frame.varname(), TYPES['int'], self.const.table[node]
 		self.writeline('%s = load %s* %s' % bits)
 		return TYPES['int'], bits[0]
@@ -143,32 +155,16 @@ class CodeGen(object):
 		return frame.defined[node.name]
 	
 	def Add(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		store = frame.varname()
-		bits = store, TYPES['int'], args[0][1], args[1][1]
-		self.writeline('%s = add %s %s, %s' % bits)
-		return TYPES['int'], store
+		return self.binop(node, frame, 'add')
 	
 	def Sub(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		store = frame.varname()
-		bits = store, TYPES['int'], args[0][1], args[1][1]
-		self.writeline('%s = sub %s %s, %s' % bits)
-		return TYPES['int'], store
+		return self.binop(node, frame, 'sub')
 	
 	def Mul(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		store = frame.varname()
-		bits = store, TYPES['int'], args[0][1], args[1][1]
-		self.writeline('%s = mul %s %s, %s' % bits)
-		return TYPES['int'], store
+		return self.binop(node, frame, 'mul')
 	
 	def Div(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		store = frame.varname()
-		bits = store, TYPES['int'], args[0][1], args[1][1]
-		self.writeline('%s = sdiv %s %s, %s' % bits)
-		return TYPES['int'], store
+		return self.binop(node, frame, 'div')
 	
 	def Assign(self, node, frame):
 		res = self.visit(node.right, frame)
@@ -201,11 +197,20 @@ class CodeGen(object):
 		self.newline()
 		
 		if '__main__' in defined:
+			
 			decl = 'define i32 @main(i32 %argc, i8** %argv) nounwind ssp {'
 			self.writeline(decl)
 			self.indent()
+			
 			frame = Frame()
+			self.writeline('%arg1.ptr = getelementptr i8** %argv, i32 0')
+			self.writeline('%arg1 = load i8** %arg1.ptr')
+			
+			bits = TYPES['str']
+			self.writeline('%%name = call %s @wrapstr(i8* %%arg1)' % bits)
+			frame.defined['name'] = TYPES['str'], '%name'
 			self.visit(defined['__main__'].code, frame)
+			
 			self.writeline('ret i32 0')
 			self.dedent()
 			self.writeline('}')
