@@ -15,7 +15,7 @@ class Node(object):
 
 class Terminal(Node):
 	lbp = 0
-	def nud(self, parser):
+	def nud(self, p):
 		return self
 
 class Name(Terminal):
@@ -34,9 +34,9 @@ class String(Terminal):
 		self.value = value
 
 class BinaryOp(Node):
-	def led(self, parser, left):
+	def led(self, p, left):
 		self.left = left
-		self.right = parser.expr(self.lbp)
+		self.right = p.expr(self.lbp)
 		return self
 
 class RightPar(Terminal):
@@ -48,10 +48,10 @@ class Elem(BinaryOp):
 	lbp = 16
 	fields = 'obj', 'elem'
 	
-	def led(self, parser, left):
+	def led(self, p, left):
 		self.obj = left
-		self.elem = parser.expr()
-		parser.advance(ElemEnd)
+		self.elem = p.expr()
+		p.advance(ElemEnd)
 		return self
 
 class ElemEnd(Terminal):
@@ -108,24 +108,24 @@ class Call(BinaryOp, Node):
 	lbp = 70
 	fields = ('args',)
 	
-	def led(self, parser, left):
+	def led(self, p, left):
 		
 		self.name = left
 		self.args = []
 		
-		next = parser.expr()
-		while isinstance(parser.token, Comma):
+		next = p.expr()
+		while isinstance(p.token, Comma):
 			self.args.append(next)
-			parser.advance(Comma)
-			next = parser.expr()
+			p.advance(Comma)
+			next = p.expr()
 		
 		self.args.append(next)
-		parser.advance(RightPar)
+		p.advance(RightPar)
 		return self
 	
-	def nud(self, parser):
-		expr = parser.expr()
-		parser.token = parser.next()
+	def nud(self, p):
+		expr = p.expr()
+		p.token = p.next()
 		return expr
 
 class Suite(Node):
@@ -133,25 +133,25 @@ class Suite(Node):
 	fields = 'stmts',
 	
 	def advance(self):
-		while isinstance(self.parser.token, NL):
-			self.parser.advance()
+		while isinstance(self.p.token, NL):
+			self.p.advance()
 	
-	def __init__(self, parser):
+	def __init__(self, p):
 		
-		self.parser = parser
+		self.p = p
 		self.stmts = []
 		
 		self.advance()
-		parser.advance(Indent)
+		p.advance(Indent)
 		self.advance()
 		
 		while True:
-			self.stmts.append(parser.expr())
+			self.stmts.append(p.expr())
 			self.advance()
-			if isinstance(parser.token, Dedent):
+			if isinstance(p.token, Dedent):
 				break
 		
-		parser.advance(Dedent)
+		p.advance(Dedent)
 
 class Argument(Node):
 	fields = 'name',
@@ -164,39 +164,39 @@ class Function(Node):
 	lbp = 0
 	fields = 'name', 'args', 'rtype', 'suite'
 	
-	def nud(self, parser):
+	def nud(self, p):
 		
-		self.name = parser.advance(Name)
-		parser.advance(Call)
+		self.name = p.advance(Name)
+		p.advance(Call)
 		
 		cur = Argument()
 		self.args = []
-		next = parser.expr()
+		next = p.expr()
 		if not isinstance(next, RightPar):
-			while parser.token.__class__ in (Comma, Colon):
+			while p.token.__class__ in (Comma, Colon):
 				
-				if isinstance(parser.token, Colon):
+				if isinstance(p.token, Colon):
 					cur.name = next
-					parser.advance(Colon)
+					p.advance(Colon)
 				else:
 					cur.type = next
 					self.args.append(cur)
-					parser.advance(Comma)
+					p.advance(Comma)
 				
-				next = parser.expr()
+				next = p.expr()
 		
 		if not isinstance(next, RightPar):
 			cur.type = next
 			self.args.append(cur)
-			parser.advance(RightPar)
+			p.advance(RightPar)
 		
 		self.rtype = None
-		if isinstance(parser.token, RType):
-			parser.advance(RType)
-			self.rtype = parser.expr()
+		if isinstance(p.token, RType):
+			p.advance(RType)
+			self.rtype = p.expr()
 		
-		parser.advance(Colon)
-		self.suite = Suite(parser)
+		p.advance(Colon)
+		self.suite = Suite(p)
 		return self
 
 OPERATORS = {
@@ -264,11 +264,11 @@ def fromfile(fn):
 	
 	src = open(fn).read()
 	tokens = tokenizer.indented(tokenizer.tokenize(src))
-	parser = Pratt(tokens)
+	p = Pratt(tokens)
 	
 	mod = Module()
-	while not isinstance(parser.token, End):
-		mod.suite.append(parser.expr())
+	while not isinstance(p.token, End):
+		mod.suite.append(p.expr())
 	
 	return mod
 
