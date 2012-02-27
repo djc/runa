@@ -131,6 +131,18 @@ class CodeGen(object):
 	def args(self, nodes, frame):
 		return [self.visit(i, frame) for i in nodes]
 	
+	def binop(self, node, frame, op):
+		
+		args = self.args((node.left, node.right), frame)
+		if op == 'div':
+			op = 'sdiv'
+		
+		rtype = args[0][0]
+		store = frame.varname()
+		bits = store, op, rtype, args[0][1], args[1][1]
+		self.writeline('%s = %s %s %s, %s' % bits)
+		return rtype, store
+	
 	def String(self, node, frame):
 		return TYPES['str'], self.const.table[node]
 	
@@ -143,32 +155,16 @@ class CodeGen(object):
 		return frame.defined[node.name]
 	
 	def Add(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		store = frame.varname()
-		bits = store, TYPES['int'], args[0][1], args[1][1]
-		self.writeline('%s = add %s %s, %s' % bits)
-		return TYPES['int'], store
+		return self.binop(node, frame, 'add')
 	
 	def Sub(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		store = frame.varname()
-		bits = store, TYPES['int'], args[0][1], args[1][1]
-		self.writeline('%s = sub %s %s, %s' % bits)
-		return TYPES['int'], store
+		return self.binop(node, frame, 'sub')
 	
 	def Mul(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		store = frame.varname()
-		bits = store, TYPES['int'], args[0][1], args[1][1]
-		self.writeline('%s = mul %s %s, %s' % bits)
-		return TYPES['int'], store
+		return self.binop(node, frame, 'mul')
 	
 	def Div(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		store = frame.varname()
-		bits = store, TYPES['int'], args[0][1], args[1][1]
-		self.writeline('%s = sdiv %s %s, %s' % bits)
-		return TYPES['int'], store
+		return self.binop(node, frame, 'div')
 	
 	def Assign(self, node, frame):
 		res = self.visit(node.right, frame)
