@@ -86,7 +86,7 @@ class Colon(Terminal):
 	op = ':'
 	fields = 'left', 'right'
 
-class Comma(BinaryOp):
+class Comma(Terminal):
 	op = ','
 	lbp = 0
 
