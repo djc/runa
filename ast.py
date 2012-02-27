@@ -19,7 +19,7 @@ class Name(Node):
 	def nud(self, parser):
 		return self
 
-class Number(Node):
+class Int(Node):
 	def __init__(self, num):
 		self.val = num
 	def nud(self, parser):
@@ -111,8 +111,8 @@ class Pratt(object):
 		for t, v in tokens:
 			if t == 'name':
 				yield Name(v)
-			elif t == 'num':
-				yield Number(v)
+			elif t == 'num' and '.' not in v:
+				yield Int(v)
 			elif t == 'str':
 				yield String(v)
 			elif t == 'op':

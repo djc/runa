@@ -51,7 +51,7 @@ class ConstantFinder(object):
 		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}' % data)
 		self.lines.append(' '.join(bits))
 	
-	def Number(self, node):
+	def Int(self, node):
 		id = self.id('num')
 		self.data[id] = node
 		self.table[node] = id
@@ -146,7 +146,7 @@ class CodeGen(object):
 	def String(self, node, frame):
 		return TYPES['str'], self.const.table[node]
 	
-	def Number(self, node, frame):
+	def Int(self, node, frame):
 		bits = frame.varname(), TYPES['int'], self.const.table[node]
 		self.writeline('%s = load %s* %s' % bits)
 		return TYPES['int'], bits[0]
