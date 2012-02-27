@@ -201,11 +201,20 @@ class CodeGen(object):
 		self.newline()
 		
 		if '__main__' in defined:
+			
 			decl = 'define i32 @main(i32 %argc, i8** %argv) nounwind ssp {'
 			self.writeline(decl)
 			self.indent()
+			
 			frame = Frame()
+			self.writeline('%arg1.ptr = getelementptr i8** %argv, i32 0')
+			self.writeline('%arg1 = load i8** %arg1.ptr')
+			
+			bits = TYPES['str']
+			self.writeline('%%name = call %s @wrapstr(i8* %%arg1)' % bits)
+			frame.defined['name'] = TYPES['str'], '%name'
 			self.visit(defined['__main__'].code, frame)
+			
 			self.writeline('ret i32 0')
 			self.dedent()
 			self.writeline('}')
