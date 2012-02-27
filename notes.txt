@@ -63,6 +63,10 @@ Paul McGuire
 A sample of a pyparsing grammar using indentation for grouping
 http://pyparsing.wikispaces.com/file/view/indentedGrammarExample.py
 
+Phil Hassey
+tinypy: parse.py (Python Pratt parser, in Python)
+http://code.google.com/p/tinypy/source/browse/trunk/tinypy/parse.py
+
 
 Implementation notes
 ====================
