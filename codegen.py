@@ -191,10 +191,14 @@ class CodeGen(object):
 	def Module(self, node, frame=None):
 		
 		self.const = ConstantFinder(node)
-		defined = {i.name: i for i in node.values}
 		self.writelines(self.const.lines)
 		self.newline()
 		self.newline()
+		
+		defined = {}
+		for n in node.suite:
+			if isinstance(n, ast.Function):
+				defined[n.name.name] = n
 		
 		if '__main__' in defined:
 			
@@ -209,7 +213,7 @@ class CodeGen(object):
 			bits = TYPES['str']
 			self.writeline('%%name = call %s @wrapstr(i8* %%arg1)' % bits)
 			frame.defined['name'] = TYPES['str'], '%name'
-			self.visit(defined['__main__'].code, frame)
+			self.visit(defined['__main__'].suite, frame)
 			
 			self.writeline('ret i32 0')
 			self.dedent()

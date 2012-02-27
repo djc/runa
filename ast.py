@@ -14,12 +14,14 @@ class Node(object):
 # Expression-level
 
 class Name(Node):
+	lbp = 0
 	def __init__(self, name):
 		self.name = name
 	def nud(self, parser):
 		return self
 
 class Int(Node):
+	lbp = 0
 	def __init__(self, num):
 		self.val = num
 	def nud(self, parser):
@@ -28,11 +30,10 @@ class Int(Node):
 class End(Node):
 	op = 'end'
 	lbp = 0
-	def nud(self, parser):
-		return self
 
 class String(Node):
 	op = 'str'
+	lbp = 0
 	def __init__(self, value):
 		self.value = value
 	def nud(self, parser):
@@ -44,52 +45,181 @@ class BinaryOp(Node):
 		self.right = parser.expr(self.lbp)
 		return self
 
-class Call(BinaryOp, Node):
-	
-	op = '('
-	lbp = 150
-	fields = ('args',)
-	
-	def led(self, parser, left):
-		self.name = left
-		self.args = (parser.expr(),)
-		parser.advance(RightPar)
-		return self
-	
-	def nud(self, parser):
-		expr = parser.expr()
-		assert parser.token.op == ')'
-		parser.token = parser.next()
-		return expr
-
 class RightPar(Node):
 	op = ')'
+	lbp = 0
+	def nud(self, parser):
+		return self
+
+class Elem(BinaryOp):
+	
+	op = '['
+	lbp = 16
+	fields = 'obj', 'elem'
+	
+	def led(self, parser, left):
+		self.obj = left
+		self.elem = parser.expr()
+		parser.advance(ElemEnd)
+		return self
+
+class ElemEnd(Node):
+	op = ']'
 	lbp = 0
 
 class Add(BinaryOp):
 	op = '+'
-	lbp = 15
+	lbp = 50
 	fields = 'left', 'right'
 
 class Sub(BinaryOp):
 	op = '-'
-	lbp = 15
+	lbp = 50
 	fields = 'left', 'right'
 
 class Mul(BinaryOp):
 	op = '*'
-	lbp = 20
+	lbp = 60
 	fields = 'left', 'right'
 
 class Div(BinaryOp):
 	op = '/'
-	lbp = 20
+	lbp = 60
 	fields = 'left', 'right'
 
 class Assign(BinaryOp):
 	op = '='
 	lbp = 10
 	fields = 'left', 'right'
+
+class Colon(Node):
+	op = ':'
+	lbp = 0
+	fields = 'left', 'right'
+	def nud(self, parser):
+		return self
+
+class Comma(BinaryOp):
+	op = ','
+	lbp = 0
+
+class RType(Node):
+	op = '->'
+	lbp = 0
+	def nud(self, parser):
+		return self
+
+class Indent(Node):
+	lbp = 0
+	def nud(self, parser):
+		return self
+
+class Dedent(Node):
+	lbp = 0
+	def nud(self, parser):
+		return self
+
+class NL(Node):
+	lbp = 0
+	def nud(self, parser):
+		return self
+
+class Call(BinaryOp, Node):
+	
+	op = '('
+	lbp = 70
+	fields = ('args',)
+	
+	def led(self, parser, left):
+		
+		self.name = left
+		self.args = []
+		
+		next = parser.expr()
+		while isinstance(parser.token, Comma):
+			self.args.append(next)
+			parser.advance(Comma)
+			next = parser.expr()
+		
+		self.args.append(next)
+		parser.advance(RightPar)
+		return self
+	
+	def nud(self, parser):
+		expr = parser.expr()
+		parser.token = parser.next()
+		return expr
+
+class Suite(Node):
+	
+	fields = 'stmts',
+	
+	def advance(self):
+		while isinstance(self.parser.token, NL):
+			self.parser.advance()
+	
+	def __init__(self, parser):
+		
+		self.parser = parser
+		self.stmts = []
+		
+		self.advance()
+		parser.advance(Indent)
+		self.advance()
+		
+		while True:
+			self.stmts.append(parser.expr())
+			self.advance()
+			if isinstance(parser.token, Dedent):
+				break
+		
+		parser.advance(Dedent)
+
+class Argument(Node):
+	fields = 'name',
+	def __init__(self):
+		self.name = None
+		self.type = None
+
+class Function(Node):
+	
+	lbp = 0
+	fields = 'name', 'args', 'rtype', 'suite'
+	
+	def nud(self, parser):
+		
+		self.name = parser.advance(Name)
+		parser.advance(Call)
+		
+		cur = Argument()
+		self.args = []
+		next = parser.expr()
+		if not isinstance(next, RightPar):
+			while parser.token.__class__ in (Comma, Colon):
+				
+				if isinstance(parser.token, Colon):
+					cur.name = next
+					parser.advance(Colon)
+				else:
+					cur.type = next
+					self.args.append(cur)
+					parser.advance(Comma)
+				
+				next = parser.expr()
+		
+		if not isinstance(next, RightPar):
+			cur.type = next
+			self.args.append(cur)
+			parser.advance(RightPar)
+		
+		self.rtype = None
+		if isinstance(parser.token, RType):
+			parser.advance(RType)
+			self.rtype = parser.expr()
+		
+		parser.advance(Colon)
+		self.suite = Suite(parser)
+		return self
 
 OPERATORS = {
 	'(': Call,
@@ -99,13 +229,18 @@ OPERATORS = {
 	'*': Mul,
 	'/': Div,
 	'=': Assign,
+	',': Comma,
+	':': Colon,
+	'[': Elem,
+	']': ElemEnd,
+	'->': RType,
 }
 
 class Pratt(object):
 	
-	def __init__(self):
-		self.token = None
-		self.next = next
+	def __init__(self, tokens):
+		self.next = self.wrap(tokens).next
+		self.token = self.next()
 	
 	def wrap(self, tokens):
 		for t, v in tokens:
@@ -113,18 +248,26 @@ class Pratt(object):
 				yield Name(v)
 			elif t == 'num' and '.' not in v:
 				yield Int(v)
+			elif t == 'kw':
+				yield Function()
 			elif t == 'str':
 				yield String(v)
 			elif t == 'op':
 				yield OPERATORS[v]()
+			elif t == 'indent' and v > 0:
+				yield Indent()
+			elif t == 'indent' and v < 0:
+				yield Dedent()
 			elif t == 'nl':
-				yield End()
+				yield NL()
 		yield End()
 	
-	def advance(self, id):
-		if not isinstance(self.token, id):
+	def advance(self, id=None):
+		if id and not isinstance(self.token, id):
 			raise Exception('expected %r' % id)
+		t = self.token
 		self.token = self.next()
+		return t
 	
 	def expr(self, rbp=0):
 		t, self.token = self.token, self.next()
@@ -133,155 +276,23 @@ class Pratt(object):
 			t, self.token = self.token, self.next()
 			left = t.led(self, left)
 		return left
-	
-	def parse(self, tokens):
-		self.next = self.wrap(tokens).next
-		self.token = self.next()
-		return self.expr()
-
-# Higher-level
-
-class Statement(Node):
-	
-	@classmethod
-	def parse(cls, tokens):
-		return Pratt().parse(tokens)
-
-class TypeExpr(Node):
-	
-	fields = ()
-	
-	def __init__(self, base, over=None):
-		self.base = base
-		self.over = over
-	
-	@classmethod
-	def parse(cls, tokens):
-		
-		cur = next(tokens)
-		assert cur[0] == 'name'
-		base = cur[1]
-		cur = next(tokens)
-		if cur != ('op', '['):
-			tokens.push(cur)
-			return cls(base)
-		
-		cur = next(tokens)
-		assert cur[0] == 'name'
-		over = cur[1]
-		cur = next(tokens)
-		assert cur == ('op', ']')
-		return cls(base, over)
-
-class Suite(Node):
-	
-	fields = ('stmts',)
-	
-	def __init__(self, stmts):
-		self.stmts = stmts
-	
-	@classmethod
-	def parse(cls, tokens):
-		cur = next(tokens)
-		stmts = []
-		while cur != ('indent', -1):
-			tokens.push(cur)
-			stmts.append(Statement.parse(tokens))
-			cur = next(tokens)
-		return cls(stmts)
-
-class Function(Node):
-	
-	fields = 'rtype', 'code'
-	
-	def __init__(self, name, args, rtype, code):
-		self.name = name
-		self.args = args
-		self.rtype = rtype
-		self.code = code
-	
-	@classmethod
-	def parse(cls, name, tokens):
-		
-		cur = next(tokens)
-		args = []
-		assert cur == ('op', '(')
-		while cur in (('op', '('), ('op', ',')):
-			cur = next(tokens)
-			assert next(tokens) == ('op', ':')
-			type = TypeExpr.parse(tokens)
-			args.append((cur[1], type))
-			cur = next(tokens)
-		
-		assert cur == ('op', ')')
-		assert next(tokens) == ('op', '->')
-		rtype = TypeExpr.parse(tokens)
-		assert next(tokens) == ('op', ':')
-		
-		cur = next(tokens)
-		while cur[0] == 'nl':
-			cur = next(tokens)
-		
-		assert cur == ('indent', 1)
-		code = Suite.parse(tokens)
-		return cls(name, args, rtype, code)
-
 
 class Module(Node):
-	
-	fields = ('values',)
-	
-	def __init__(self, values):
-		self.values = values
-	
-	@classmethod
-	def parse(cls, tokens):
-		values = []
-		cur = next(tokens)
-		while cur:
-			
-			if cur[0] == 'nl':
-				cur = next(tokens)
-				continue
-			
-			if cur[0] == 'kw' and cur[1] == 'def':
-				cur = next(tokens)
-				assert cur[0] == 'name'
-				values.append(Function.parse(cur[1], tokens))
-			else:
-				assert False, 'unknown token ' + str(cur)
-			
-			try:
-				cur = next(tokens)
-			except StopIteration:
-				break
-			
-		return cls(values)
-
-class Buffer(object):
-	def __init__(self, gen):
-		self.next = None
-		self.gen = gen
-	def __iter__(self):
-		return self
-	def peek(self):
-		if self.next is None:
-			self.next = next(self.gen)
-		return self.next
-	def push(self, val):
-		self.next = val
-	def next(self):
-		if self.next is not None:
-			tmp = self.next
-			self.next = None
-			return tmp
-		else:
-			return next(self.gen)
+	fields = 'suite',
+	def __init__(self):
+		self.suite = []
 
 def fromfile(fn):
+	
 	src = open(fn).read()
 	tokens = tokenizer.indented(tokenizer.tokenize(src))
-	return Module.parse(Buffer(tokens))
+	parser = Pratt(tokens)
+	
+	mod = Module()
+	while not isinstance(parser.token, End):
+		mod.suite.append(parser.expr())
+	
+	return mod
 
 if __name__ == '__main__':
 	print fromfile(sys.argv[1])
