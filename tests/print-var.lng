@@ -1,7 +1,8 @@
-# test
+# test: {"args": ["cold"]}
 def __main__(name: str, args: list[str]) -> int:
 	x = 29
 	print(str(x))
 	y = 'birthday'
 	print(y)
 	print(name)
+	print(args[0])
