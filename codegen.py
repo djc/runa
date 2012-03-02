@@ -207,11 +207,9 @@ class CodeGen(object):
 			self.indent()
 			
 			frame = Frame()
-			self.writeline('%arg1.ptr = getelementptr i8** %argv, i32 0')
-			self.writeline('%arg1 = load i8** %arg1.ptr')
-			
-			bits = TYPES['str']
-			self.writeline('%%name = call %s @wrapstr(i8* %%arg1)' % bits)
+			self.writeline('%name = alloca %struct.str')
+			self.writeline('%arg1 = load i8** %argv')
+			self.writeline('call void @wrapstr(i8* %arg1, %struct.str* %name)')
 			frame.defined['name'] = TYPES['str'], '%name'
 			self.visit(defined['__main__'].suite, frame)
 			

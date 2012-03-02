@@ -30,13 +30,11 @@ define %struct.str* @str(i64 %n) {
 	ret %struct.str* %s.ptr
 }
 
-define %struct.str* @wrapstr(i8* %s) {
-	%s.ptr.tmp = call i8* @malloc(i64 16)
-	%s.ptr = bitcast i8* %s.ptr.tmp to %struct.str*
-	%s.len = getelementptr inbounds %struct.str* %s.ptr, i32 0, i32 0
-	%len = call i64 @strlen(i8* %s)
+define void @wrapstr(i8* %s, %struct.str* %out) {
+	%s.len = getelementptr inbounds %struct.str* %out, i32 0, i32 0
+	%len = call i64 @strlen(i8* %s) nounwind readonly
 	store i64 %len, i64* %s.len
-	%s.data = getelementptr %struct.str* %s.ptr, i32 0, i32 1
+	%s.data = getelementptr %struct.str* %out, i32 0, i32 1
 	store i8* %s, i8** %s.data
-	ret %struct.str* %s.ptr
+	ret void
 }
