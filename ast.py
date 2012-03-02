@@ -46,11 +46,11 @@ class Elem(BinaryOp):
 	
 	op = '['
 	lbp = 16
-	fields = 'obj', 'elem'
+	fields = 'obj', 'key'
 	
 	def led(self, p, left):
 		self.obj = left
-		self.elem = p.expr()
+		self.key = p.expr()
 		p.advance(ElemEnd)
 		return self
 
