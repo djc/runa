@@ -104,6 +104,7 @@ class NL(Terminal):
 
 class Comment(Terminal):
 	op = '#'
+	fields = ()
 	def nud(self, p):
 		while not isinstance(p.token, NL):
 			p.advance()
