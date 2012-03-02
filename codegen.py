@@ -170,6 +170,15 @@ class CodeGen(object):
 		res = self.visit(node.right, frame)
 		frame.defined[node.left.name] = res
 	
+	def Elem(self, node, frame):
+		obj = self.visit(node.obj, frame)
+		key = self.visit(node.key, frame)
+		res = frame.varname()
+		bits = obj[0], obj[1], key[0], key[1]
+		self.writeline('%%tmp.ptr = getelementptr %s %s, %s %s' % bits)
+		self.writeline('%s = load %%struct.str** %%tmp.ptr' % res)
+		return obj[0][:-1], res
+	
 	def Call(self, node, frame):
 		
 		args = ['%s %s' % a for a in self.args(node.args, frame)]
