@@ -13,6 +13,7 @@ MATCHING = {
 		(r'[a-zA-Z_][a-zA-Z0-9_]*', 'name', None, None),
 		(r'[0-9\-.]+', 'num', None, None),
 		(r"'(.*?)'", 'str', None, None),
+		(r'"(.*?)"', 'str', None, None),
 	],
 	'indent': [
 		(r'[ \t]', 'indent', None, None),
