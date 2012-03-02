@@ -102,6 +102,14 @@ class Dedent(Terminal):
 class NL(Terminal):
 	pass
 
+class Comment(Terminal):
+	op = '#'
+	def nud(self, p):
+		while not isinstance(p.token, NL):
+			p.advance()
+		p.advance(NL)
+		return self
+
 class Call(BinaryOp, Node):
 	
 	op = '('
@@ -212,6 +220,7 @@ OPERATORS = {
 	'[': Elem,
 	']': ElemEnd,
 	'->': RType,
+	'#': Comment,
 }
 
 class Pratt(object):

@@ -1,3 +1,4 @@
+# test
 def __main__(name: str, args: list[str]) -> int:
 	x = 29
 	print(str(x))
