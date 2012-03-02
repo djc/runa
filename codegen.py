@@ -207,13 +207,23 @@ class CodeGen(object):
 			self.indent()
 			
 			frame = Frame()
-			self.writeline('%args = alloca %struct.str*')
-			args = 'i32 %argc', 'i8** %argv', '%struct.str** %args'
+			self.writeline('%args$ = alloca %struct.str*')
+			args = 'i32 %argc', 'i8** %argv', '%struct.str** %args$'
 			self.writeline('call void @argv(%s)' % ', '.join(args))
 			
-			self.writeline('%ptr = getelementptr %struct.str** %args, i32 0')
-			self.writeline('%name = load %struct.str** %ptr')
+			lines = [
+				'%a0.p = load %struct.str** %args$, align 8',
+				'%name = getelementptr inbounds %struct.str* %a0.p, i64 0',
+				'%a1.p = getelementptr inbounds %struct.str* %a0.p, i64 1',
+				'%args = alloca %struct.str*',
+				'store %struct.str* %a1.p, %struct.str** %args',
+			]
+			
+			for ln in lines:
+				self.writeline(ln)
+			
 			frame.defined['name'] = TYPES['str'], '%name'
+			frame.defined['args'] = TYPES['str'] + '*', '%args'
 			self.visit(defined['__main__'].suite, frame)
 			
 			self.writeline('ret i32 0')
