@@ -38,3 +38,32 @@ define void @wrapstr(i8* %s, %struct.str* %out) {
 	store i8* %s, i8** %s.data
 	ret void
 }
+
+define void @argv(i32 %argc, i8** %argv, %struct.str** %out) {
+	
+	%num = sext i32 %argc to i64
+	%size = mul i64 %num, 16
+	%array.raw = call i8* @malloc(i64 %size)
+	%array = bitcast i8* %array.raw to %struct.str*
+	%it.first = icmp sgt i64 %num, 0
+	br i1 %it.first, label %Start, label %Done
+	
+	Start:
+		br label %Next
+	
+	Next:
+		%cur = phi i64 [ %num, %Start ], [ %i, %Next ]
+		%i = add i64 %cur, -1
+		%arg.ptr = getelementptr inbounds i8** %argv, i64 %i
+		%arg = load i8** %arg.ptr
+		%dst = getelementptr inbounds %struct.str* %array, i64 %i
+		tail call void @wrapstr(i8* %arg, %struct.str* %dst)
+		%more = icmp sgt i64 %i, 0
+		br i1 %more, label %Next, label %Done
+	
+	Done:
+		store %struct.str* %array, %struct.str** %out
+		ret void
+	
+}
+
