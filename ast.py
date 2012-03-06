@@ -208,6 +208,13 @@ class Function(Node):
 		self.suite = Suite(p)
 		return self
 
+class Return(Node):
+	lbp = 0
+	fields = 'value',
+	def nud(self, p):
+		self.value = p.expr()
+		return self
+
 OPERATORS = {
 	'(': Call,
 	')': RightPar,
@@ -226,6 +233,11 @@ OPERATORS = {
 	'#': Comment,
 }
 
+KEYWORDS = {
+	'def': Function,
+	'return': Return,
+}
+
 class Pratt(object):
 	
 	def __init__(self, tokens):
@@ -239,7 +251,7 @@ class Pratt(object):
 			elif t == 'num' and '.' not in v:
 				yield Int(v)
 			elif t == 'kw':
-				yield Function()
+				yield KEYWORDS[v]()
 			elif t == 'str':
 				yield String(v)
 			elif t == 'op':
