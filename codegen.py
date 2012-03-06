@@ -197,6 +197,36 @@ class CodeGen(object):
 		for stmt in node.stmts:
 			self.visit(stmt, frame)
 	
+	def main(self, node, frame):
+		
+		decl = 'define i32 @main(i32 %argc, i8** %argv) nounwind ssp {'
+		self.writeline(decl)
+		self.indent()
+		
+		frame = Frame()
+		self.writeline('%args$ = alloca %str*')
+		args = 'i32 %argc', 'i8** %argv', '%str** %args$'
+		self.writeline('call void @argv(%s)' % ', '.join(args))
+		
+		lines = [
+			'%a0.p = load %str** %args$, align 8',
+			'%name = getelementptr inbounds %str* %a0.p, i64 0',
+			'%a1.p = getelementptr inbounds %str* %a0.p, i64 1',
+			'%args = alloca %str*',
+			'store %str* %a1.p, %str** %args',
+		]
+		
+		for ln in lines:
+			self.writeline(ln)
+		
+		frame.defined['name'] = TYPES['str'], '%name'
+		frame.defined['args'] = TYPES['str'] + '*', '%args'
+		self.visit(node.suite, frame)
+		
+		self.writeline('ret i32 0')
+		self.dedent()
+		self.writeline('}')
+
 	def Module(self, node, frame=None):
 		
 		self.const = ConstantFinder(node)
@@ -209,35 +239,9 @@ class CodeGen(object):
 			if isinstance(n, ast.Function):
 				defined[n.name.name] = n
 		
+		frame = Frame()
 		if '__main__' in defined:
-			
-			decl = 'define i32 @main(i32 %argc, i8** %argv) nounwind ssp {'
-			self.writeline(decl)
-			self.indent()
-			
-			frame = Frame()
-			self.writeline('%args$ = alloca %str*')
-			args = 'i32 %argc', 'i8** %argv', '%str** %args$'
-			self.writeline('call void @argv(%s)' % ', '.join(args))
-			
-			lines = [
-				'%a0.p = load %str** %args$, align 8',
-				'%name = getelementptr inbounds %str* %a0.p, i64 0',
-				'%a1.p = getelementptr inbounds %str* %a0.p, i64 1',
-				'%args = alloca %str*',
-				'store %str* %a1.p, %str** %args',
-			]
-			
-			for ln in lines:
-				self.writeline(ln)
-			
-			frame.defined['name'] = TYPES['str'], '%name'
-			frame.defined['args'] = TYPES['str'] + '*', '%args'
-			self.visit(defined['__main__'].suite, frame)
-			
-			self.writeline('ret i32 0')
-			self.dedent()
-			self.writeline('}')
+			self.main(defined.pop('__main__'), frame)
 		
 		return ''.join(self.buf).split('\n')
 
