@@ -8,7 +8,7 @@ TRIPLES = {
 TYPES = {
 	'void': 'void',
 	'int': 'i64',
-	'str': '%struct.str*',
+	'str': '%str*',
 }
 
 LIBRARY = {
@@ -176,7 +176,7 @@ class CodeGen(object):
 		res = frame.varname()
 		bits = obj[0], obj[1], key[0], key[1]
 		self.writeline('%%tmp.ptr = getelementptr %s %s, %s %s' % bits)
-		self.writeline('%s = load %%struct.str** %%tmp.ptr' % res)
+		self.writeline('%s = load %%str** %%tmp.ptr' % res)
 		return obj[0][:-1], res
 	
 	def Call(self, node, frame):
@@ -216,16 +216,16 @@ class CodeGen(object):
 			self.indent()
 			
 			frame = Frame()
-			self.writeline('%args$ = alloca %struct.str*')
-			args = 'i32 %argc', 'i8** %argv', '%struct.str** %args$'
+			self.writeline('%args$ = alloca %str*')
+			args = 'i32 %argc', 'i8** %argv', '%str** %args$'
 			self.writeline('call void @argv(%s)' % ', '.join(args))
 			
 			lines = [
-				'%a0.p = load %struct.str** %args$, align 8',
-				'%name = getelementptr inbounds %struct.str* %a0.p, i64 0',
-				'%a1.p = getelementptr inbounds %struct.str* %a0.p, i64 1',
-				'%args = alloca %struct.str*',
-				'store %struct.str* %a1.p, %struct.str** %args',
+				'%a0.p = load %str** %args$, align 8',
+				'%name = getelementptr inbounds %str* %a0.p, i64 0',
+				'%a1.p = getelementptr inbounds %str* %a0.p, i64 1',
+				'%args = alloca %str*',
+				'store %str* %a1.p, %str** %args',
 			]
 			
 			for ln in lines:
