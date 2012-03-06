@@ -193,6 +193,9 @@ class CodeGen(object):
 		self.writeline(' '.join((start, rtype, call)))
 		return rtype, store
 	
+	def Return(self, node, frame):
+		self.writeline('ret %s %s' % self.visit(node.value, frame))
+	
 	def Suite(self, node, frame):
 		for stmt in node.stmts:
 			self.visit(stmt, frame)
@@ -226,7 +229,38 @@ class CodeGen(object):
 		self.writeline('ret i32 0')
 		self.dedent()
 		self.writeline('}')
-
+	
+	def Function(self, node, frame):
+		
+		if node.name.name == '__main__':
+			return self.main(node, frame)
+		
+		self.write('define ')
+		self.write(TYPES[node.rtype.name])
+		self.write(' @')
+		self.write(node.name.name)
+		self.write('(')
+		
+		first = True
+		for arg in node.args:
+			if not first: self.write(', ')
+			self.write(TYPES[arg.type.name])
+			self.write(' ')
+			self.write('%' + arg.name.name)
+			bits = TYPES[arg.type.name], '%' + arg.name.name
+			frame.defined[arg.name.name] = bits
+			first = False
+		
+		self.write(') {')
+		self.newline()
+		self.indent()
+		
+		self.visit(node.suite, frame)
+		
+		self.dedent()
+		self.writeline('}')
+		self.newline()
+	
 	def Module(self, node, frame=None):
 		
 		self.const = ConstantFinder(node)
@@ -238,10 +272,13 @@ class CodeGen(object):
 		for n in node.suite:
 			if isinstance(n, ast.Function):
 				defined[n.name.name] = n
+				if n.name.name == '__main__': continue
+				atypes = tuple(a.type.name for a in n.args)
+				LIBRARY[n.name.name] = (n.rtype.name,) + atypes
 		
 		frame = Frame()
-		if '__main__' in defined:
-			self.main(defined.pop('__main__'), frame)
+		for name, n in defined.iteritems():
+			self.visit(n, frame)
 		
 		return ''.join(self.buf).split('\n')
 

@@ -5,7 +5,7 @@ DIR = os.path.dirname(__file__)
 TESTS_DIR = os.path.join(DIR, 'tests')
 
 TESTS = [
-	'hello', 'multi-stmt', 'arith-int', 'print-var',
+	'hello', 'multi-stmt', 'arith-int', 'print-var', 'function',
 ]
 
 def run(self, key):
