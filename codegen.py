@@ -167,8 +167,13 @@ class CodeGen(object):
 		return self.binop(node, frame, 'div')
 	
 	def Assign(self, node, frame):
-		res = self.visit(node.right, frame)
-		frame.defined[node.left.name] = res
+		if isinstance(node.right, ast.Int):
+			bits = node.left.name, TYPES['int'], self.const.table[node.right]
+			self.writeline('%%%s = load %s* %s' % bits)
+			frame.defined[node.left.name] = TYPES['int'], '%' + node.left.name
+		else:
+			res = self.visit(node.right, frame)
+			frame.defined[node.left.name] = res
 	
 	def Elem(self, node, frame):
 		obj = self.visit(node.obj, frame)
