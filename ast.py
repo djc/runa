@@ -190,6 +190,7 @@ class Function(Node):
 				else:
 					cur.type = next
 					self.args.append(cur)
+					cur = Argument()
 					p.advance(Comma)
 				
 				next = p.expr()
