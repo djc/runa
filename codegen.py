@@ -139,17 +139,17 @@ class CodeGen(object):
 		
 		rtype = args[0][0]
 		store = frame.varname()
-		bits = store, op, rtype, args[0][1], args[1][1]
+		bits = store, op, TYPES[rtype], args[0][1], args[1][1]
 		self.writeline('%s = %s %s %s, %s' % bits)
 		return rtype, store
 	
 	def String(self, node, frame):
-		return TYPES['str'], self.const.table[node]
+		return 'str', self.const.table[node]
 	
 	def Int(self, node, frame):
 		bits = frame.varname(), TYPES['int'], self.const.table[node]
 		self.writeline('%s = load %s* %s' % bits)
-		return TYPES['int'], bits[0]
+		return 'int', bits[0]
 	
 	def Name(self, node, frame):
 		return frame.defined[node.name]
@@ -170,36 +170,43 @@ class CodeGen(object):
 		if isinstance(node.right, ast.Int):
 			bits = node.left.name, TYPES['int'], self.const.table[node.right]
 			self.writeline('%%%s = load %s* %s' % bits)
-			frame.defined[node.left.name] = TYPES['int'], '%' + node.left.name
+			frame.defined[node.left.name] = 'int', '%' + node.left.name
 		else:
 			res = self.visit(node.right, frame)
 			frame.defined[node.left.name] = res
 	
 	def Elem(self, node, frame):
+		
 		obj = self.visit(node.obj, frame)
 		key = self.visit(node.key, frame)
 		res = frame.varname()
-		bits = obj[0], obj[1], key[0], key[1]
+		
+		bits = TYPES[obj[0][1]] + '*', obj[1], TYPES[key[0]], key[1]
 		self.writeline('%%tmp.ptr = getelementptr %s %s, %s %s' % bits)
 		self.writeline('%s = load %%str** %%tmp.ptr' % res)
-		return obj[0][:-1], res
+		return obj[0][1], res
 	
 	def Call(self, node, frame):
 		
-		args = ['%s %s' % a for a in self.args(node.args, frame)]
+		# set up args before reserving variable
+		args = self.args(node.args, frame)
+		irt = [(TYPES[a[0]], a[1]) for a in args]
+		args = ', '.join('%s %s' % a for a in irt)
+		
 		store, start = None, 'call'
 		void = LIBRARY[node.name.name][0] == 'void'
 		if not void:
 			store = frame.varname()
 			start = '%s = call' % store
 		
-		rtype = TYPES[LIBRARY[node.name.name][0]]
-		call = '@' + node.name.name + '(' + ', '.join(args) + ')'
-		self.writeline(' '.join((start, rtype, call)))
+		call = '@' + node.name.name + '(' + args + ')'
+		rtype = LIBRARY[node.name.name][0]
+		self.writeline(' '.join((start, TYPES[rtype], call)))
 		return rtype, store
 	
 	def Return(self, node, frame):
-		self.writeline('ret %s %s' % self.visit(node.value, frame))
+		value = self.visit(node.value, frame)
+		self.writeline('ret %s %s' % (TYPES[value[0]], value[1]))
 	
 	def Suite(self, node, frame):
 		for stmt in node.stmts:
@@ -227,8 +234,8 @@ class CodeGen(object):
 		for ln in lines:
 			self.writeline(ln)
 		
-		frame.defined['name'] = TYPES['str'], '%name'
-		frame.defined['args'] = TYPES['str'] + '*', '%args'
+		frame.defined['name'] = 'str', '%name'
+		frame.defined['args'] = ('array', 'str'), '%args'
 		self.visit(node.suite, frame)
 		
 		self.writeline('ret i32 0')
@@ -252,7 +259,7 @@ class CodeGen(object):
 			self.write(TYPES[arg.type.name])
 			self.write(' ')
 			self.write('%' + arg.name.name)
-			bits = TYPES[arg.type.name], '%' + arg.name.name
+			bits = arg.type.name, '%' + arg.name.name
 			frame.defined[arg.name.name] = bits
 			first = False
 		
