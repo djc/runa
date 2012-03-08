@@ -5,11 +5,30 @@ TRIPLES = {
 	'linux2': 'x86_64-pc-linux-gnu',
 }
 
-TYPES = {
-	'void': 'void',
-	'int': 'i64',
-	'str': '%str*',
-}
+class Type(object):
+	
+	class base(object):
+		def __repr__(self):
+			return '<type: %s>' % self.__class__.__name__
+	
+	class int(base):
+		ir = 'i64'
+	class void(base):
+		ir = 'void'
+	class str(base):
+		ir = '%str*'
+	
+	class array(base):
+		def __init__(self, over):
+			self.over = over
+		@property
+		def ir(self):
+			return self.over.ir + '*'
+
+TYPES = {}
+for t in dir(Type):
+	if t[0] == '_': continue
+	TYPES[t] = getattr(Type, t)
 
 LIBRARY = {
 	'print': ('void', 'str'),
@@ -46,7 +65,7 @@ class ConstantFinder(object):
 		self.lines.append(' '.join(bits))
 		
 		data = type, id
-		bits = [id, '=', 'constant', TYPES['str'][:-1]]
+		bits = [id, '=', 'constant', Type.str().ir[:-1]]
 		bits.append('{ i64 %s,' % l)
 		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}' % data)
 		self.lines.append(' '.join(bits))
@@ -55,7 +74,7 @@ class ConstantFinder(object):
 		id = self.id('num')
 		self.data[id] = node
 		self.table[node] = id
-		bits = id, TYPES['int'], node.val
+		bits = id, Type.int().ir, node.val
 		self.lines.append('%s = constant %s %s' % bits)
 	
 	def visit(self, node):
@@ -148,17 +167,17 @@ class CodeGen(object):
 		
 		rtype = args[0][0]
 		store = frame.varname()
-		bits = store, op, TYPES[rtype], args[0][1], args[1][1]
+		bits = store, op, rtype.ir, args[0][1], args[1][1]
 		self.writeline('%s = %s %s %s, %s' % bits)
 		return rtype, store
 	
 	def String(self, node, frame):
-		return 'str', self.const.table[node]
+		return Type.str(), self.const.table[node]
 	
 	def Int(self, node, frame):
-		bits = frame.varname(), TYPES['int'], self.const.table[node]
+		bits = frame.varname(), Type.int().ir, self.const.table[node]
 		self.writeline('%s = load %s* %s' % bits)
-		return 'int', bits[0]
+		return Type.int(), bits[0]
 	
 	def Name(self, node, frame):
 		return frame[node.name]
@@ -177,9 +196,9 @@ class CodeGen(object):
 	
 	def Assign(self, node, frame):
 		if isinstance(node.right, ast.Int):
-			bits = node.left.name, TYPES['int'], self.const.table[node.right]
+			bits = node.left.name, Type.int().ir, self.const.table[node.right]
 			self.writeline('%%%s = load %s* %s' % bits)
-			frame[node.left.name] = 'int', '%' + node.left.name
+			frame[node.left.name] = Type.int(), '%' + node.left.name
 		else:
 			res = self.visit(node.right, frame)
 			frame[node.left.name] = res
@@ -190,16 +209,16 @@ class CodeGen(object):
 		key = self.visit(node.key, frame)
 		res = frame.varname()
 		
-		bits = TYPES[obj[0][1]] + '*', obj[1], TYPES[key[0]], key[1]
+		bits = obj[0].ir, obj[1], key[0].ir, key[1]
 		self.writeline('%%tmp.ptr = getelementptr %s %s, %s %s' % bits)
 		self.writeline('%s = load %%str** %%tmp.ptr' % res)
-		return obj[0][1], res
+		return obj[0].over, res
 	
 	def Call(self, node, frame):
 		
 		# set up args before reserving variable
 		args = self.args(node.args, frame)
-		irt = [(TYPES[a[0]], a[1]) for a in args]
+		irt = [(a[0].ir, a[1]) for a in args]
 		args = ', '.join('%s %s' % a for a in irt)
 		
 		store, start = None, 'call'
@@ -209,13 +228,13 @@ class CodeGen(object):
 			start = '%s = call' % store
 		
 		call = '@' + node.name.name + '(' + args + ')'
-		rtype = LIBRARY[node.name.name][0]
-		self.writeline(' '.join((start, TYPES[rtype], call)))
+		rtype = TYPES[LIBRARY[node.name.name][0]]()
+		self.writeline(' '.join((start, rtype.ir, call)))
 		return rtype, store
 	
 	def Return(self, node, frame):
 		value = self.visit(node.value, frame)
-		self.writeline('ret %s %s' % (TYPES[value[0]], value[1]))
+		self.writeline('ret %s %s' % (value[0].ir, value[1]))
 	
 	def Suite(self, node, frame):
 		for stmt in node.stmts:
@@ -243,8 +262,8 @@ class CodeGen(object):
 		for ln in lines:
 			self.writeline(ln)
 		
-		frame['name'] = 'str', '%name'
-		frame['args'] = ('array', 'str'), '%args'
+		frame['name'] = Type.str(), '%name'
+		frame['args'] = Type.array(Type.str()), '%args'
 		self.visit(node.suite, frame)
 		
 		self.writeline('ret i32 0')
@@ -258,7 +277,7 @@ class CodeGen(object):
 			return self.main(node, frame)
 		
 		self.write('define ')
-		self.write(TYPES[node.rtype.name])
+		self.write(TYPES[node.rtype.name].ir)
 		self.write(' @')
 		self.write(node.name.name)
 		self.write('(')
@@ -266,10 +285,10 @@ class CodeGen(object):
 		first = True
 		for arg in node.args:
 			if not first: self.write(', ')
-			self.write(TYPES[arg.type.name])
+			self.write(TYPES[arg.type.name].ir)
 			self.write(' ')
 			self.write('%' + arg.name.name)
-			bits = arg.type.name, '%' + arg.name.name
+			bits = TYPES[arg.type.name](), '%' + arg.name.name
 			frame[arg.name.name] = bits
 			first = False
 		
