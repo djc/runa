@@ -78,6 +78,12 @@ class Frame(object):
 		self.var = 1
 		self.defined = {}
 	
+	def __getitem__(self, key):
+		return self.defined[key]
+	
+	def __setitem__(self, key, value):
+		self.defined[key] = value
+	
 	def varname(self):
 		self.var += 1
 		return '%%%i' % (self.var - 1)
@@ -152,7 +158,7 @@ class CodeGen(object):
 		return 'int', bits[0]
 	
 	def Name(self, node, frame):
-		return frame.defined[node.name]
+		return frame[node.name]
 	
 	def Add(self, node, frame):
 		return self.binop(node, frame, 'add')
@@ -170,10 +176,10 @@ class CodeGen(object):
 		if isinstance(node.right, ast.Int):
 			bits = node.left.name, TYPES['int'], self.const.table[node.right]
 			self.writeline('%%%s = load %s* %s' % bits)
-			frame.defined[node.left.name] = 'int', '%' + node.left.name
+			frame[node.left.name] = 'int', '%' + node.left.name
 		else:
 			res = self.visit(node.right, frame)
-			frame.defined[node.left.name] = res
+			frame[node.left.name] = res
 	
 	def Elem(self, node, frame):
 		
@@ -234,8 +240,8 @@ class CodeGen(object):
 		for ln in lines:
 			self.writeline(ln)
 		
-		frame.defined['name'] = 'str', '%name'
-		frame.defined['args'] = ('array', 'str'), '%args'
+		frame['name'] = 'str', '%name'
+		frame['args'] = ('array', 'str'), '%args'
 		self.visit(node.suite, frame)
 		
 		self.writeline('ret i32 0')
@@ -260,7 +266,7 @@ class CodeGen(object):
 			self.write(' ')
 			self.write('%' + arg.name.name)
 			bits = arg.type.name, '%' + arg.name.name
-			frame.defined[arg.name.name] = bits
+			frame[arg.name.name] = bits
 			first = False
 		
 		self.write(') {')
