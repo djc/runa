@@ -79,7 +79,7 @@ class Div(BinaryOp):
 
 class Assign(BinaryOp):
 	op = '='
-	lbp = 10
+	lbp = 5
 	fields = 'left', 'right'
 
 class Colon(Terminal):
@@ -216,6 +216,27 @@ class Return(Node):
 		self.value = p.expr()
 		return self
 
+class If(Node):
+	lbp = 10
+	fields = 'cond', 'values'
+	def __init__(self):
+		self.cond = None
+		self.values = []
+	def nud(self, p):
+		print p.expr()
+		return self
+	def led(self, p, left):
+		self.values.append(left)
+		self.cond = p.expr()
+		p.advance(Else)
+		self.values.append(p.expr())
+		return self
+
+class Else(Node):
+	lbp = 0
+	def nud(self, p):
+		return self
+
 OPERATORS = {
 	'(': Call,
 	')': RightPar,
@@ -237,6 +258,8 @@ OPERATORS = {
 KEYWORDS = {
 	'def': Function,
 	'return': Return,
+	'if': If,
+	'else': Else,
 }
 
 class Pratt(object):
