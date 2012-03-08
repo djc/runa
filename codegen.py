@@ -74,11 +74,14 @@ class ConstantFinder(object):
 
 class Frame(object):
 	
-	def __init__(self):
+	def __init__(self, parent=None):
 		self.var = 1
+		self.parent = parent
 		self.defined = {}
 	
 	def __getitem__(self, key):
+		if key not in self.defined:
+			return self.parent[key]
 		return self.defined[key]
 	
 	def __setitem__(self, key, value):
@@ -250,6 +253,7 @@ class CodeGen(object):
 	
 	def Function(self, node, frame):
 		
+		frame = Frame(frame)
 		if node.name.name == '__main__':
 			return self.main(node, frame)
 		
