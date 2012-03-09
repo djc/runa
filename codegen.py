@@ -18,6 +18,9 @@ class Type(object):
 	class str(base):
 		ir = '%str*'
 	
+	class bool(base):
+		ir = 'i1'
+	
 	class array(base):
 		def __init__(self, over):
 			self.over = over
