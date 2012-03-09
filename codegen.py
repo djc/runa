@@ -10,11 +10,19 @@ class Type(object):
 	class base(object):
 		def __repr__(self):
 			return '<type: %s>' % self.__class__.__name__
+		def __eq__(self, other):
+			classes = self.__class__, other.__class__
+			return classes[0] == classes[1] and self.__dict__ == other.__dict__
 	
 	class int(base):
 		ir = 'i64'
+		methods = {
+			'__bool__': ('@int.__bool__', 'bool', 'int'),
+		}
+	
 	class void(base):
 		ir = 'void'
+	
 	class str(base):
 		ir = '%str*'
 	
@@ -221,6 +229,49 @@ class CodeGen(object):
 		self.writeline('%%tmp.ptr = getelementptr %s %s, %s %s' % bits)
 		self.writeline('%s = load %%str** %%tmp.ptr' % res)
 		return obj[0].over, res
+	
+	def If(self, node, frame):
+		
+		cond = self.visit(node.cond, frame)
+		if cond[0] != Type.bool():
+			assert '__bool__' in cond[0].methods
+			condvar = frame.varname()
+			method = cond[0].methods['__bool__']
+			self.write(condvar + ' = call i1 ' + method[0] + '(')
+			self.write(cond[0].ir + ' ' + cond[1] + ')')
+			self.newline()
+			cond = Type.bool(), condvar
+		
+		lif, lelse = frame.labelname(), frame.labelname()
+		lfin = frame.labelname()
+		
+		self.write('br i1 ' + cond[1] + ', ')
+		self.write('label %%%s, label %%%s' % (lif, lelse))
+		self.newline()
+		
+		self.writeline('%s:' % lif)
+		self.indent()
+		left = self.visit(node.values[0], frame)
+		self.writeline('br label %%%s' % lfin)
+		self.dedent()
+		
+		self.newline()
+		self.writeline('%s:' % lelse)
+		self.indent()
+		right = self.visit(node.values[1], frame)
+		self.writeline('br label %%%s' % lfin)
+		self.dedent()
+		
+		self.writeline('%s:' % lfin)
+		self.indent()
+		finvar = frame.varname()
+		self.write('%s = phi ' % finvar)
+		self.write(left[0].ir)
+		self.write('[ %s, %%%s ], ' % (left[1], lif))
+		self.write('[ %s, %%%s ]' % (right[1], lelse))
+		self.newline()
+		
+		return left[0], finvar
 	
 	def Call(self, node, frame):
 		

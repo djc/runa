@@ -30,6 +30,11 @@ define %str* @str(i64 %n) {
 	ret %str* %s.ptr
 }
 
+define i1 @int.__bool__(i64 %n) {
+	%1 = icmp ne i64 %n, 0
+	ret i1 %1
+}
+
 define void @wrapstr(i8* %s, %str* %out) {
 	%s.len = getelementptr inbounds %str* %out, i32 0, i32 0
 	%len = call i64 @strlen(i8* %s) nounwind readonly
@@ -66,4 +71,3 @@ define void @argv(i32 %argc, i8** %argv, %str** %out) {
 		ret void
 	
 }
-
