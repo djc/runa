@@ -175,6 +175,11 @@ class CodeGen(object):
 	def writelines(self, lines):
 		self.buf.append(('\n' + self.tabs()).join(lines))
 	
+	def label(self, label):
+		self.dedent()
+		self.writeline('%s:' % label)
+		self.indent()
+	
 	def args(self, nodes, frame):
 		return [self.visit(i, frame) for i in nodes]
 	
@@ -248,30 +253,25 @@ class CodeGen(object):
 		lif, lelse = frame.labelname(), frame.labelname()
 		lfin = frame.labelname()
 		
+		self.newline()
 		self.write('br i1 ' + cond[1] + ', ')
 		self.write('label %%%s, label %%%s' % (lif, lelse))
 		self.newline()
 		
-		self.writeline('%s:' % lif)
-		self.indent()
+		self.label(lif)
 		left = self.visit(node.values[0], frame)
 		self.writeline('br label %%%s' % lfin)
-		self.dedent()
-		
-		self.newline()
-		self.writeline('%s:' % lelse)
-		self.indent()
+		self.label(lelse)
 		right = self.visit(node.values[1], frame)
 		self.writeline('br label %%%s' % lfin)
-		self.dedent()
 		
-		self.writeline('%s:' % lfin)
-		self.indent()
+		self.label(lfin)
 		finvar = frame.varname()
 		self.write('%s = phi ' % finvar)
 		self.write(left[0].ir)
 		self.write('[ %s, %%%s ], ' % (left[1], lif))
 		self.write('[ %s, %%%s ]' % (right[1], lelse))
+		self.newline()
 		self.newline()
 		
 		return left[0], finvar
