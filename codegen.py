@@ -25,6 +25,9 @@ class Type(object):
 	
 	class str(base):
 		ir = '%str*'
+		methods = {
+			'__bool__': ('@str.__bool__', 'bool', 'str'),
+		}
 	
 	class bool(base):
 		ir = 'i1'

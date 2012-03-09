@@ -35,6 +35,13 @@ define i1 @int.__bool__(i64 %n) {
 	ret i1 %1
 }
 
+define i1 @str.__bool__(%str* %s) {
+	%s.len = getelementptr %str* %s, i32 0, i32 0
+	%len = load i64* %s.len
+	%res = icmp ne i64 %len, 0
+	ret i1 %res
+}
+
 define void @wrapstr(i8* %s, %str* %out) {
 	%s.len = getelementptr inbounds %str* %out, i32 0, i32 0
 	%len = call i64 @strlen(i8* %s) nounwind readonly

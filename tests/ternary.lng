@@ -3,3 +3,5 @@ def __main__(name: str, args: list[str]) -> int:
 	print(str(2 if 111 else 1))
 	print('true' if 111 else 'false')
 	print('true' if 0 else 'false')
+	print(str(1 if 'a' else 0))
+	print(str(1 if '' else 0))
