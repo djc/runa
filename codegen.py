@@ -94,7 +94,8 @@ class ConstantFinder(object):
 class Frame(object):
 	
 	def __init__(self, parent=None):
-		self.var = 1
+		self.vars = 1
+		self.labels = 1
 		self.parent = parent
 		self.defined = {}
 	
@@ -107,8 +108,12 @@ class Frame(object):
 		self.defined[key] = value
 	
 	def varname(self):
-		self.var += 1
-		return '%%%i' % (self.var - 1)
+		self.vars += 1
+		return '%%%i' % (self.vars - 1)
+	
+	def labelname(self):
+		self.labels += 1
+		return 'L%i' % (self.labels - 1)
 
 class CodeGen(object):
 	
