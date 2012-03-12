@@ -2,12 +2,14 @@ import sys, tokenizer
 
 # Base class
 
+IGNORE = {'p', 'ln'}
+
 class Node(object):
 	def __init__(self, ln):
 		self.ln = ln
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%s' % (k, v) for (k, v) in contents)
+		show = ('%s=%s' % (k, v) for (k, v) in contents if k not in IGNORE)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	def __hash__(self):
 		values = tuple(sorted((k, v) for (k, v) in self.__dict__.iteritems()))
