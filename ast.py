@@ -247,6 +247,13 @@ class Else(Node):
 	def nud(self, p):
 		return self
 
+class Not(Node):
+	lbp = 0
+	fields = 'value',
+	def nud(self, p):
+		self.value = p.expr()
+		return self
+
 OPERATORS = {
 	'(': Call,
 	')': RightPar,
@@ -263,6 +270,7 @@ OPERATORS = {
 	'}': ElemEnd, # tmp
 	'->': RType,
 	'#': Comment,
+	'not': Not,
 }
 
 KEYWORDS = {
