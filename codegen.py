@@ -151,6 +151,8 @@ class CodeGen(object):
 			else:
 				self.visit(attr, frame)
 	
+	# Output helper methods
+	
 	def tabs(self):
 		return '\t' * self.level
 	
@@ -182,6 +184,8 @@ class CodeGen(object):
 		self.writeline('%s:' % label)
 		self.indent()
 	
+	# Other helper methods
+	
 	def args(self, nodes, frame):
 		return [self.visit(i, frame) for i in nodes]
 	
@@ -209,6 +213,8 @@ class CodeGen(object):
 		self.write(val[0].ir + ' ' + val[1] + ')')
 		self.newline()
 		return Type.bool(), boolean
+	
+	# Node visitation methods
 	
 	def String(self, node, frame):
 		return Type.str(), self.const.table[node]
