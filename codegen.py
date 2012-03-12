@@ -13,6 +13,8 @@ class Type(object):
 		def __eq__(self, other):
 			classes = self.__class__, other.__class__
 			return classes[0] == classes[1] and self.__dict__ == other.__dict__
+		def __ne__(self, other):
+			return not self.__eq__(other)
 	
 	class int(base):
 		ir = 'i64'
@@ -237,6 +239,24 @@ class CodeGen(object):
 		self.writeline('%%tmp.ptr = getelementptr %s %s, %s %s' % bits)
 		self.writeline('%s = load %%str** %%tmp.ptr' % res)
 		return obj[0].over, res
+	
+	def Not(self, node, frame):
+		
+		val = self.visit(node.value, frame)
+		if val[0] != Type.bool():
+			assert '__bool__' in val[0].methods
+			notvar = frame.varname()
+			method = val[0].methods['__bool__']
+			self.write(notvar + ' = call i1 ' + method[0] + '(')
+			self.write(val[0].ir + ' ' + val[1] + ')')
+			self.newline()
+			val = Type.bool(), notvar
+		
+		res = frame.varname()
+		self.write(res + ' = call i1 @flip(')
+		self.write('i1 ' + val[1] + ')')
+		self.newline()
+		return Type.bool(), res
 	
 	def If(self, node, frame):
 		
