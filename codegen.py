@@ -284,12 +284,13 @@ class CodeGen(object):
 		self.label(lelse)
 		right = self.visit(node.values[1], frame)
 		self.writeline('br label %%%s' % lfin)
+		assert left[0] == right[0]
 		
 		self.label(lfin)
 		finvar = frame.varname()
 		self.write('%s = phi ' % finvar)
 		self.write(left[0].ir)
-		self.write('[ %s, %%%s ], ' % (left[1], lif))
+		self.write(' [ %s, %%%s ], ' % (left[1], lif))
 		self.write('[ %s, %%%s ]' % (right[1], lelse))
 		self.newline()
 		self.newline()
