@@ -10,3 +10,6 @@ def __main__(name: str, args: list[str]) -> int:
 	print(str(1 if '' else 0))
 	
 	print(str(1 if not '' else 0))
+	print('a' and 'b')
+	print('' and 'a')
+	print('a' and '')

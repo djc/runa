@@ -296,6 +296,41 @@ class CodeGen(object):
 		
 		return left[0], finvar
 	
+	def And(self, node, frame):
+		
+		lif, lelse, lfin = [frame.labelname() for i in range(3)]
+		self.newline()
+		left = self.visit(node.left, frame)
+		lbool = self.boolean(left, frame)
+		self.write('br i1 ' + lbool[1] + ', ')
+		self.write('label %%%s, label %%%s' % (lif, lelse))
+		self.newline()
+		
+		self.label(lif)
+		right = self.visit(node.right, frame)
+		rbool = self.boolean(right, frame)
+		typed = left[0] == right[0]
+		self.writeline('br label %%%s' % lfin)
+		
+		self.label(lelse)
+		self.writeline('br label %%%s' % lfin)
+		
+		self.label(lfin)
+		finvar = frame.varname()
+		self.write('%s = phi ' % finvar)
+		if typed:
+			self.write(left[0].ir)
+			self.write(' [ %s, %%%s ],' % (right[1], lif))
+			self.write(' [ %s, %%%s ]' % (left[1], lelse))
+		else:
+			self.write('i1')
+			self.write(' [ %s, %%%s ],' % (rbool[1], lif))
+			self.write(' [ %s, %%%s ]' % (lbool[1], lelse))
+		
+		self.newline()
+		self.newline()
+		return (left[0] if typed else lbool[0]), finvar
+	
 	def Call(self, node, frame):
 		
 		# set up args before reserving variable
