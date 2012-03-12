@@ -197,6 +197,19 @@ class CodeGen(object):
 		self.writeline('%s = %s %s %s, %s' % bits)
 		return rtype, store
 	
+	def boolean(self, val, frame):
+		
+		if val[0] == Type.bool():
+			return val
+		
+		assert '__bool__' in val[0].methods
+		boolean = frame.varname()
+		method = val[0].methods['__bool__']
+		self.write(boolean + ' = call i1 ' + method[0] + '(')
+		self.write(val[0].ir + ' ' + val[1] + ')')
+		self.newline()
+		return Type.bool(), boolean
+	
 	def String(self, node, frame):
 		return Type.str(), self.const.table[node]
 	
@@ -241,17 +254,7 @@ class CodeGen(object):
 		return obj[0].over, res
 	
 	def Not(self, node, frame):
-		
-		val = self.visit(node.value, frame)
-		if val[0] != Type.bool():
-			assert '__bool__' in val[0].methods
-			notvar = frame.varname()
-			method = val[0].methods['__bool__']
-			self.write(notvar + ' = call i1 ' + method[0] + '(')
-			self.write(val[0].ir + ' ' + val[1] + ')')
-			self.newline()
-			val = Type.bool(), notvar
-		
+		val = self.boolean(self.visit(node.value, frame), frame)
 		res = frame.varname()
 		self.write(res + ' = call i1 @flip(')
 		self.write('i1 ' + val[1] + ')')
@@ -260,16 +263,7 @@ class CodeGen(object):
 	
 	def If(self, node, frame):
 		
-		cond = self.visit(node.cond, frame)
-		if cond[0] != Type.bool():
-			assert '__bool__' in cond[0].methods
-			condvar = frame.varname()
-			method = cond[0].methods['__bool__']
-			self.write(condvar + ' = call i1 ' + method[0] + '(')
-			self.write(cond[0].ir + ' ' + cond[1] + ')')
-			self.newline()
-			cond = Type.bool(), condvar
-		
+		cond = self.boolean(self.visit(node.cond, frame), frame)
 		lif, lelse = frame.labelname(), frame.labelname()
 		lfin = frame.labelname()
 		
