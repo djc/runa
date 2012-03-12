@@ -89,6 +89,16 @@ class Assign(BinaryOp):
 	lbp = 5
 	fields = 'left', 'right'
 
+class And(BinaryOp):
+	op = 'and'
+	lbp = 40
+	fields = 'left', 'right'
+
+class Or(BinaryOp):
+	op = 'or'
+	lbp = 40
+	fields = 'left', 'right'
+
 class Colon(Terminal):
 	op = ':'
 	fields = 'left', 'right'
@@ -271,6 +281,8 @@ OPERATORS = {
 	'->': RType,
 	'#': Comment,
 	'not': Not,
+	'and': And,
+	'or': Or,
 }
 
 KEYWORDS = {
