@@ -27,6 +27,7 @@ for k, v in MATCHING.iteritems():
 
 def tokenize(src):
 	pos = 0
+	line = 0
 	grammar = [None]
 	buffer = []
 	while True:
@@ -63,7 +64,9 @@ def tokenize(src):
 				break
 			
 			for x in res:
-				yield x
+				yield x + (line,)
+				if x[0] == 'nl':
+					line += 1
 			
 			break
 		
@@ -72,10 +75,10 @@ def tokenize(src):
 
 def indented(gen):
 	level, future, hold = 0, None, []
-	for t, v in gen:
+	for t, v, ln in gen:
 		if t == 'nl':
 			future = None
-			hold = [(t, v)]
+			hold = [(t, v, ln)]
 			continue
 		elif t != 'indent':
 			if future is not None:
@@ -83,13 +86,13 @@ def indented(gen):
 			for x in hold:
 				yield x
 			hold = []
-			yield t, v
+			yield t, v, ln
 		elif v > level:
 			future = v
-			hold.append(('indent', 1))
+			hold.append(('indent', 1, ln))
 		elif v < level:
 			future = v
-			hold.append(('indent', -1))
+			hold.append(('indent', -1, ln))
 		elif v == level:
 			continue
 	for x in hold:

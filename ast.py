@@ -269,7 +269,7 @@ class Pratt(object):
 		self.token = self.next()
 	
 	def wrap(self, tokens):
-		for t, v in tokens:
+		for t, v, ln in tokens:
 			if t == 'name':
 				yield Name(v)
 			elif t == 'num' and '.' not in v:
