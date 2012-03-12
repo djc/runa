@@ -3,6 +3,8 @@ import sys, tokenizer
 # Base class
 
 class Node(object):
+	def __init__(self, ln):
+		self.ln = ln
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
 		show = ('%s=%s' % (k, v) for (k, v) in contents)
@@ -19,18 +21,21 @@ class Terminal(Node):
 		return self
 
 class Name(Terminal):
-	def __init__(self, name):
+	def __init__(self, name, ln):
+		Node.__init__(self, ln)
 		self.name = name
 
 class Int(Terminal):
-	def __init__(self, num):
+	def __init__(self, num, ln):
+		Node.__init__(self, ln)
 		self.val = num
 
 class End(Terminal):
 	op = 'end'
 
 class String(Terminal):
-	def __init__(self, value):
+	def __init__(self, value, ln):
+		Node.__init__(self, ln)
 		self.value = value
 
 class BinaryOp(Node):
@@ -145,8 +150,9 @@ class Suite(Node):
 		while isinstance(self.p.token, NL):
 			self.p.advance()
 	
-	def __init__(self, p):
+	def __init__(self, p, ln):
 		
+		Node.__init__(self, ln)
 		self.p = p
 		self.stmts = []
 		
@@ -164,7 +170,8 @@ class Suite(Node):
 
 class Argument(Node):
 	fields = 'name',
-	def __init__(self):
+	def __init__(self, ln):
+		Node.__init__(self, ln)
 		self.name = None
 		self.type = None
 
@@ -178,7 +185,7 @@ class Function(Node):
 		self.name = p.advance(Name)
 		p.advance(Call)
 		
-		cur = Argument()
+		cur = Argument(self.ln)
 		self.args = []
 		next = p.expr()
 		if not isinstance(next, RightPar):
@@ -190,7 +197,7 @@ class Function(Node):
 				else:
 					cur.type = next
 					self.args.append(cur)
-					cur = Argument()
+					cur = Argument(self.ln)
 					p.advance(Comma)
 				
 				next = p.expr()
@@ -206,7 +213,7 @@ class Function(Node):
 			self.rtype = p.expr()
 		
 		p.advance(Colon)
-		self.suite = Suite(p)
+		self.suite = Suite(p, self.ln + 1)
 		return self
 
 class Return(Node):
@@ -219,7 +226,8 @@ class Return(Node):
 class If(Node):
 	lbp = 10
 	fields = 'cond', 'values'
-	def __init__(self):
+	def __init__(self, ln):
+		Node.__init__(self, ln)
 		self.cond = None
 		self.values = []
 	def nud(self, p):
@@ -271,22 +279,22 @@ class Pratt(object):
 	def wrap(self, tokens):
 		for t, v, ln in tokens:
 			if t == 'name':
-				yield Name(v)
+				yield Name(v, ln)
 			elif t == 'num' and '.' not in v:
-				yield Int(v)
+				yield Int(v, ln)
 			elif t == 'kw':
-				yield KEYWORDS[v]()
+				yield KEYWORDS[v](ln)
 			elif t == 'str':
-				yield String(v)
+				yield String(v, ln)
 			elif t == 'op':
-				yield OPERATORS[v]()
+				yield OPERATORS[v](ln)
 			elif t == 'indent' and v > 0:
-				yield Indent()
+				yield Indent(ln)
 			elif t == 'indent' and v < 0:
-				yield Dedent()
+				yield Dedent(ln)
 			elif t == 'nl':
-				yield NL()
-		yield End()
+				yield NL(ln)
+		yield End(ln)
 	
 	def advance(self, id=None):
 		if id and not isinstance(self.token, id):
