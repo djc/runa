@@ -22,6 +22,9 @@ class Terminal(Node):
 	def nud(self, p):
 		return self
 
+class Statement(Node):
+	lbp = 0
+
 class Name(Terminal):
 	def __init__(self, name, ln):
 		Node.__init__(self, ln)
@@ -249,7 +252,7 @@ class Ternary(Node):
 		p.advance(Else)
 		self.values.append(p.expr())
 
-class If(Node):
+class If(Statement):
 	
 	lbp = 10
 	fields = 'blocks',
@@ -348,7 +351,7 @@ class Pratt(object):
 	def expr(self, rbp=0):
 		t, self.token = self.token, self.next()
 		left = t.nud(self)
-		while rbp < self.token.lbp:
+		while rbp < self.token.lbp and not isinstance(left, Statement):
 			t, self.token = self.token, self.next()
 			left = t.led(self, left)
 		return left

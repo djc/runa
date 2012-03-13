@@ -3,3 +3,5 @@ def __main__(name: str, args: list[str]) -> int:
 		print('T')
 	else:
 		print('F')
+	if 3:
+		print('O')
