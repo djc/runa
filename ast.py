@@ -319,7 +319,7 @@ class Pratt(object):
 	
 	def advance(self, id=None):
 		if id and not isinstance(self.token, id):
-			raise Exception('expected %r' % id)
+			raise Exception('expected %r, got %r' % (id, self.token))
 		t = self.token
 		self.token = self.next()
 		return t
