@@ -243,7 +243,6 @@ class If(Node):
 		self.cond = None
 		self.values = []
 	def nud(self, p):
-		print p.expr()
 		return self
 	def led(self, p, left):
 		self.values.append(left)
