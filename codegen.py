@@ -51,28 +51,20 @@ LIBRARY = {
 	'str': ('str', 'int'),
 }
 
-class ConstantFinder(object):
+class Constants(object):
 	
-	def __init__(self, node):
-		self.data = {}
-		self.table = {}
+	def __init__(self):
 		self.next = 0
 		self.lines = []
-		self.visit(node)
 	
 	def id(self, type):
 		s = '@%s%s' % (type, self.next)
 		self.next += 1
 		return s
 	
-	def Name(self, node):
-		pass
-	
 	def String(self, node):
 		
 		id = self.id('str')
-		self.data[id] = node
-		self.table[node] = id
 		l = len(node.value)
 		type = '[%i x i8]' % l
 		
@@ -85,27 +77,13 @@ class ConstantFinder(object):
 		bits.append('{ i64 %s,' % l)
 		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}' % data)
 		self.lines.append(' '.join(bits))
+		return Type.str(), id
 	
 	def Int(self, node):
 		id = self.id('num')
-		self.data[id] = node
-		self.table[node] = id
 		bits = id, Type.int().ir, node.val
 		self.lines.append('%s = constant %s %s' % bits)
-	
-	def visit(self, node):
-		
-		if hasattr(self, node.__class__.__name__):
-			getattr(self, node.__class__.__name__)(node)
-			return
-		
-		for k in node.fields:
-			attr = getattr(node, k)
-			if isinstance(attr, list) or isinstance(attr, tuple):
-				for v in attr:
-					self.visit(v)
-			else:
-				self.visit(attr)
+		return Type.int(), id
 
 class Frame(object):
 	
@@ -137,6 +115,7 @@ class CodeGen(object):
 		self.buf = []
 		self.level = 0
 		self.start = True
+		self.const = Constants()
 	
 	def visit(self, node, frame):
 		
@@ -217,10 +196,11 @@ class CodeGen(object):
 	# Node visitation methods
 	
 	def String(self, node, frame):
-		return Type.str(), self.const.table[node]
+		return self.const.String(node)
 	
 	def Int(self, node, frame):
-		bits = frame.varname(), Type.int().ir, self.const.table[node]
+		const = self.const.Int(node)
+		bits = frame.varname(), const[0].ir, const[1]
 		self.writeline('%s = load %s* %s' % bits)
 		return Type.int(), bits[0]
 	
@@ -241,7 +221,8 @@ class CodeGen(object):
 	
 	def Assign(self, node, frame):
 		if isinstance(node.right, ast.Int):
-			bits = node.left.name, Type.int().ir, self.const.table[node.right]
+			const = self.const.Int(node.right)
+			bits = node.left.name, const[0].ir, const[1]
 			self.writeline('%%%s = load %s* %s' % bits)
 			frame[node.left.name] = Type.int(), '%' + node.left.name
 		else:
@@ -455,11 +436,6 @@ class CodeGen(object):
 	
 	def Module(self, node, frame=None):
 		
-		self.const = ConstantFinder(node)
-		self.writelines(self.const.lines)
-		self.newline()
-		self.newline()
-		
 		defined = {}
 		for n in node.suite:
 			if isinstance(n, ast.Function):
@@ -472,7 +448,8 @@ class CodeGen(object):
 		for name, n in defined.iteritems():
 			self.visit(n, frame)
 		
-		return ''.join(self.buf).split('\n')
+		lines = self.const.lines + ['', ''] + self.buf
+		return ''.join(lines).split('\n')
 
 def layout(data):
 	bits = []
