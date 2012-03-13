@@ -30,11 +30,6 @@ define %str* @str(i64 %n) {
 	ret %str* %s.ptr
 }
 
-define i1 @flip(i1 %b) {
-	%res = select i1 %b, i1 false, i1 true
-	ret i1 %res
-}
-
 define i1 @int.__bool__(i64 %n) {
 	%1 = icmp ne i64 %n, 0
 	ret i1 %1
