@@ -371,6 +371,30 @@ class CodeGen(object):
 		for stmt in node.stmts:
 			self.visit(stmt, frame)
 	
+	def If(self, node, frame):
+		
+		lnext = frame.labelname()
+		lfin = frame.labelname()
+		for i, (cond, suite) in enumerate(node.blocks):
+			
+			lbranch = lnext
+			if len(node.blocks) > i + 1:
+				lnext = frame.labelname()
+			else:
+				lnext = lfin
+			
+			if cond is not None:
+				condvar = self.boolean(self.visit(cond, frame), frame)
+				self.write('br i1 ' + condvar[1] + ', ')
+				self.write('label %%%s, label %%%s' % (lbranch, lnext))
+				self.newline()
+			
+			self.label(lbranch)
+			self.visit(suite, frame)
+			self.writeline('br label %%%s' % lfin)
+		
+		self.label(lfin)
+	
 	def main(self, node, frame):
 		
 		decl = 'define i32 @main(i32 %argc, i8** %argv) nounwind ssp {'
