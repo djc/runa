@@ -235,20 +235,41 @@ class Return(Node):
 		self.value = p.expr()
 		return self
 
-class If(Node):
+class Ternary(Node):
+	
 	lbp = 10
 	fields = 'cond', 'values'
-	def __init__(self, ln):
+	
+	def __init__(self, p, left, ln):
 		Node.__init__(self, ln)
 		self.cond = None
 		self.values = []
-	def nud(self, p):
-		return self
-	def led(self, p, left):
 		self.values.append(left)
 		self.cond = p.expr()
 		p.advance(Else)
 		self.values.append(p.expr())
+
+class If(Node):
+	
+	lbp = 10
+	fields = 'blocks',
+	
+	def led(self, p, left):
+		return Ternary(p, left, self.ln)
+	
+	def nud(self, p):
+		
+		cond = p.expr()
+		p.advance(Colon)
+		block = Suite(p, self.ln)
+		self.blocks = [(cond, block)]
+		
+		if isinstance(p.token, Else):
+			kw = p.advance(Else)
+			p.advance(Colon)
+			block = Suite(p, kw.ln)
+			self.blocks.append((None, block))
+		
 		return self
 
 class Else(Node):

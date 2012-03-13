@@ -265,7 +265,7 @@ class CodeGen(object):
 		self.writeline(res + ' = select i1 %s, i1 false, i1 true' % val[1])
 		return Type.bool(), res
 	
-	def If(self, node, frame):
+	def Ternary(self, node, frame):
 		
 		cond = self.boolean(self.visit(node.cond, frame), frame)
 		lif, lelse = frame.labelname(), frame.labelname()
