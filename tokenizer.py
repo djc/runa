@@ -92,7 +92,7 @@ def indented(gen):
 			hold.append(('indent', 1, ln))
 		elif v < level:
 			future = v
-			hold.append(('indent', -1, ln))
+			hold += [('indent', -1, ln)] * (level - v)
 		elif v == level:
 			continue
 	for x in hold:
