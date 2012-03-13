@@ -1,3 +1,5 @@
+target triple = "x86_64-apple-darwin11.0.0"
+
 declare i8* @malloc(i64)
 declare i64 @write(i32, i8*, i64)
 declare i32 @asprintf(i8**, i8*, ...)

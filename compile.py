@@ -11,7 +11,7 @@ def compile(fn, outfn=None):
 		f.write(llir(fn))
 	
 	outfn = outfn if outfn else fn.rsplit('.', 1)[0]
-	subprocess.check_call(('clang', '-o', outfn, llfn))
+	subprocess.check_call(('clang', '-o', outfn, 'std.ll', llfn))
 	os.unlink(llfn)
 
 if __name__ == '__main__':

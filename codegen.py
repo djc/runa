@@ -483,12 +483,12 @@ def layout(data):
 def prologue(mod):
 	return ['target triple = "%s"' % TRIPLES[sys.platform]]
 
-def stdlib():
-	return open('std.ll').read().splitlines() + ['']
+def include():
+	return open('include.ll').read().splitlines() + ['']
 
 def source(mod):
 	lines = prologue(mod) + ['']
-	lines += stdlib()
+	lines += include()
 	lines += CodeGen().Module(mod)
 	return '\n'.join(lines)
 
