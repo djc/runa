@@ -67,22 +67,21 @@ class Constants(object):
 		id = self.id('str')
 		l = len(node.value)
 		type = '[%i x i8]' % l
-		
 		bits = [id + '_data', '=', 'constant']
-		bits += ['%s c"%s"' % (type, node.value)]
+		bits += ['%s c"%s"\n' % (type, node.value)]
 		self.lines.append(' '.join(bits))
 		
 		data = type, id
 		bits = [id, '=', 'constant', Type.str().ir[:-1]]
 		bits.append('{ i64 %s,' % l)
-		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}' % data)
+		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}\n' % data)
 		self.lines.append(' '.join(bits))
 		return Type.str(), id
 	
 	def Int(self, node):
 		id = self.id('num')
 		bits = id, Type.int().ir, node.val
-		self.lines.append('%s = constant %s %s' % bits)
+		self.lines.append('%s = constant %s %s\n' % bits)
 		return Type.int(), id
 
 class Frame(object):
@@ -448,7 +447,7 @@ class CodeGen(object):
 		for name, n in defined.iteritems():
 			self.visit(n, frame)
 		
-		lines = self.const.lines + ['', ''] + self.buf
+		lines = self.const.lines + ['\n', '\n'] + self.buf
 		return ''.join(lines).split('\n')
 
 def layout(data):
