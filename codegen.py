@@ -262,9 +262,7 @@ class CodeGen(object):
 	def Not(self, node, frame):
 		val = self.boolean(self.visit(node.value, frame), frame)
 		res = frame.varname()
-		self.write(res + ' = call i1 @flip(')
-		self.write('i1 ' + val[1] + ')')
-		self.newline()
+		self.writeline(res + ' = select i1 %s, i1 false, i1 true' % val[1])
 		return Type.bool(), res
 	
 	def If(self, node, frame):

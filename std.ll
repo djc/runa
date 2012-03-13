@@ -6,8 +6,6 @@ declare i64 @strlen(i8*) nounwind readonly
 %str = type { i64, i8* }
 @str_NL = constant [1 x i8] c"\0a"
 @fmt_INT = constant [4 x i8] c"%ld\00"
-@bool_T = constant i1 1
-@bool_F = constant i1 0
 
 define void @print(%str* %s) {
 	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 1
@@ -33,15 +31,7 @@ define %str* @str(i64 %n) {
 }
 
 define i1 @flip(i1 %b) {
-	br i1 %b, label %True, label %False
-True:
-	%bt = load i1* @bool_T
-	br label %Done
-False:
-	%bf = load i1* @bool_F
-	br label %Done
-Done:
-	%res = phi i1 [ %bt, %True ], [ %bf, %False ]
+	%res = select i1 %b, i1 false, i1 true
 	ret i1 %res
 }
 
