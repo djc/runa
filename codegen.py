@@ -157,9 +157,12 @@ class CodeGen(object):
 	def writelines(self, lines):
 		self.buf.append(('\n' + self.tabs()).join(lines))
 	
-	def label(self, label):
+	def label(self, label, hint=None):
 		self.dedent()
-		self.writeline('%s:' % label)
+		if hint is None:
+			self.writeline('%s:' % label)
+		else:
+			self.writeline('%s: ; %s' % (label, hint))
 		self.indent()
 	
 	# Other helper methods
@@ -256,15 +259,15 @@ class CodeGen(object):
 		self.write('label %%%s, label %%%s' % (lif, lelse))
 		self.newline()
 		
-		self.label(lif)
+		self.label(lif, 'ternary-if')
 		left = self.visit(node.values[0], frame)
 		self.writeline('br label %%%s' % lfin)
-		self.label(lelse)
+		self.label(lelse, 'ternary-else')
 		right = self.visit(node.values[1], frame)
 		self.writeline('br label %%%s' % lfin)
 		assert left[0] == right[0]
 		
-		self.label(lfin)
+		self.label(lfin, 'ternary-fin')
 		finvar = frame.varname()
 		self.write('%s = phi ' % finvar)
 		self.write(left[0].ir)
@@ -285,16 +288,16 @@ class CodeGen(object):
 		self.write('label %%%s, label %%%s' % (lif, lelse))
 		self.newline()
 		
-		self.label(lif)
+		self.label(lif, 'and-true')
 		right = self.visit(node.right, frame)
 		rbool = self.boolean(right, frame)
 		typed = left[0] == right[0]
 		self.writeline('br label %%%s' % lfin)
 		
-		self.label(lelse)
+		self.label(lelse, 'and-false')
 		self.writeline('br label %%%s' % lfin)
 		
-		self.label(lfin)
+		self.label(lfin, 'and-fin')
 		finvar = frame.varname()
 		self.write('%s = phi ' % finvar)
 		if typed:
@@ -320,16 +323,16 @@ class CodeGen(object):
 		self.write('label %%%s, label %%%s' % (lif, lelse))
 		self.newline()
 		
-		self.label(lif)
+		self.label(lif, 'or-true')
 		self.writeline('br label %%%s' % lfin)
 		
-		self.label(lelse)
+		self.label(lelse, 'or-false')
 		right = self.visit(node.right, frame)
 		rbool = self.boolean(right, frame)
 		typed = left[0] == right[0]
 		self.writeline('br label %%%s' % lfin)
 		
-		self.label(lfin)
+		self.label(lfin, 'or-fin')
 		finvar = frame.varname()
 		self.write('%s = phi ' % finvar)
 		if typed:
@@ -385,18 +388,18 @@ class CodeGen(object):
 			
 			if cond is not None:
 				if i:
-					self.label(lbranch)
+					self.label(lbranch, 'if-cond-%s' % i)
 					lbranch = frame.labelname()
 				condvar = self.boolean(self.visit(cond, frame), frame)
 				self.write('br i1 ' + condvar[1] + ', ')
 				self.write('label %%%s, label %%%s' % (lbranch, lnext))
 				self.newline()
 			
-			self.label(lbranch)
+			self.label(lbranch, 'if-suite-%s' % i)
 			self.visit(suite, frame)
 			self.writeline('br label %%%s' % lfin)
 		
-		self.label(lfin)
+		self.label(lfin, 'if-fin')
 	
 	def main(self, node, frame):
 		
