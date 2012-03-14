@@ -8,7 +8,7 @@ MATCHING = {
 	None: [
 		(r'\n', 'nl', 'indent', indent),
 		(r' ', '!sp', None, None),
-		(r'def|return|if|else', 'kw', None, None),
+		(r'def|return|if|else|elif', 'kw', None, None),
 		(r'->|not|and|or|[,\[\]:()+=*\-/#{}]', 'op', None, None),
 		(r'[a-zA-Z_][a-zA-Z0-9_]*', 'name', None, None),
 		(r'[0-9\-.]+', 'num', None, None),

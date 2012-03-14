@@ -384,6 +384,9 @@ class CodeGen(object):
 				lnext = lfin
 			
 			if cond is not None:
+				if i:
+					self.label(lbranch)
+					lbranch = frame.labelname()
 				condvar = self.boolean(self.visit(cond, frame), frame)
 				self.write('br i1 ' + condvar[1] + ', ')
 				self.write('label %%%s, label %%%s' % (lbranch, lnext))

@@ -267,12 +267,24 @@ class If(Statement):
 		block = Suite(p, self.ln)
 		self.blocks = [(cond, block)]
 		
+		while isinstance(p.token, Elif):
+			kw = p.advance(Elif)
+			cond = p.expr()
+			p.advance(Colon)
+			block = Suite(p, kw.ln)
+			self.blocks.append((cond, block))
+		
 		if isinstance(p.token, Else):
 			kw = p.advance(Else)
 			p.advance(Colon)
 			block = Suite(p, kw.ln)
 			self.blocks.append((None, block))
 		
+		return self
+
+class Elif(Node):
+	lbp = 0
+	def nud(self, p):
 		return self
 
 class Else(Node):
@@ -312,6 +324,7 @@ KEYWORDS = {
 	'def': Function,
 	'return': Return,
 	'if': If,
+	'elif': Elif,
 	'else': Else,
 }
 

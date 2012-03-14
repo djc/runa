@@ -1,7 +1,16 @@
 def __main__(name: str, args: list[str]) -> int:
+	
 	if 1:
 		print('T')
 	else:
 		print('F')
+	
 	if 3:
 		print('O')
+	
+	if 0:
+		print('N')
+	elif 2:
+		print('E')
+	else:
+		print('A')
