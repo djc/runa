@@ -4,12 +4,14 @@ def indent(s):
 	yield 'nl', '\n'
 	yield 'indent', len(s)
 
+KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for'}
+OPERATORS = {'not', 'and', 'or', 'in'}
+
 MATCHING = {
 	None: [
 		(r'\n', 'nl', 'indent', indent),
 		(r' ', '!sp', None, None),
-		(r'def|return|if|else|elif', 'kw', None, None),
-		(r'->|not|and|or|[,\[\]:()+=*\-/#{}]', 'op', None, None),
+		(r'->|[,\[\]:()+=*\-/#{}]', 'op', None, None),
 		(r'[a-zA-Z_][a-zA-Z0-9_]*', 'name', None, None),
 		(r'[0-9\-.]+', 'num', None, None),
 		(r"'(.*?)'", 'str', None, None),
@@ -64,6 +66,10 @@ def tokenize(src):
 				break
 			
 			for x in res:
+				if x[0] == 'name' and x[1] in OPERATORS:
+					x = 'op', x[1]
+				elif x[0] == 'name' and x[1] in KEYWORDS:
+					x = 'kw', x[1]
 				yield x + (line,)
 				if x[0] == 'nl':
 					line += 1
