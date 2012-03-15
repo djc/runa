@@ -292,11 +292,27 @@ class Else(Node):
 	def nud(self, p):
 		return self
 
+class For(Statement):
+	fields = 'lvar', 'source', 'suite'
+	def nud(self, p):
+		self.lvar = p.advance(Name)
+		p.advance(In)
+		self.source = p.expr()
+		p.advance(Colon)
+		self.suite = Suite(p, self.ln)
+		return self
+
 class Not(Node):
 	lbp = 0
 	fields = 'value',
 	def nud(self, p):
 		self.value = p.expr()
+		return self
+
+class In(Node):
+	lbp = 70
+	fields = 'left', 'right'
+	def nud(self, p):
 		return self
 
 OPERATORS = {
@@ -318,6 +334,7 @@ OPERATORS = {
 	'not': Not,
 	'and': And,
 	'or': Or,
+	'in': In,
 }
 
 KEYWORDS = {
@@ -326,6 +343,7 @@ KEYWORDS = {
 	'if': If,
 	'elif': Elif,
 	'else': Else,
+	'for': For,
 }
 
 class Pratt(object):
