@@ -43,6 +43,12 @@ class Type(object):
 		@property
 		def ir(self):
 			return self.over.ir + '*'
+	
+	class intiter(base):
+		ir = '%intiter'
+		methods = {
+			'__next__': ('@intiter.__next__', 'int', 'intiter'),
+		}
 
 TYPES = {}
 for t in dir(Type):
@@ -54,6 +60,7 @@ BYVAL = {'int'}
 LIBRARY = {
 	'print': ('void', 'str'),
 	'str': ('str', 'int'),
+	'range': ('intiter', 'int', 'int', 'int'),
 }
 
 class Value(object):
@@ -61,6 +68,14 @@ class Value(object):
 		self.type = type
 		self.ptr = ptr
 		self.val = val
+	def __repr__(self):
+		s = ['<value[%s] ' % self.type.name]
+		if self.ptr:
+			s.append('ptr=' + self.ptr)
+		if self.val:
+			s.append('val=' + self.val)
+		s.append('>')
+		return ''.join(s)
 
 class Constants(object):
 	
@@ -431,6 +446,33 @@ class CodeGen(object):
 			self.writeline('br label %%%s' % lfin)
 		
 		self.label(lfin, 'if-fin')
+	
+	def For(self, node, frame):
+		
+		source = self.visit(node.source, frame)
+		self.newline()
+		
+		next = source.type.methods['__next__']
+		lval = Value(TYPES[next[1]](), ptr='%' + node.lvar.name)
+		frame.defined[node.lvar.name] = lval
+		self.writeline('%s = alloca %s' % (lval.ptr, lval.type.ir))
+		lhead, lbody, lend = [frame.labelname() for i in range(3)]
+		self.writeline('br label %%%s' % lhead)
+		
+		self.label(lhead, 'for-head')
+		cont = frame.varname()
+		bits = cont, next[0], self.ptr(source, frame), self.ptr(lval, frame)
+		self.writeline('%s = call i1 %s(%s, %s)' % bits)
+		bits = cont, lbody, lend
+		self.writeline('br i1 %s, label %%%s, label %%%s' % bits)
+		
+		self.label(lbody, 'for-body')
+		self.visit(node.suite, frame)
+		self.writeline('br label %%%s' % lhead)
+		
+		self.label(lend, 'for-end')
+		
+		
 	
 	def main(self, node, frame):
 		

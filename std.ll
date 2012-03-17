@@ -6,6 +6,7 @@ declare i32 @asprintf(i8**, i8*, ...)
 declare i64 @strlen(i8*) nounwind readonly
 
 %str = type { i64, i8* }
+%intiter = type { i64, i64, i64 }
 @str_NL = constant [1 x i8] c"\0a"
 @fmt_INT = constant [4 x i8] c"%ld\00"
 
@@ -77,4 +78,28 @@ define void @argv(i32 %argc, i8** %argv, %str** %out) {
 		store %str* %array, %str** %out
 		ret void
 	
+}
+
+define void @range(i64 %start, i64 %stop, i64 %step, %intiter* %res) {
+	%1 = getelementptr inbounds %intiter* %res, i64 0, i32 0
+	store i64 %start, i64* %1
+	%2 = getelementptr inbounds %intiter* %res, i64 0, i32 1
+	store i64 %stop, i64* %2
+	%3 = getelementptr inbounds %intiter* %res, i64 0, i32 2
+	store i64 %step, i64* %3
+	ret void
+}
+
+define i1 @intiter.__next__(%intiter* %self, i64* %res) {
+	%start.ptr = getelementptr inbounds %intiter* %self, i64 0, i32 0
+	%start = load i64* %start.ptr
+	store i64 %start, i64* %res
+	%step.ptr = getelementptr inbounds %intiter* %self, i64 0, i32 2
+	%step = load i64* %step.ptr
+	%next = add i64 %start, %step
+	%stop.ptr = getelementptr inbounds %intiter* %self, i64 0, i32 1
+	%stop = load i64* %stop.ptr
+	%more = icmp sle i64 %next, %stop
+	store i64 %next, i64* %start.ptr
+	ret i1 %more
 }
