@@ -571,6 +571,9 @@ def prologue(mod):
 def include():
 	return open('include.ll').read().splitlines() + ['']
 
+def stdlib():
+	return open('std.ll').read().splitlines()[2:] + ['']
+
 def source(mod):
 	lines = prologue(mod) + ['']
 	lines += include()
