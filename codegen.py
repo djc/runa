@@ -477,7 +477,7 @@ class CodeGen(object):
 		for name, n in defined.iteritems():
 			self.visit(n, frame)
 		
-		lines = self.const.lines + ['\n', '\n'] + self.buf
+		lines = self.const.lines + ['\n'] + self.buf
 		return ''.join(lines).split('\n')
 
 def layout(data):
