@@ -8,6 +8,9 @@ TRIPLES = {
 class Type(object):
 	
 	class base(object):
+		@property
+		def name(self):
+			return self.__class__.__name__
 		def __repr__(self):
 			return '<type: %s>' % self.__class__.__name__
 		def __eq__(self, other):
@@ -26,7 +29,7 @@ class Type(object):
 		ir = 'void'
 	
 	class str(base):
-		ir = '%str*'
+		ir = '%str'
 		methods = {
 			'__bool__': ('@str.__bool__', 'bool', 'str'),
 		}
@@ -46,10 +49,18 @@ for t in dir(Type):
 	if t[0] == '_': continue
 	TYPES[t] = getattr(Type, t)
 
+BYVAL = {'int'}
+
 LIBRARY = {
 	'print': ('void', 'str'),
 	'str': ('str', 'int'),
 }
+
+class Value(object):
+	def __init__(self, type, ptr=None, val=None):
+		self.type = type
+		self.ptr = ptr
+		self.val = val
 
 class Constants(object):
 	
@@ -72,17 +83,17 @@ class Constants(object):
 		self.lines.append(' '.join(bits))
 		
 		data = type, id
-		bits = [id, '=', 'constant', Type.str().ir[:-1]]
+		bits = [id, '=', 'constant', Type.str().ir]
 		bits.append('{ i64 %s,' % l)
 		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}\n' % data)
 		self.lines.append(' '.join(bits))
-		return Type.str(), id
+		return Value(Type.str(), ptr=id)
 	
 	def Int(self, node):
 		id = self.id('num')
 		bits = id, Type.int().ir, node.val
 		self.lines.append('%s = constant %s %s\n' % bits)
-		return Type.int(), id
+		return Value(Type.int(), ptr=id)
 
 class Frame(object):
 	
@@ -176,24 +187,45 @@ class CodeGen(object):
 		if op == 'div':
 			op = 'sdiv'
 		
-		rtype = args[0][0]
+		left = self.value(args[0], frame)
+		right = self.value(args[1], frame)
+		
+		rtype = args[0].type
 		store = frame.varname()
-		bits = store, op, rtype.ir, args[0][1], args[1][1]
+		bits = store, op, rtype.ir, left.split()[1], right.split()[1]
 		self.writeline('%s = %s %s %s, %s' % bits)
-		return rtype, store
+		return Value(args[0].type, val=store)
 	
 	def boolean(self, val, frame):
 		
-		if val[0] == Type.bool():
+		if val.type == Type.bool():
 			return val
 		
-		assert '__bool__' in val[0].methods
+		assert '__bool__' in val.type.methods
+		if val.type.name in BYVAL:
+			arg = self.value(val, frame)
+		else:
+			arg = self.ptr(val, frame)
+		
 		boolean = frame.varname()
-		method = val[0].methods['__bool__']
-		self.write(boolean + ' = call i1 ' + method[0] + '(')
-		self.write(val[0].ir + ' ' + val[1] + ')')
+		method = val.type.methods['__bool__']
+		self.write(boolean + ' = call i1 ' + method[0] + '(' + arg + ')')
 		self.newline()
-		return Type.bool(), boolean
+		return Value(Type.bool(), val=boolean)
+
+	def value(self, val, frame):
+		if not val.val:
+			val.val = frame.varname()
+			bits = (val.val, val.type.ir + '*', val.ptr)
+			self.writeline('%s = load %s %s' % bits)
+		return val.type.ir + ' ' + val.val
+	
+	def ptr(self, val, frame):
+		if not val.ptr:
+			val.ptr = frame.varname()
+			self.writeline('%s = alloca %s' % (val.ptr, val.type.ir))
+			val.val = None
+		return val.type.ir + '* ' + val.ptr
 	
 	# Node visitation methods
 	
@@ -201,10 +233,7 @@ class CodeGen(object):
 		return self.const.String(node)
 	
 	def Int(self, node, frame):
-		const = self.const.Int(node)
-		bits = frame.varname(), const[0].ir, const[1]
-		self.writeline('%s = load %s* %s' % bits)
-		return Type.int(), bits[0]
+		return self.const.Int(node)
 	
 	def Name(self, node, frame):
 		return frame[node.name]
@@ -222,31 +251,25 @@ class CodeGen(object):
 		return self.binop(node, frame, 'div')
 	
 	def Assign(self, node, frame):
-		if isinstance(node.right, ast.Int):
-			const = self.const.Int(node.right)
-			bits = node.left.name, const[0].ir, const[1]
-			self.writeline('%%%s = load %s* %s' % bits)
-			frame[node.left.name] = Type.int(), '%' + node.left.name
-		else:
-			res = self.visit(node.right, frame)
-			frame[node.left.name] = res
+		frame[node.left.name] = self.visit(node.right, frame)
 	
 	def Elem(self, node, frame):
 		
 		obj = self.visit(node.obj, frame)
 		key = self.visit(node.key, frame)
-		res = frame.varname()
+		bits = self.ptr(obj, frame), self.value(key, frame)
+		self.writeline('%%tmp.ptr = getelementptr %s, %s' % bits)
 		
-		bits = obj[0].ir, obj[1], key[0].ir, key[1]
-		self.writeline('%%tmp.ptr = getelementptr %s %s, %s %s' % bits)
+		res = frame.varname()
 		self.writeline('%s = load %%str** %%tmp.ptr' % res)
-		return obj[0].over, res
+		return Value(obj.type.over, ptr=res)
 	
 	def Not(self, node, frame):
 		val = self.boolean(self.visit(node.value, frame), frame)
+		arg = self.value(val, frame)
 		res = frame.varname()
-		self.writeline(res + ' = select i1 %s, i1 false, i1 true' % val[1])
-		return Type.bool(), res
+		self.writeline(res + ' = select %s, i1 false, i1 true' % arg)
+		return Value(Type.bool(), val=res)
 	
 	def Ternary(self, node, frame):
 		
@@ -255,7 +278,8 @@ class CodeGen(object):
 		lfin = frame.labelname()
 		
 		self.newline()
-		self.write('br i1 ' + cond[1] + ', ')
+		cval = self.value(cond, frame)
+		self.write('br ' + cval + ', ')
 		self.write('label %%%s, label %%%s' % (lif, lelse))
 		self.newline()
 		
@@ -265,33 +289,33 @@ class CodeGen(object):
 		self.label(lelse, 'ternary-else')
 		right = self.visit(node.values[1], frame)
 		self.writeline('br label %%%s' % lfin)
-		assert left[0] == right[0]
+		assert left.type == right.type
 		
 		self.label(lfin, 'ternary-fin')
 		finvar = frame.varname()
 		self.write('%s = phi ' % finvar)
-		self.write(left[0].ir)
-		self.write(' [ %s, %%%s ], ' % (left[1], lif))
-		self.write('[ %s, %%%s ]' % (right[1], lelse))
+		self.write(left.type.ir + '*')
+		self.write(' [ %s, %%%s ], ' % (left.ptr, lif))
+		self.write('[ %s, %%%s ]' % (right.ptr, lelse))
 		self.newline()
 		self.newline()
 		
-		return left[0], finvar
+		return Value(left.type, ptr=finvar)
 	
 	def And(self, node, frame):
 		
 		lif, lelse, lfin = [frame.labelname() for i in range(3)]
 		self.newline()
 		left = self.visit(node.left, frame)
-		lbool = self.boolean(left, frame)
-		self.write('br i1 ' + lbool[1] + ', ')
+		lbool = self.value(self.boolean(left, frame), frame)
+		self.write('br ' + lbool + ', ')
 		self.write('label %%%s, label %%%s' % (lif, lelse))
 		self.newline()
 		
 		self.label(lif, 'and-true')
 		right = self.visit(node.right, frame)
-		rbool = self.boolean(right, frame)
-		typed = left[0] == right[0]
+		rbool = self.value(self.boolean(right, frame), frame)
+		typed = left.type == right.type
 		self.writeline('br label %%%s' % lfin)
 		
 		self.label(lelse, 'and-false')
@@ -301,25 +325,25 @@ class CodeGen(object):
 		finvar = frame.varname()
 		self.write('%s = phi ' % finvar)
 		if typed:
-			self.write(left[0].ir)
-			self.write(' [ %s, %%%s ],' % (right[1], lif))
-			self.write(' [ %s, %%%s ]' % (left[1], lelse))
+			self.write(left.type.ir + '*')
+			self.write(' [ %s, %%%s ],' % (right.ptr, lif))
+			self.write(' [ %s, %%%s ]' % (left.ptr, lelse))
 		else:
 			self.write('i1')
-			self.write(' [ %s, %%%s ],' % (rbool[1], lif))
-			self.write(' [ %s, %%%s ]' % (lbool[1], lelse))
+			self.write(' [ %s, %%%s ],' % (rbool.split()[1], lif))
+			self.write(' [ %s, %%%s ]' % (lbool.split()[1], lelse))
 		
 		self.newline()
 		self.newline()
-		return (left[0] if typed else lbool[0]), finvar
+		return Value(left.type if typed else Type.bool(), ptr=finvar)
 	
 	def Or(self, node, frame):
 		
 		lif, lelse, lfin = [frame.labelname() for i in range(3)]
 		self.newline()
 		left = self.visit(node.left, frame)
-		lbool = self.boolean(left, frame)
-		self.write('br i1 ' + lbool[1] + ', ')
+		lbool = self.value(self.boolean(left, frame), frame)
+		self.write('br ' + lbool + ', ')
 		self.write('label %%%s, label %%%s' % (lif, lelse))
 		self.newline()
 		
@@ -328,47 +352,54 @@ class CodeGen(object):
 		
 		self.label(lelse, 'or-false')
 		right = self.visit(node.right, frame)
-		rbool = self.boolean(right, frame)
-		typed = left[0] == right[0]
+		rbool = self.value(self.boolean(right, frame), frame)
+		typed = left.type == right.type
 		self.writeline('br label %%%s' % lfin)
 		
 		self.label(lfin, 'or-fin')
 		finvar = frame.varname()
 		self.write('%s = phi ' % finvar)
 		if typed:
-			self.write(left[0].ir)
-			self.write(' [ %s, %%%s ],' % (left[1], lif))
-			self.write(' [ %s, %%%s ]' % (right[1], lelse))
+			self.write(left.type.ir + '*')
+			self.write(' [ %s, %%%s ],' % (left.ptr, lif))
+			self.write(' [ %s, %%%s ]' % (right.ptr, lelse))
 		else:
 			self.write('i1')
-			self.write(' [ %s, %%%s ],' % (lbool[1], lif))
-			self.write(' [ %s, %%%s ]' % (rbool[1], lelse))
+			self.write(' [ %s, %%%s ],' % (lbool.split()[1], lif))
+			self.write(' [ %s, %%%s ]' % (rbool.split()[1], lelse))
 		
 		self.newline()
 		self.newline()
-		return (left[0] if typed else lbool[0]), finvar
+		return Value(left.type if typed else Type.bool(), ptr=finvar)
 	
 	def Call(self, node, frame):
 		
 		# set up args before reserving variable
+		seq = []
 		args = self.args(node.args, frame)
-		irt = [(a[0].ir, a[1]) for a in args]
-		args = ', '.join('%s %s' % a for a in irt)
+		for val in args:
+			if val.type.name in BYVAL:
+				seq.append(self.value(val, frame))
+			else:
+				seq.append(self.ptr(val, frame))
 		
-		store, start = None, 'call'
-		void = LIBRARY[node.name.name][0] == 'void'
-		if not void:
-			store = frame.varname()
-			start = '%s = call' % store
-		
-		call = '@' + node.name.name + '(' + args + ')'
 		rtype = TYPES[LIBRARY[node.name.name][0]]()
-		self.writeline(' '.join((start, rtype.ir, call)))
-		return rtype, store
+		rval = Value(rtype)
+		if rtype != Type.void():
+			store = frame.varname()
+			self.writeline('%s = alloca %s' % (store, rtype.ir))
+			rval = Value(rtype, ptr=store)
+			seq.append(self.ptr(rval, frame))
+		
+		call = '@' + node.name.name + '(' + ', '.join(seq) + ')'
+		self.writeline(' '.join(('call void', call)))
+		return rval
 	
 	def Return(self, node, frame):
 		value = self.visit(node.value, frame)
-		self.writeline('ret %s %s' % (value[0].ir, value[1]))
+		bits = self.value(value, frame), value.type.ir + '*', '%lang.res'
+		self.writeline('store %s, %s %s' % bits)
+		self.writeline('ret void')
 	
 	def Suite(self, node, frame):
 		for stmt in node.stmts:
@@ -391,7 +422,8 @@ class CodeGen(object):
 					self.label(lbranch, 'if-cond-%s' % i)
 					lbranch = frame.labelname()
 				condvar = self.boolean(self.visit(cond, frame), frame)
-				self.write('br i1 ' + condvar[1] + ', ')
+				condval = self.value(condvar, frame)
+				self.write('br ' + condval + ', ')
 				self.write('label %%%s, label %%%s' % (lbranch, lnext))
 				self.newline()
 			
@@ -423,8 +455,8 @@ class CodeGen(object):
 		for ln in lines:
 			self.writeline(ln)
 		
-		frame['name'] = Type.str(), '%name'
-		frame['args'] = Type.array(Type.str()), '%args'
+		frame['name'] = Value(Type.str(), ptr='%a0.p')
+		frame['args'] = Value(Type.array(Type.str()), ptr='%args')
 		self.visit(node.suite, frame)
 		
 		self.writeline('ret i32 0')
@@ -437,21 +469,27 @@ class CodeGen(object):
 		if node.name.name == '__main__':
 			return self.main(node, frame)
 		
-		self.write('define ')
-		self.write(TYPES[node.rtype.name].ir)
-		self.write(' @')
+		self.write('define void @')
 		self.write(node.name.name)
 		self.write('(')
 		
 		first = True
 		for arg in node.args:
 			if not first: self.write(', ')
-			self.write(TYPES[arg.type.name].ir)
+			atype = TYPES[arg.type.name]()
+			self.write(atype.ir)
 			self.write(' ')
 			self.write('%' + arg.name.name)
-			bits = TYPES[arg.type.name](), '%' + arg.name.name
-			frame[arg.name.name] = bits
+			if atype.name in BYVAL:
+				val = Value(atype, val='%' + arg.name.name)
+			else:
+				val = Value(atype, ptr='%' + arg.name.name)
+			frame[arg.name.name] = val
 			first = False
+		
+		self.write(', ')
+		self.write(TYPES[node.rtype.name].ir + '*')
+		self.write(' %lang.res')
 		
 		self.write(') {')
 		self.newline()

@@ -20,16 +20,14 @@ define void @print(%str* %s) {
 	ret void
 }
 
-define %str* @str(i64 %n) {
-	%s.ptr.tmp = call i8* @malloc(i64 16)
-	%s.ptr = bitcast i8* %s.ptr.tmp to %str*
-	%s.data = getelementptr %str* %s.ptr, i32 0, i32 1
+define void @str(i64 %n, %str* %s) {
+	%s.data = getelementptr %str* %s, i32 0, i32 1
 	%fmt = getelementptr inbounds [4 x i8]* @fmt_INT, i32 0, i32 0
 	%fmt.len = call i32 (i8**, i8*, ...)* @asprintf(i8** %s.data, i8* %fmt, i64 %n)
 	%fmt.len64 = sext i32 %fmt.len to i64
-	%s.len = getelementptr inbounds %str* %s.ptr, i32 0, i32 0
+	%s.len = getelementptr inbounds %str* %s, i32 0, i32 0
 	store i64 %fmt.len64, i64* %s.len
-	ret %str* %s.ptr
+	ret void
 }
 
 define i1 @int.__bool__(i64 %n) {
