@@ -314,8 +314,6 @@ class CodeGen(object):
 		
 		self.label(lif, 'and-true')
 		right = self.visit(node.right, frame)
-		rbool = self.value(self.boolean(right, frame), frame)
-		typed = left.type == right.type
 		self.writeline('br label %%%s' % lfin)
 		
 		self.label(lelse, 'and-false')
@@ -323,13 +321,15 @@ class CodeGen(object):
 		
 		self.label(lfin, 'and-fin')
 		finvar = frame.varname()
-		self.write('%s = phi ' % finvar)
+		typed = left.type == right.type
 		if typed:
+			self.write('%s = phi ' % finvar)
 			self.write(left.type.ir + '*')
 			self.write(' [ %s, %%%s ],' % (right.ptr, lif))
 			self.write(' [ %s, %%%s ]' % (left.ptr, lelse))
 		else:
-			self.write('i1')
+			rbool = self.value(self.boolean(right, frame), frame)
+			self.write('%s = phi i1' % finvar)
 			self.write(' [ %s, %%%s ],' % (rbool.split()[1], lif))
 			self.write(' [ %s, %%%s ]' % (lbool.split()[1], lelse))
 		
@@ -349,22 +349,21 @@ class CodeGen(object):
 		
 		self.label(lif, 'or-true')
 		self.writeline('br label %%%s' % lfin)
-		
 		self.label(lelse, 'or-false')
 		right = self.visit(node.right, frame)
-		rbool = self.value(self.boolean(right, frame), frame)
-		typed = left.type == right.type
 		self.writeline('br label %%%s' % lfin)
 		
 		self.label(lfin, 'or-fin')
 		finvar = frame.varname()
-		self.write('%s = phi ' % finvar)
+		typed = left.type == right.type
 		if typed:
+			self.write('%s = phi ' % finvar)
 			self.write(left.type.ir + '*')
 			self.write(' [ %s, %%%s ],' % (left.ptr, lif))
 			self.write(' [ %s, %%%s ]' % (right.ptr, lelse))
 		else:
-			self.write('i1')
+			rbool = self.value(self.boolean(right, frame), frame)
+			self.write('%s = phi i1' % finvar)
 			self.write(' [ %s, %%%s ],' % (lbool.split()[1], lif))
 			self.write(' [ %s, %%%s ]' % (rbool.split()[1], lelse))
 		
