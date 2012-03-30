@@ -69,6 +69,7 @@ LIBRARY = {
 
 PROTOCOL = {
 	'str': '__str__',
+	'bool': '__bool__',
 }
 
 class Value(object):
@@ -229,22 +230,10 @@ class CodeGen(object):
 		return Value(args[0].type, val=store)
 	
 	def boolean(self, val, frame):
-		
 		if val.type == Type.bool():
 			return val
-		
-		assert '__bool__' in val.type.methods
-		if val.type.name in BYVAL:
-			arg = self.value(val, frame)
-		else:
-			arg = self.ptr(val, frame)
-		
-		boolean = frame.varname()
-		method = val.type.methods['__bool__']
-		self.write(boolean + ' = call i1 ' + method[0] + '(' + arg + ')')
-		self.newline()
-		return Value(Type.bool(), val=boolean)
-
+		return self.call('bool', [val], frame)
+	
 	def value(self, val, frame):
 		if not val.val:
 			val.val = frame.varname()
@@ -273,6 +262,8 @@ class CodeGen(object):
 			name, rtype, param = objtype.methods[PROTOCOL[fun]]
 		elif fun in LIBRARY:
 			name, rtype = '@' + fun, LIBRARY[fun][0]
+		else:
+			assert False, 'unknown function %s' % fun
 		
 		rtype = TYPES[rtype]()
 		rval = Value(rtype)

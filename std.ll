@@ -57,16 +57,18 @@ define void @int.__str__(i64 %n, %str* %s) {
 	ret void
 }
 
-define i1 @int.__bool__(i64 %n) {
+define void @int.__bool__(i64 %n, i1* %res) {
 	%1 = icmp ne i64 %n, 0
-	ret i1 %1
+	store i1 %1, i1* %res
+	ret void
 }
 
-define i1 @str.__bool__(%str* %s) {
+define void @str.__bool__(%str* %s, i1* %res) {
 	%s.len = getelementptr %str* %s, i32 0, i32 0
 	%len = load i64* %s.len
-	%res = icmp ne i64 %len, 0
-	ret i1 %res
+	%bool = icmp ne i64 %len, 0
+	store i1 %bool, i1* %res
+	ret void
 }
 
 define void @wrapstr(i8* %s, %str* %out) {
