@@ -90,4 +90,5 @@ Generics:
 
 Can we prevent keeping a pointer to the class inside every object? Only if
 the compiler knows all of the types in advance. Alternative: keep a pointer to
-the type of the contained type in containers.
+the type of the contained type in containers. Simple first problem: str()
+should accept any type and call its __str__() method.
