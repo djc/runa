@@ -488,10 +488,7 @@ class CodeGen(object):
 		self.label(lbody, 'for-body')
 		self.visit(node.suite, frame)
 		self.writeline('br label %%%s' % lhead)
-		
 		self.label(lend, 'for-end')
-		
-		
 	
 	def main(self, node, frame):
 		
