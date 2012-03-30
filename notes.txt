@@ -67,6 +67,10 @@ Phil Hassey
 tinypy: parse.py (Python Pratt parser, in Python)
 http://code.google.com/p/tinypy/source/browse/trunk/tinypy/parse.py
 
+Andreas Zwinkau
+Faster than C
+http://beza1e1.tuxen.de/articles/faster_than_C.html
+
 
 Implementation notes
 ====================
