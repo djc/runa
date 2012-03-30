@@ -2,6 +2,7 @@
 %intiter = type { i64, i64, i64 }
 
 declare void @print(%str* %s)
+declare void @bool.__str__(i1 %v, %str* %s)
 declare void @int.__str__(i64 %n, %str* %s)
 declare i1 @int.__bool__(i64 %n)
 declare i1 @str.__bool__(%str* %s)
