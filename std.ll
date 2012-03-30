@@ -21,7 +21,7 @@ define void @print(%str* %s) {
 	ret void
 }
 
-define void @str(i64 %n, %str* %s) {
+define void @int.__str__(i64 %n, %str* %s) {
 	%s.data = getelementptr %str* %s, i32 0, i32 1
 	%fmt = getelementptr inbounds [4 x i8]* @fmt_INT, i32 0, i32 0
 	%fmt.len = call i32 (i8**, i8*, ...)* @asprintf(i8** %s.data, i8* %fmt, i64 %n)

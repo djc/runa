@@ -63,6 +63,10 @@ LIBRARY = {
 	'range': ('intiter', 'int', 'int', 'int'),
 }
 
+PROTOCOL = {
+	'str': '__str__',
+}
+
 class Value(object):
 	def __init__(self, type, ptr=None, val=None):
 		self.type = type
@@ -405,7 +409,11 @@ class CodeGen(object):
 			rval = Value(rtype, ptr=store)
 			seq.append(self.ptr(rval, frame))
 		
-		call = '@' + node.name.name + '(' + ', '.join(seq) + ')'
+		name = node.name.name
+		if node.name.name in PROTOCOL:
+			name = args[0].type.name + '.' + PROTOCOL[node.name.name]
+		
+		call = '@' + name + '(' + ', '.join(seq) + ')'
 		self.writeline(' '.join(('call void', call)))
 		return rval
 	
