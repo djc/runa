@@ -71,6 +71,10 @@ Andreas Zwinkau
 Faster than C
 http://beza1e1.tuxen.de/articles/faster_than_C.html
 
+Russ Cox
+Go Data Structures: Interfaces
+http://research.swtch.com/interfaces
+
 
 Implementation notes
 ====================
