@@ -37,6 +37,9 @@ class Type(object):
 	
 	class bool(base):
 		ir = 'i1'
+		methods = {
+			'__str__': ('@bool.__str__', 'str', 'bool'),
+		}
 	
 	class array(base):
 		def __init__(self, over):
@@ -256,6 +259,33 @@ class CodeGen(object):
 			val.val = None
 		return val.type.ir + '* ' + val.ptr
 	
+	def call(self, fun, args, frame):
+		
+		seq = []
+		for val in args:
+			if val.type.name in BYVAL:
+				seq.append(self.value(val, frame))
+			else:
+				seq.append(self.ptr(val, frame))
+		
+		if fun in PROTOCOL:
+			objtype = args[0].type
+			name, rtype, param = objtype.methods[PROTOCOL[fun]]
+		elif fun in LIBRARY:
+			name, rtype = '@' + fun, LIBRARY[fun][0]
+		
+		rtype = TYPES[rtype]()
+		rval = Value(rtype)
+		if rtype != Type.void():
+			store = frame.varname()
+			self.writeline('%s = alloca %s' % (store, rtype.ir))
+			rval = Value(rtype, ptr=store)
+			seq.append(self.ptr(rval, frame))
+		
+		call = name + '(' + ', '.join(seq) + ')'
+		self.writeline(' '.join(('call void', call)))
+		return rval
+	
 	# Node visitation methods
 	
 	def Bool(self, node, frame):
@@ -404,31 +434,8 @@ class CodeGen(object):
 		return Value(left.type if typed else Type.bool(), ptr=finvar)
 	
 	def Call(self, node, frame):
-		
-		# set up args before reserving variable
-		seq = []
 		args = self.args(node.args, frame)
-		for val in args:
-			if val.type.name in BYVAL:
-				seq.append(self.value(val, frame))
-			else:
-				seq.append(self.ptr(val, frame))
-		
-		rtype = TYPES[LIBRARY[node.name.name][0]]()
-		rval = Value(rtype)
-		if rtype != Type.void():
-			store = frame.varname()
-			self.writeline('%s = alloca %s' % (store, rtype.ir))
-			rval = Value(rtype, ptr=store)
-			seq.append(self.ptr(rval, frame))
-		
-		name = node.name.name
-		if node.name.name in PROTOCOL:
-			name = args[0].type.name + '.' + PROTOCOL[node.name.name]
-		
-		call = '@' + name + '(' + ', '.join(seq) + ')'
-		self.writeline(' '.join(('call void', call)))
-		return rval
+		return self.call(node.name.name, args, frame)
 	
 	def Return(self, node, frame):
 		value = self.visit(node.value, frame)
