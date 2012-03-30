@@ -25,6 +25,11 @@ class Terminal(Node):
 class Statement(Node):
 	lbp = 0
 
+class Bool(Terminal):
+	def __init__(self, val, ln):
+		Node.__init__(self, ln)
+		self.val = True if val == 'True' else False
+
 class Name(Terminal):
 	def __init__(self, name, ln):
 		Node.__init__(self, ln)
@@ -354,7 +359,9 @@ class Pratt(object):
 	
 	def wrap(self, tokens):
 		for t, v, ln in tokens:
-			if t == 'name':
+			if t == 'name' and v in {'True', 'False'}:
+				yield Bool(v, ln)
+			elif t == 'name':
 				yield Name(v, ln)
 			elif t == 'num' and '.' not in v:
 				yield Int(v, ln)

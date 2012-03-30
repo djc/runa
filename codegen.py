@@ -56,7 +56,7 @@ for t in dir(Type):
 	if t[0] == '_': continue
 	TYPES[t] = getattr(Type, t)
 
-BYVAL = {'int'}
+BYVAL = {'bool', 'int'}
 
 LIBRARY = {
 	'print': ('void', 'str'),
@@ -87,11 +87,20 @@ class Constants(object):
 	def __init__(self):
 		self.next = 0
 		self.lines = []
+		self.bools = False
 	
 	def id(self, type):
 		s = '@%s%s' % (type, self.next)
 		self.next += 1
 		return s
+	
+	def Bool(self, node):
+		if not self.bools:
+			self.lines.append('@bool0 = constant i1 0\n')
+			self.lines.append('@bool1 = constant i1 1\n')
+			self.bools = True
+		id = '@bool1' if node.val else '@bool0'
+		return Value(Type.bool(), ptr=id)
 	
 	def String(self, node):
 		
@@ -249,11 +258,14 @@ class CodeGen(object):
 	
 	# Node visitation methods
 	
-	def String(self, node, frame):
-		return self.const.String(node)
+	def Bool(self, node, frame):
+		return self.const.Bool(node)
 	
 	def Int(self, node, frame):
 		return self.const.Int(node)
+	
+	def String(self, node, frame):
+		return self.const.String(node)
 	
 	def Name(self, node, frame):
 		return frame[node.name]
