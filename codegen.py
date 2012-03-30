@@ -69,11 +69,11 @@ class Value(object):
 		self.ptr = ptr
 		self.val = val
 	def __repr__(self):
-		s = ['<value[%s] ' % self.type.name]
+		s = ['<value[%s]' % self.type.name]
 		if self.ptr:
-			s.append('ptr=' + self.ptr)
+			s.append(' ptr=' + self.ptr)
 		if self.val:
-			s.append('val=' + self.val)
+			s.append(' val=' + self.val)
 		s.append('>')
 		return ''.join(s)
 
