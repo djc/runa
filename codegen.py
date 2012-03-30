@@ -23,6 +23,7 @@ class Type(object):
 		ir = 'i64'
 		methods = {
 			'__bool__': ('@int.__bool__', 'bool', 'int'),
+			'__str__': ('@int.__str__', 'str', 'int'),
 		}
 	
 	class void(base):
