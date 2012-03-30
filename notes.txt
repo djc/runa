@@ -82,3 +82,8 @@ Context managers:
  - def __enter__(self)
  - def __exit__(self, type, value, traceback)
 
+Generics:
+
+Can we prevent keeping a pointer to the class inside every object? Only if
+the compiler knows all of the types in advance. Alternative: keep a pointer to
+the type of the contained type in containers.
