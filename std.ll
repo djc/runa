@@ -4,9 +4,13 @@ declare i8* @malloc(i64)
 declare i64 @write(i32, i8*, i64)
 declare i32 @asprintf(i8**, i8*, ...)
 declare i64 @strlen(i8*) nounwind readonly
+declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 
 %str = type { i64, i8* }
 %intiter = type { i64, i64, i64 }
+
+@bool_TRUE = constant [4 x i8] c"True"
+@bool_FALSE = constant [5 x i8] c"False"
 @str_NL = constant [1 x i8] c"\0a"
 @fmt_INT = constant [4 x i8] c"%ld\00"
 
@@ -18,6 +22,28 @@ define void @print(%str* %s) {
 	call i64 @write(i32 1, i8* %s.data, i64 %s.len)
 	%nl.ptr = getelementptr inbounds [1 x i8]* @str_NL, i64 0, i64 0
 	call i64 @write(i32 1, i8* %nl.ptr, i64 1)
+	ret void
+}
+
+define void @bool.__str__(i1 %v, %str* %s) {
+	%s.data = getelementptr %str* %s, i32 0, i32 1
+	%s.len = getelementptr inbounds %str* %s, i32 0, i32 0
+	br i1 %v, label %True, label %False
+True:
+	store i64 4, i64* %s.len
+	%ptr1 = call i8* @malloc(i64 4)
+	%val1 = getelementptr inbounds [4 x i8]* @bool_TRUE, i32 0, i32 0
+	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %ptr1, i8* %val1, i64 4, i32 1, i1 false)
+	store i8* %ptr1, i8** %s.data
+	br label %Done
+False:
+	store i64 5, i64* %s.len
+	%ptr0 = call i8* @malloc(i64 5)
+	%val0 = getelementptr inbounds [5 x i8]* @bool_FALSE, i32 0, i32 0
+	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %ptr0, i8* %val0, i64 5, i32 1, i1 false)
+	store i8* %ptr0, i8** %s.data
+	br label %Done
+Done:
 	ret void
 }
 
