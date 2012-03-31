@@ -4,6 +4,7 @@ declare i8* @malloc(i64)
 declare i64 @write(i32, i8*, i64)
 declare i32 @asprintf(i8**, i8*, ...)
 declare i64 @strlen(i8*) nounwind readonly
+declare i32 @strncmp(i8*, i8*, i64)
 declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 
 %str = type { i64, i8* }
@@ -81,6 +82,29 @@ define void @str.__bool__(%str* %s, i1* %res) {
 	%len = load i64* %s.len
 	%bool = icmp ne i64 %len, 0
 	store i1 %bool, i1* %res
+	ret void
+}
+
+define void @str.__eq__(%str* %a, %str* %b, i1* %res) {
+	%a.len.ptr = getelementptr %str* %a, i32 0, i32 0
+	%a.len = load i64* %a.len.ptr
+	%b.len.ptr = getelementptr %str* %b, i32 0, i32 0
+	%b.len = load i64* %b.len.ptr
+	%samelen = icmp eq i64 %a.len, %b.len
+	br i1 %samelen, label %Full, label %NEq
+Full:
+	%less = icmp slt i64 %a.len, %b.len
+	%cmplen = select i1 %less, i64 %a.len, i64 %b.len
+	%a.data.ptr = getelementptr %str* %a, i32 0, i32 1
+	%b.data.ptr = getelementptr %str* %b, i32 0, i32 1
+	%a.data = load i8** %a.data.ptr
+	%b.data = load i8** %b.data.ptr
+	%cmp = call i32 @strncmp(i8* %a.data, i8* %b.data, i64 %cmplen)
+	%check = icmp eq i32 %cmp, 0
+	store i1 %check, i1* %res
+	ret void
+NEq:
+	store i1 false, i1* %res
 	ret void
 }
 

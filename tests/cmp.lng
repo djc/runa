@@ -5,3 +5,7 @@ def __main__(name: str, args: list[str]) -> int:
 	print(str(2 == 2))
 	print(str(True == True))
 	print(str(False == True))
+	print(str("a" == "b"))
+	print(str("aa" == "b"))
+	print(str("aa" == "bb"))
+	print(str("a" == "a"))

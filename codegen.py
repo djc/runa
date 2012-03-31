@@ -34,6 +34,7 @@ class Type(object):
 		ir = '%str'
 		methods = {
 			'__bool__': ('@str.__bool__', 'bool'),
+			'__eq__': ('@str.__eq__', 'bool', 'str'),
 		}
 	
 	class bool(base):
