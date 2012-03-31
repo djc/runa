@@ -601,11 +601,17 @@ def include():
 def stdlib():
 	return open('std.ll').read().splitlines()[2:] + ['']
 
-def source(mod):
+def source(mod, inline=False):
 	lines = prologue(mod) + ['']
-	lines += include()
+	lines += include() if not inline else stdlib()
 	lines += CodeGen().Module(mod)
 	return '\n'.join(lines)
 
 if __name__ == '__main__':
-	print source(ast.fromfile(sys.argv[1]))
+	
+	inline = False
+	if '--inline' in sys.argv:
+		sys.argv.remove('--inline')
+		inline = True
+	
+	print source(ast.fromfile(sys.argv[1]), inline)
