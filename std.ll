@@ -15,17 +15,6 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 @str_NL = constant [1 x i8] c"\0a"
 @fmt_INT = constant [4 x i8] c"%ld\00"
 
-define void @print(%str* %s) {
-	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 1
-	%s.data = load i8** %s.data.ptr
-	%s.len.ptr = getelementptr inbounds %str* %s, i64 0, i32 0
-	%s.len = load i64* %s.len.ptr
-	call i64 @write(i32 1, i8* %s.data, i64 %s.len)
-	%nl.ptr = getelementptr inbounds [1 x i8]* @str_NL, i64 0, i64 0
-	call i64 @write(i32 1, i8* %nl.ptr, i64 1)
-	ret void
-}
-
 define void @bool.__str__(i1 %v, %str* %s) {
 	%s.data = getelementptr %str* %s, i32 0, i32 1
 	%s.len = getelementptr inbounds %str* %s, i32 0, i32 0
@@ -55,6 +44,12 @@ define void @bool.__eq__(i1 %a, i1 %b, i1* %res) {
 	ret void
 }
 
+define void @int.__bool__(i64 %n, i1* %res) {
+	%1 = icmp ne i64 %n, 0
+	store i1 %1, i1* %res
+	ret void
+}
+
 define void @int.__str__(i64 %n, %str* %s) {
 	%s.data = getelementptr %str* %s, i32 0, i32 1
 	%fmt = getelementptr inbounds [4 x i8]* @fmt_INT, i32 0, i32 0
@@ -62,12 +57,6 @@ define void @int.__str__(i64 %n, %str* %s) {
 	%fmt.len64 = sext i32 %fmt.len to i64
 	%s.len = getelementptr inbounds %str* %s, i32 0, i32 0
 	store i64 %fmt.len64, i64* %s.len
-	ret void
-}
-
-define void @int.__bool__(i64 %n, i1* %res) {
-	%1 = icmp ne i64 %n, 0
-	store i1 %1, i1* %res
 	ret void
 }
 
@@ -105,6 +94,17 @@ Full:
 	ret void
 NEq:
 	store i1 false, i1* %res
+	ret void
+}
+
+define void @print(%str* %s) {
+	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 1
+	%s.data = load i8** %s.data.ptr
+	%s.len.ptr = getelementptr inbounds %str* %s, i64 0, i32 0
+	%s.len = load i64* %s.len.ptr
+	call i64 @write(i32 1, i8* %s.data, i64 %s.len)
+	%nl.ptr = getelementptr inbounds [1 x i8]* @str_NL, i64 0, i64 0
+	call i64 @write(i32 1, i8* %nl.ptr, i64 1)
 	ret void
 }
 

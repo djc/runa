@@ -19,6 +19,16 @@ class Type(object):
 		def __ne__(self, other):
 			return not self.__eq__(other)
 	
+	class void(base):
+		ir = 'void'
+	
+	class bool(base):
+		ir = 'i1'
+		methods = {
+			'__str__': ('@bool.__str__', 'str'),
+			'__eq__': ('@bool.__eq__', 'bool', 'bool'),
+		}
+	
 	class int(base):
 		ir = 'i64'
 		methods = {
@@ -27,21 +37,11 @@ class Type(object):
 			'__eq__': ('@int.__eq__', 'bool', 'int'),
 		}
 	
-	class void(base):
-		ir = 'void'
-	
 	class str(base):
 		ir = '%str'
 		methods = {
 			'__bool__': ('@str.__bool__', 'bool'),
 			'__eq__': ('@str.__eq__', 'bool', 'str'),
-		}
-	
-	class bool(base):
-		ir = 'i1'
-		methods = {
-			'__str__': ('@bool.__str__', 'str'),
-			'__eq__': ('@bool.__eq__', 'bool', 'bool'),
 		}
 	
 	class array(base):
@@ -71,8 +71,8 @@ LIBRARY = {
 }
 
 PROTOCOL = {
-	'str': '__str__',
 	'bool': '__bool__',
+	'str': '__str__',
 }
 
 class Value(object):
@@ -109,6 +109,12 @@ class Constants(object):
 		id = '@bool1' if node.val else '@bool0'
 		return Value(Type.bool(), ptr=id)
 	
+	def Int(self, node):
+		id = self.id('num')
+		bits = id, Type.int().ir, node.val
+		self.lines.append('%s = constant %s %s\n' % bits)
+		return Value(Type.int(), ptr=id)
+	
 	def String(self, node):
 		
 		id = self.id('str')
@@ -124,12 +130,6 @@ class Constants(object):
 		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}\n' % data)
 		self.lines.append(' '.join(bits))
 		return Value(Type.str(), ptr=id)
-	
-	def Int(self, node):
-		id = self.id('num')
-		bits = id, Type.int().ir, node.val
-		self.lines.append('%s = constant %s %s\n' % bits)
-		return Value(Type.int(), ptr=id)
 
 class Frame(object):
 	
