@@ -22,8 +22,8 @@ class Type(object):
 	class int(base):
 		ir = 'i64'
 		methods = {
-			'__bool__': ('@int.__bool__', 'bool', 'int'),
-			'__str__': ('@int.__str__', 'str', 'int'),
+			'__bool__': ('@int.__bool__', 'bool'),
+			'__str__': ('@int.__str__', 'str'),
 		}
 	
 	class void(base):
@@ -32,13 +32,13 @@ class Type(object):
 	class str(base):
 		ir = '%str'
 		methods = {
-			'__bool__': ('@str.__bool__', 'bool', 'str'),
+			'__bool__': ('@str.__bool__', 'bool'),
 		}
 	
 	class bool(base):
 		ir = 'i1'
 		methods = {
-			'__str__': ('@bool.__str__', 'str', 'bool'),
+			'__str__': ('@bool.__str__', 'str'),
 		}
 	
 	class array(base):
@@ -259,7 +259,7 @@ class CodeGen(object):
 		
 		if fun in PROTOCOL:
 			objtype = args[0].type
-			name, rtype, param = objtype.methods[PROTOCOL[fun]]
+			name, rtype = objtype.methods[PROTOCOL[fun]][:2]
 		elif fun in LIBRARY:
 			name, rtype = '@' + fun, LIBRARY[fun][0]
 		else:
