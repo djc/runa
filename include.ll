@@ -3,6 +3,7 @@
 
 declare void @print(%str* %s)
 declare void @bool.__str__(i1 %v, %str* %s)
+declare void @bool.__eq__(i1 %a, i1 %b, i1* %res)
 declare void @int.__str__(i64 %n, %str* %s)
 declare void @int.__bool__(i64 %n, i1* %res)
 declare void @int.__eq__(i64 %a, i64 %b, i1* %res)

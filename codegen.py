@@ -40,6 +40,7 @@ class Type(object):
 		ir = 'i1'
 		methods = {
 			'__str__': ('@bool.__str__', 'str'),
+			'__eq__': ('@bool.__eq__', 'bool', 'bool'),
 		}
 	
 	class array(base):

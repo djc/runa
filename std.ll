@@ -47,6 +47,13 @@ Done:
 	ret void
 }
 
+define void @bool.__eq__(i1 %a, i1 %b, i1* %res) {
+	%1 = xor i1 %a, %b
+	%2 = select i1 %1, i1 false, i1 true
+	store i1 %2, i1* %res
+	ret void
+}
+
 define void @int.__str__(i64 %n, %str* %s) {
 	%s.data = getelementptr %str* %s, i32 0, i32 1
 	%fmt = getelementptr inbounds [4 x i8]* @fmt_INT, i32 0, i32 0

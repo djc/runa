@@ -3,3 +3,5 @@ def __main__(name: str, args: list[str]) -> int:
 	print(str(False))
 	print(str(1 == 3))
 	print(str(2 == 2))
+	print(str(True == True))
+	print(str(False == True))
