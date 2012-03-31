@@ -107,6 +107,11 @@ class Or(BinaryOp):
 	lbp = 40
 	fields = 'left', 'right'
 
+class Eq(BinaryOp):
+	op = '=='
+	lbp = 20
+	fields = 'left', 'right'
+
 class Colon(Terminal):
 	op = ':'
 	fields = 'left', 'right'
@@ -335,6 +340,7 @@ OPERATORS = {
 	'{': Elem, # tmp
 	'}': ElemEnd, # tmp
 	'->': RType,
+	'==': Eq,
 	'#': Comment,
 	'not': Not,
 	'and': And,
