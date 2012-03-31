@@ -63,6 +63,12 @@ define void @int.__bool__(i64 %n, i1* %res) {
 	ret void
 }
 
+define void @int.__eq__(i64 %a, i64 %b, i1* %res) {
+	%1 = icmp eq i64 %a, %b
+	store i1 %1, i1* %res
+	ret void
+}
+
 define void @str.__bool__(%str* %s, i1* %res) {
 	%s.len = getelementptr %str* %s, i32 0, i32 0
 	%len = load i64* %s.len

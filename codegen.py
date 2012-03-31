@@ -24,6 +24,7 @@ class Type(object):
 		methods = {
 			'__bool__': ('@int.__bool__', 'bool'),
 			'__str__': ('@int.__str__', 'str'),
+			'__eq__': ('@int.__eq__', 'bool', 'int'),
 		}
 	
 	class void(base):
@@ -232,7 +233,7 @@ class CodeGen(object):
 	def boolean(self, val, frame):
 		if val.type == Type.bool():
 			return val
-		return self.call('bool', [val], frame)
+		return self.call(('bool',), [val], frame)
 	
 	def value(self, val, frame):
 		if not val.val:
@@ -257,11 +258,13 @@ class CodeGen(object):
 			else:
 				seq.append(self.ptr(val, frame))
 		
-		if fun in PROTOCOL:
+		if fun[0] in PROTOCOL:
 			objtype = args[0].type
-			name, rtype = objtype.methods[PROTOCOL[fun]][:2]
-		elif fun in LIBRARY:
-			name, rtype = '@' + fun, LIBRARY[fun][0]
+			name, rtype = objtype.methods[PROTOCOL[fun[0]]][:2]
+		elif fun[0] in LIBRARY:
+			name, rtype = '@' + fun[0], LIBRARY[fun[0]][0]
+		elif isinstance(fun[0], Type.base):
+			name, rtype = fun[0].methods[fun[1]][:2]
 		else:
 			assert False, 'unknown function %s' % fun
 		
@@ -302,6 +305,12 @@ class CodeGen(object):
 	
 	def Div(self, node, frame):
 		return self.binop(node, frame, 'div')
+	
+	def Eq(self, node, frame):
+		args = self.args((node.left, node.right), frame)
+		mdata = args[0].type.methods['__eq__']
+		assert args[1].type == TYPES[mdata[2]]()
+		return self.call((args[0].type, '__eq__'), args, frame)
 	
 	def Assign(self, node, frame):
 		frame[node.left.name] = self.visit(node.right, frame)
@@ -426,7 +435,7 @@ class CodeGen(object):
 	
 	def Call(self, node, frame):
 		args = self.args(node.args, frame)
-		return self.call(node.name.name, args, frame)
+		return self.call((node.name.name,), args, frame)
 	
 	def Return(self, node, frame):
 		value = self.visit(node.value, frame)
