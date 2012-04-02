@@ -2,11 +2,11 @@ import sys, tokenizer
 
 # Base class
 
-IGNORE = {'p', 'ln'}
+IGNORE = {'p', 'pos'}
 
 class Node(object):
-	def __init__(self, ln):
-		self.ln = ln
+	def __init__(self, pos):
+		self.pos = pos
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
 		show = ('%s=%s' % (k, v) for (k, v) in contents if k not in IGNORE)
@@ -26,26 +26,26 @@ class Statement(Node):
 	lbp = 0
 
 class Bool(Terminal):
-	def __init__(self, val, ln):
-		Node.__init__(self, ln)
+	def __init__(self, val, pos):
+		Node.__init__(self, pos)
 		self.val = True if val == 'True' else False
 
 class Name(Terminal):
-	def __init__(self, name, ln):
-		Node.__init__(self, ln)
+	def __init__(self, name, pos):
+		Node.__init__(self, pos)
 		self.name = name
 
 class Int(Terminal):
-	def __init__(self, num, ln):
-		Node.__init__(self, ln)
+	def __init__(self, num, pos):
+		Node.__init__(self, pos)
 		self.val = num
 
 class End(Terminal):
 	op = 'end'
 
 class String(Terminal):
-	def __init__(self, value, ln):
-		Node.__init__(self, ln)
+	def __init__(self, value, pos):
+		Node.__init__(self, pos)
 		self.value = value
 
 class BinaryOp(Node):
@@ -185,9 +185,9 @@ class Suite(Node):
 		while isinstance(self.p.token, NL):
 			self.p.advance()
 	
-	def __init__(self, p, ln):
+	def __init__(self, p, pos):
 		
-		Node.__init__(self, ln)
+		Node.__init__(self, pos)
 		self.p = p
 		self.stmts = []
 		
@@ -205,8 +205,8 @@ class Suite(Node):
 
 class Argument(Node):
 	fields = 'name',
-	def __init__(self, ln):
-		Node.__init__(self, ln)
+	def __init__(self, pos):
+		Node.__init__(self, pos)
 		self.name = None
 		self.type = None
 
@@ -220,7 +220,7 @@ class Function(Node):
 		self.name = p.advance(Name)
 		p.advance(Call)
 		
-		cur = Argument(self.ln)
+		cur = Argument(self.pos)
 		self.args = []
 		next = p.expr()
 		if not isinstance(next, RightPar):
@@ -232,7 +232,7 @@ class Function(Node):
 				else:
 					cur.type = next
 					self.args.append(cur)
-					cur = Argument(self.ln)
+					cur = Argument(self.pos)
 					p.advance(Comma)
 				
 				next = p.expr()
@@ -248,7 +248,7 @@ class Function(Node):
 			self.rtype = p.expr()
 		
 		p.advance(Colon)
-		self.suite = Suite(p, self.ln + 1)
+		self.suite = Suite(p, self.pos)
 		return self
 
 class Return(Node):
@@ -263,8 +263,8 @@ class Ternary(Node):
 	lbp = 10
 	fields = 'cond', 'values'
 	
-	def __init__(self, p, left, ln):
-		Node.__init__(self, ln)
+	def __init__(self, p, left, pos):
+		Node.__init__(self, pos)
 		self.cond = None
 		self.values = []
 		self.values.append(left)
@@ -278,26 +278,26 @@ class If(Statement):
 	fields = 'blocks',
 	
 	def led(self, p, left):
-		return Ternary(p, left, self.ln)
+		return Ternary(p, left, self.pos)
 	
 	def nud(self, p):
 		
 		cond = p.expr()
 		p.advance(Colon)
-		block = Suite(p, self.ln)
+		block = Suite(p, self.pos)
 		self.blocks = [(cond, block)]
 		
 		while isinstance(p.token, Elif):
 			kw = p.advance(Elif)
 			cond = p.expr()
 			p.advance(Colon)
-			block = Suite(p, kw.ln)
+			block = Suite(p, kw.pos)
 			self.blocks.append((cond, block))
 		
 		if isinstance(p.token, Else):
 			kw = p.advance(Else)
 			p.advance(Colon)
-			block = Suite(p, kw.ln)
+			block = Suite(p, kw.pos)
 			self.blocks.append((None, block))
 		
 		return self
@@ -319,7 +319,7 @@ class For(Statement):
 		p.advance(In)
 		self.source = p.expr()
 		p.advance(Colon)
-		self.suite = Suite(p, self.ln)
+		self.suite = Suite(p, self.pos)
 		return self
 
 class While(Statement):
@@ -327,7 +327,7 @@ class While(Statement):
 	def nud(self, p):
 		self.cond = p.expr()
 		p.advance(Colon)
-		self.suite = Suite(p, self.ln)
+		self.suite = Suite(p, self.pos)
 		return self
 
 class Not(Node):
@@ -385,26 +385,26 @@ class Pratt(object):
 		self.token = self.next()
 	
 	def wrap(self, tokens):
-		for t, v, ln in tokens:
+		for t, v, s, e in tokens:
 			if t == 'name' and v in {'True', 'False'}:
-				yield Bool(v, ln)
+				yield Bool(v, (s, e))
 			elif t == 'name':
-				yield Name(v, ln)
+				yield Name(v, (s, e))
 			elif t == 'num' and '.' not in v:
-				yield Int(v, ln)
+				yield Int(v, (s, e))
 			elif t == 'kw':
-				yield KEYWORDS[v](ln)
+				yield KEYWORDS[v]((s, e))
 			elif t == 'str':
-				yield String(v, ln)
+				yield String(v, (s, e))
 			elif t == 'op':
-				yield OPERATORS[v](ln)
+				yield OPERATORS[v]((s, e))
 			elif t == 'indent' and v > 0:
-				yield Indent(ln)
+				yield Indent((s, e))
 			elif t == 'indent' and v < 0:
-				yield Dedent(ln)
+				yield Dedent((s, e))
 			elif t == 'nl':
-				yield NL(ln)
-		yield End(ln)
+				yield NL((s, e))
+		yield End((s, e))
 	
 	def advance(self, id=None):
 		if id and not isinstance(self.token, id):
