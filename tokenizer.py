@@ -1,83 +1,54 @@
 import sys, re
 
-def indent(s):
-	yield 'nl', '\n'
-	yield 'indent', len(s)
-
 KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for', 'while'}
 OPERATORS = {'not', 'and', 'or', 'in'}
+SPACES = re.compile('[ \t]*')
 
-MATCHING = {
-	None: [
-		(r'\n', 'nl', 'indent', indent),
-		(r' ', '!sp', None, None),
-		(r'->|==|!=|[,\[\]:()+=*\-/#{}<]', 'op', None, None),
-		(r'[a-zA-Z_][a-zA-Z0-9_]*', 'name', None, None),
-		(r'[0-9\-.]+', 'num', None, None),
-		(r"'(.*?)'", 'str', None, None),
-		(r'"(.*?)"', 'str', None, None),
-	],
-	'indent': [
-		(r'[ \t]', 'indent', None, None),
-		(r'', 'end', None, None),
-	],
-}
+MATCHERS = [
+	(r'\n', 'nl'),
+	(r' ', '!sp'),
+	(r'->|==|!=|[,\[\]:()+=*\-/#{}<]', 'op'),
+	(r'[a-zA-Z_][a-zA-Z0-9_]*', 'name'),
+	(r'[0-9\-.]+', 'num'),
+	(r"'(.*?)'", 'str'),
+	(r'"(.*?)"', 'str'),
+]
 
-REGEX = {}
-for k, v in MATCHING.iteritems():
-	REGEX[k] = [(re.compile(e), t, g, r) for (e, t, g, r) in v]
+REGEX = [(re.compile(e), t) for (e, t) in MATCHERS]
 
 def tokenize(src):
-	pos = 0
-	line = 0
-	grammar = [None]
-	buffer = []
+	pos, line = 0, 0
 	while True:
-		for m, t, g, r in REGEX[grammar[-1]]:
+		for m, t in REGEX:
+			
+			if pos == len(src):
+				return
 			
 			m = m.match(src, pos)
 			if not m: continue
+			#print 'MATCHED', line, pos - base, repr(m.group())
 			pos = m.end()
-			# print 'MATCHED', repr(m.group())
 			
 			val = m.group()
 			if m.groups():
 				val = m.groups()[0]
 			
-			if g:
-				grammar.append(g)
-				buffer.append((r, []))
-				break
+			if t == 'nl':
+				line = line + 1
+				yield t, val, line
+				sp = SPACES.match(src, pos).group()
+				yield 'indent', len(sp), line
+				pos += len(sp)
+				continue
 			
 			if t[0] == '!':
-				break
-			elif t == 'end' and not buffer:
-				return
-			elif t == 'end' and buffer:
-				grammar.pop()
-				buf = buffer.pop()
-				res = list(buf[0](buf[1]))
-			else:
-				res = [(t, val)]
+				continue
+			elif t == 'name' and val in OPERATORS:
+				t = 'op'
+			elif t == 'name' and val in KEYWORDS:
+				t = 'kw'
 			
-			if buffer:
-				# print 'BUFFER', res
-				buffer[-1][1].append(res)
-				break
-			
-			for x in res:
-				if x[0] == 'name' and x[1] in OPERATORS:
-					x = 'op', x[1]
-				elif x[0] == 'name' and x[1] in KEYWORDS:
-					x = 'kw', x[1]
-				yield x + (line,)
-				if x[0] == 'nl':
-					line += 1
-			
-			break
-		
-		else:
-			return
+			yield t, val, line
 
 def indented(gen):
 	level, future, hold = 0, None, []
