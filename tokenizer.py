@@ -4,7 +4,7 @@ def indent(s):
 	yield 'nl', '\n'
 	yield 'indent', len(s)
 
-KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for'}
+KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for', 'while'}
 OPERATORS = {'not', 'and', 'or', 'in'}
 
 MATCHING = {

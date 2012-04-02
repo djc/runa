@@ -322,6 +322,14 @@ class For(Statement):
 		self.suite = Suite(p, self.ln)
 		return self
 
+class While(Statement):
+	fields = 'cond', 'suite'
+	def nud(self, p):
+		self.cond = p.expr()
+		p.advance(Colon)
+		self.suite = Suite(p, self.ln)
+		return self
+
 class Not(Node):
 	lbp = 0
 	fields = 'value',
@@ -367,6 +375,7 @@ KEYWORDS = {
 	'elif': Elif,
 	'else': Else,
 	'for': For,
+	'while': While,
 }
 
 class Pratt(object):

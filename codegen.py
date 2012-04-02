@@ -142,6 +142,9 @@ class Frame(object):
 		self.parent = parent
 		self.defined = {}
 	
+	def __contains__(self, key):
+		return key in self.defined or (self.parent and key in self.parent)
+	
 	def __getitem__(self, key):
 		if key not in self.defined:
 			return self.parent[key]
@@ -342,9 +345,10 @@ class CodeGen(object):
 		type = right.type
 		val = self.value(right, frame)
 		
-		self.writeline('%%%s = alloca %s' % (name, type.ir))
+		if name not in frame:
+			self.writeline('%%%s = alloca %s' % (name, type.ir))
 		self.writeline('store %s, %s* %%%s' % (val, type.ir, name))
-		frame[node.left.name] = Value(type, ptr='%%%s' % name, var=True)
+		frame[name] = Value(type, ptr='%%%s' % name, var=True)
 	
 	def Elem(self, node, frame):
 		
@@ -529,6 +533,23 @@ class CodeGen(object):
 		self.visit(node.suite, frame)
 		self.writeline('br label %%%s' % lhead)
 		self.label(lend, 'for-end')
+	
+	def While(self, node, frame):
+		
+		self.newline()
+		lhead, lbody, lend = [frame.labelname() for i in range(3)]
+		self.writeline('br label %%%s' % lhead)
+		
+		self.label(lhead, 'while-head')
+		cond = self.visit(node.cond, frame)
+		check = self.value(self.boolean(cond, frame), frame)
+		bits = check, lbody, lend
+		self.writeline('br %s, label %%%s, label %%%s' % bits)
+		
+		self.label(lbody, 'while-body')
+		self.visit(node.suite, frame)
+		self.writeline('br label %%%s' % lhead)
+		self.label(lend, 'while-end')
 	
 	def main(self, node, frame):
 		

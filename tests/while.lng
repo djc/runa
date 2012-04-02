@@ -1,0 +1,5 @@
+def __main__(name: str, args: list[str]) -> int:
+	i = 0
+	while i < 5:
+		print(str(i))
+		i = i + 1
