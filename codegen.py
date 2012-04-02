@@ -314,6 +314,16 @@ class CodeGen(object):
 		assert args[1].type == TYPES[mdata[2]]()
 		return self.call((args[0].type, '__eq__'), args, frame)
 	
+	def NEq(self, node, frame):
+		args = self.args((node.left, node.right), frame)
+		mdata = args[0].type.methods['__eq__']
+		assert args[1].type == TYPES[mdata[2]]()
+		eq = self.call((args[0].type, '__eq__'), args, frame)
+		arg = self.value(eq, frame)
+		res = frame.varname()
+		self.writeline(res + ' = select %s, i1 false, i1 true' % arg)
+		return Value(Type.bool(), val=res)
+	
 	def Assign(self, node, frame):
 		frame[node.left.name] = self.visit(node.right, frame)
 	
