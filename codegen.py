@@ -78,10 +78,11 @@ PROTOCOL = {
 }
 
 class Value(object):
-	def __init__(self, type, ptr=None, val=None):
+	def __init__(self, type, ptr=None, val=None, var=False):
 		self.type = type
 		self.ptr = ptr
 		self.val = val
+		self.var = var
 	def __repr__(self):
 		s = ['<value[%s]' % self.type.name]
 		if self.ptr:
@@ -241,10 +242,12 @@ class CodeGen(object):
 	
 	def value(self, val, frame):
 		if not val.val:
-			val.val = frame.varname()
-			bits = (val.val, val.type.ir + '*', val.ptr)
+			res = frame.varname()
+			bits = (res, val.type.ir + '*', val.ptr)
 			self.writeline('%s = load %s %s' % bits)
-		return val.type.ir + ' ' + val.val
+			if not val.var:
+				val.val = res
+		return val.type.ir + ' ' + (val.val if val.val else res)
 	
 	def ptr(self, val, frame):
 		if not val.ptr:
@@ -333,7 +336,15 @@ class CodeGen(object):
 		return self.call((args[0].type, '__lt__'), args, frame)
 	
 	def Assign(self, node, frame):
-		frame[node.left.name] = self.visit(node.right, frame)
+		
+		name = node.left.name
+		right = self.visit(node.right, frame)
+		type = right.type
+		val = self.value(right, frame)
+		
+		self.writeline('%%%s = alloca %s' % (name, type.ir))
+		self.writeline('store %s, %s* %%%s' % (val, type.ir, name))
+		frame[node.left.name] = Value(type, ptr='%%%s' % name, var=True)
 	
 	def Elem(self, node, frame):
 		
