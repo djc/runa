@@ -35,6 +35,7 @@ class Type(object):
 			'__bool__': ('@int.__bool__', 'bool'),
 			'__str__': ('@int.__str__', 'str'),
 			'__eq__': ('@int.__eq__', 'bool', 'int'),
+			'__lt__': ('@int.__lt__', 'bool', 'int'),
 		}
 	
 	class str(base):
@@ -42,6 +43,7 @@ class Type(object):
 		methods = {
 			'__bool__': ('@str.__bool__', 'bool'),
 			'__eq__': ('@str.__eq__', 'bool', 'str'),
+			'__lt__': ('@str.__lt__', 'bool', 'str'),
 		}
 	
 	class array(base):
@@ -323,6 +325,12 @@ class CodeGen(object):
 		res = frame.varname()
 		self.writeline(res + ' = select %s, i1 false, i1 true' % arg)
 		return Value(Type.bool(), val=res)
+	
+	def LT(self, node, frame):
+		args = self.args((node.left, node.right), frame)
+		mdata = args[0].type.methods['__lt__']
+		assert args[1].type == TYPES[mdata[2]]()
+		return self.call((args[0].type, '__lt__'), args, frame)
 	
 	def Assign(self, node, frame):
 		frame[node.left.name] = self.visit(node.right, frame)

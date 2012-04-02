@@ -66,6 +66,12 @@ define void @int.__eq__(i64 %a, i64 %b, i1* %res) {
 	ret void
 }
 
+define void @int.__lt__(i64 %a, i64 %b, i1* %res) {
+	%1 = icmp slt i64 %a, %b
+	store i1 %1, i1* %res
+	ret void
+}
+
 define void @str.__bool__(%str* %s, i1* %res) {
 	%s.len = getelementptr %str* %s, i32 0, i32 0
 	%len = load i64* %s.len
@@ -93,6 +99,33 @@ Full:
 	store i1 %check, i1* %res
 	ret void
 NEq:
+	store i1 false, i1* %res
+	ret void
+}
+
+define void @str.__lt__(%str* %a, %str* %b, i1* %res) {
+	%a.len.ptr = getelementptr %str* %a, i32 0, i32 0
+	%a.len = load i64* %a.len.ptr
+	%b.len.ptr = getelementptr %str* %b, i32 0, i32 0
+	%b.len = load i64* %b.len.ptr
+	%less = icmp slt i64 %a.len, %b.len
+	%cmplen = select i1 %less, i64 %a.len, i64 %b.len
+	%a.data.ptr = getelementptr %str* %a, i32 0, i32 1
+	%b.data.ptr = getelementptr %str* %b, i32 0, i32 1
+	%a.data = load i8** %a.data.ptr
+	%b.data = load i8** %b.data.ptr
+	%cmp = call i32 @strncmp(i8* %a.data, i8* %b.data, i64 %cmplen)
+	%check = icmp slt i32 %cmp, 0
+	br i1 %check, label %Less, label %EG
+EG:
+	%eq = icmp sgt i32 %cmp, 0
+	br i1 %eq, label %NotLess, label %EQ
+EQ:
+	br i1 %less, label %Less, label %NotLess
+Less:
+	store i1 true, i1* %res
+	ret void
+NotLess:
 	store i1 false, i1* %res
 	ret void
 }

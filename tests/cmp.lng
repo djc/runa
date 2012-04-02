@@ -17,3 +17,13 @@ def __main__(name: str, args: list[str]) -> int:
 	print(str(1 != 4))
 	print(str(False != False))
 	print(str("a" != "b"))
+	
+	print(str(1 < 4))
+	print(str(2 < 2))
+	print(str(5 < 4))
+	
+	print(str('a' < 'aa'))
+	print(str('a' < 'b'))
+	print(str('a' < 'a'))
+	print(str('b' < 'a'))
+	

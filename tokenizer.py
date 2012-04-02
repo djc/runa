@@ -11,7 +11,7 @@ MATCHING = {
 	None: [
 		(r'\n', 'nl', 'indent', indent),
 		(r' ', '!sp', None, None),
-		(r'->|==|!=|[,\[\]:()+=*\-/#{}]', 'op', None, None),
+		(r'->|==|!=|[,\[\]:()+=*\-/#{}<]', 'op', None, None),
 		(r'[a-zA-Z_][a-zA-Z0-9_]*', 'name', None, None),
 		(r'[0-9\-.]+', 'num', None, None),
 		(r"'(.*?)'", 'str', None, None),

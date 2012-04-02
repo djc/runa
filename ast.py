@@ -117,6 +117,11 @@ class NEq(BinaryOp):
 	lbp = 20
 	fields = 'left', 'right'
 
+class LT(BinaryOp):
+	op = '<'
+	lbp = 20
+	fields = 'left', 'right'
+
 class Colon(Terminal):
 	op = ':'
 	fields = 'left', 'right'
@@ -347,6 +352,7 @@ OPERATORS = {
 	'->': RType,
 	'==': Eq,
 	'!=': NEq,
+	'<': LT,
 	'#': Comment,
 	'not': Not,
 	'and': And,
