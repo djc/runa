@@ -316,11 +316,7 @@ class CodeGen(object):
 		return self.binop(node, frame, 'eq')
 	
 	def NEq(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		mdata = args[0].type.methods['__eq__']
-		assert args[1].type == TYPES[mdata[2]]()
-		eq = self.call((args[0].type, '__eq__'), args, frame)
-		arg = self.value(eq, frame)
+		arg = self.value(self.binop(node, frame, 'eq'), frame)
 		res = frame.varname()
 		self.writeline(res + ' = select %s, i1 false, i1 true' % arg)
 		return Value(Type.bool(), val=res)
