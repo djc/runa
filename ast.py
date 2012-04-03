@@ -427,15 +427,10 @@ class Module(Node):
 		self.suite = []
 
 def fromfile(fn):
-	
-	src = open(fn).read()
-	tokens = tokenizer.tokenize(src)
-	p = Pratt(tokens)
-	
 	mod = Module()
+	p = Pratt(tokenizer.tokenize(open(fn)))
 	while not isinstance(p.token, End):
 		mod.suite.append(p.expr())
-	
 	return mod
 
 if __name__ == '__main__':

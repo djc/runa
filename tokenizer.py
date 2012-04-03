@@ -16,60 +16,55 @@ MATCHERS = [
 
 REGEX = [(re.compile(e), t) for (e, t) in MATCHERS]
 
-def tokenize(src):
-	pos, line, base = 0, 0, 0
-	hold, level = None, 0
-	for m, t in itertools.cycle(REGEX):
+def tokenize(f):
+	indent, level, prev = None, 0, None
+	for line, src in enumerate(f):
 		
-		if pos == len(src):
-			lend = hold[2][0], hold[2][1] + 1
-			yield 'nl', hold[0], hold[2], lend
-			ipos = (hold[2][0] + 1, 0), (hold[2][0] + 1, hold[1])
-			for i in range(level):
-				yield 'indent', -1, ipos[0], ipos[1]
-			return
+		sp = SPACES.match(src).group()
+		pos = len(sp)
+		if prev is not None:
+			indent = len(sp)
 		
-		m = m.match(src, pos)
-		if not m: continue
-		start = line, pos - base
-		#print 'MATCHED', line, pos - base, repr(m.group())
-		pos = m.end()
-		end = line, pos - base
+		for m, t in itertools.cycle(REGEX):
+			
+			m = m.match(src, pos)
+			if not m: continue
+			if t == 'nl': break
+			
+			start = line, pos
+			pos = m.end()
+			end = line, pos
+			
+			val = m.group()
+			if m.groups():
+				val = m.groups()[0]
+			
+			if indent is not None and indent != level:
+				yield 'nl', '\n', (line - 1, prev - 1), (line - 1, prev)
+				yield 'indent', cmp(indent, level), (line, 0), (line, indent)
+				level, indent = indent, None
+			elif indent is not None:
+				yield 'nl', '\n', (line - 1, prev - 1), (line - 1, prev)
+				indent = None
+			
+			if t[0] == '!':
+				continue
+			elif t == 'name' and val in OPERATORS:
+				t = 'op'
+			elif t == 'name' and val in KEYWORDS:
+				t = 'kw'
+			
+			yield t, val, start, end
 		
-		val = m.group()
-		if m.groups():
-			val = m.groups()[0]
-		
-		if t == 'nl':
-			line, base = line + 1, pos
-			sp = SPACES.match(src, pos).group()
-			pos += len(sp)
-			hold = val, len(sp), start, pos - base
-			continue
-		elif hold:
-			lend = hold[2][0], hold[2][1] + 1
-			yield 'nl', hold[0], hold[2], lend
-			ipos = (hold[2][0] + 1, 0), (hold[2][0] + 1, hold[1])
-			if hold[1] > level:
-				yield 'indent', 1, ipos[0], ipos[1]
-				level = hold[1]
-			elif hold[1] < level:
-				yield 'indent', -1, ipos[0], ipos[1]
-				level = hold[1]
-			hold = None
-		
-		if t[0] == '!':
-			continue
-		elif t == 'name' and val in OPERATORS:
-			t = 'op'
-		elif t == 'name' and val in KEYWORDS:
-			t = 'kw'
-		
-		yield t, val, start, end
-
+		prev = len(src)
+	
+	yield 'nl', '\n', (line, pos), (line, pos + 1)
+	for i in range(level):
+		yield 'indent', -1, (line + 1, 0), (line + 1, 0)
+	
 def show(src):
 	for x in tokenize(src):
 		print x
 
 if __name__ == '__main__':
-	show(open(sys.argv[1]).read())
+	show(open(sys.argv[1]))
