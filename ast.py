@@ -33,11 +33,9 @@ class ElemEnd(Terminal):
 
 class Colon(Terminal):
 	op = ':'
-	fields = 'left', 'right'
 
 class Comma(Terminal):
 	op = ','
-	lbp = 0
 
 class RType(Terminal):
 	op = '->'
