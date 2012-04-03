@@ -134,7 +134,7 @@ class Constants(object):
 		
 		data = type, id
 		bits = [id, '=', 'constant', Type.str().ir]
-		bits.append('{ i64 %s,' % l)
+		bits.append('{ i1 0, i64 %s,' % l)
 		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}\n' % data)
 		self.lines.append(' '.join(bits))
 		return Value(Type.str(), ptr=id)

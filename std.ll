@@ -7,7 +7,7 @@ declare i64 @strlen(i8*) nounwind readonly
 declare i32 @strncmp(i8*, i8*, i64)
 declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 
-%str = type { i64, i8* }
+%str = type { i1, i64, i8* }
 %intiter = type { i64, i64, i64 }
 
 @bool_TRUE = constant [4 x i8] c"True"
@@ -16,8 +16,8 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 @fmt_INT = constant [4 x i8] c"%ld\00"
 
 define void @bool.__str__(i1 %v, %str* %s) {
-	%s.data = getelementptr %str* %s, i32 0, i32 1
-	%s.len = getelementptr inbounds %str* %s, i32 0, i32 0
+	%s.data = getelementptr %str* %s, i32 0, i32 2
+	%s.len = getelementptr inbounds %str* %s, i32 0, i32 1
 	br i1 %v, label %True, label %False
 True:
 	store i64 4, i64* %s.len
@@ -51,11 +51,11 @@ define void @int.__bool__(i64 %n, i1* %res) {
 }
 
 define void @int.__str__(i64 %n, %str* %s) {
-	%s.data = getelementptr %str* %s, i32 0, i32 1
+	%s.data = getelementptr %str* %s, i32 0, i32 2
 	%fmt = getelementptr inbounds [4 x i8]* @fmt_INT, i32 0, i32 0
 	%fmt.len = call i32 (i8**, i8*, ...)* @asprintf(i8** %s.data, i8* %fmt, i64 %n)
 	%fmt.len64 = sext i32 %fmt.len to i64
-	%s.len = getelementptr inbounds %str* %s, i32 0, i32 0
+	%s.len = getelementptr inbounds %str* %s, i32 0, i32 1
 	store i64 %fmt.len64, i64* %s.len
 	ret void
 }
@@ -97,7 +97,7 @@ define void @int.__div__(i64 %a, i64 %b, i64* %res) {
 }
 
 define void @str.__bool__(%str* %s, i1* %res) {
-	%s.len = getelementptr %str* %s, i32 0, i32 0
+	%s.len = getelementptr %str* %s, i32 0, i32 1
 	%len = load i64* %s.len
 	%bool = icmp ne i64 %len, 0
 	store i1 %bool, i1* %res
@@ -105,17 +105,17 @@ define void @str.__bool__(%str* %s, i1* %res) {
 }
 
 define void @str.__eq__(%str* %a, %str* %b, i1* %res) {
-	%a.len.ptr = getelementptr %str* %a, i32 0, i32 0
+	%a.len.ptr = getelementptr %str* %a, i32 0, i32 1
 	%a.len = load i64* %a.len.ptr
-	%b.len.ptr = getelementptr %str* %b, i32 0, i32 0
+	%b.len.ptr = getelementptr %str* %b, i32 0, i32 1
 	%b.len = load i64* %b.len.ptr
 	%samelen = icmp eq i64 %a.len, %b.len
 	br i1 %samelen, label %Full, label %NEq
 Full:
 	%less = icmp slt i64 %a.len, %b.len
 	%cmplen = select i1 %less, i64 %a.len, i64 %b.len
-	%a.data.ptr = getelementptr %str* %a, i32 0, i32 1
-	%b.data.ptr = getelementptr %str* %b, i32 0, i32 1
+	%a.data.ptr = getelementptr %str* %a, i32 0, i32 2
+	%b.data.ptr = getelementptr %str* %b, i32 0, i32 2
 	%a.data = load i8** %a.data.ptr
 	%b.data = load i8** %b.data.ptr
 	%cmp = call i32 @strncmp(i8* %a.data, i8* %b.data, i64 %cmplen)
@@ -128,14 +128,14 @@ NEq:
 }
 
 define void @str.__lt__(%str* %a, %str* %b, i1* %res) {
-	%a.len.ptr = getelementptr %str* %a, i32 0, i32 0
+	%a.len.ptr = getelementptr %str* %a, i32 0, i32 1
 	%a.len = load i64* %a.len.ptr
-	%b.len.ptr = getelementptr %str* %b, i32 0, i32 0
+	%b.len.ptr = getelementptr %str* %b, i32 0, i32 1
 	%b.len = load i64* %b.len.ptr
 	%less = icmp slt i64 %a.len, %b.len
 	%cmplen = select i1 %less, i64 %a.len, i64 %b.len
-	%a.data.ptr = getelementptr %str* %a, i32 0, i32 1
-	%b.data.ptr = getelementptr %str* %b, i32 0, i32 1
+	%a.data.ptr = getelementptr %str* %a, i32 0, i32 2
+	%b.data.ptr = getelementptr %str* %b, i32 0, i32 2
 	%a.data = load i8** %a.data.ptr
 	%b.data = load i8** %b.data.ptr
 	%cmp = call i32 @strncmp(i8* %a.data, i8* %b.data, i64 %cmplen)
@@ -155,30 +155,30 @@ NotLess:
 }
 
 define void @str.__add__(%str* %a, %str* %b, %str* %res) {
-	%a.len.ptr = getelementptr %str* %a, i32 0, i32 0
+	%a.len.ptr = getelementptr %str* %a, i32 0, i32 1
 	%a.len = load i64* %a.len.ptr
-	%b.len.ptr = getelementptr %str* %b, i32 0, i32 0
+	%b.len.ptr = getelementptr %str* %b, i32 0, i32 1
 	%b.len = load i64* %b.len.ptr
 	%total = add i64 %a.len, %b.len
-	%res.len.ptr = getelementptr %str* %res, i32 0, i32 0
+	%res.len.ptr = getelementptr %str* %res, i32 0, i32 1
 	store i64 %total, i64* %res.len.ptr
-	%res.data.ptr = getelementptr %str* %res, i32 0, i32 1
+	%res.data.ptr = getelementptr %str* %res, i32 0, i32 2
 	%buf = call i8* @malloc(i64 %total)
 	store i8* %buf, i8** %res.data.ptr
-	%a.data.ptr = getelementptr %str* %a, i32 0, i32 1
+	%a.data.ptr = getelementptr %str* %a, i32 0, i32 2
 	%a.data = load i8** %a.data.ptr
 	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %buf, i8* %a.data, i64 %a.len, i32 1, i1 false)
 	%rest = getelementptr i8* %buf, i64 %a.len
-	%b.data.ptr = getelementptr %str* %b, i32 0, i32 1
+	%b.data.ptr = getelementptr %str* %b, i32 0, i32 2
 	%b.data = load i8** %b.data.ptr
 	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %rest, i8* %b.data, i64 %b.len, i32 1, i1 false)
 	ret void
 }
 
 define void @print(%str* %s) {
-	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 1
+	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 2
 	%s.data = load i8** %s.data.ptr
-	%s.len.ptr = getelementptr inbounds %str* %s, i64 0, i32 0
+	%s.len.ptr = getelementptr inbounds %str* %s, i64 0, i32 1
 	%s.len = load i64* %s.len.ptr
 	call i64 @write(i32 1, i8* %s.data, i64 %s.len)
 	%nl.ptr = getelementptr inbounds [1 x i8]* @str_NL, i64 0, i64 0
@@ -187,10 +187,10 @@ define void @print(%str* %s) {
 }
 
 define void @wrapstr(i8* %s, %str* %out) {
-	%s.len = getelementptr inbounds %str* %out, i32 0, i32 0
+	%s.len = getelementptr inbounds %str* %out, i32 0, i32 1
 	%len = call i64 @strlen(i8* %s) nounwind readonly
 	store i64 %len, i64* %s.len
-	%s.data = getelementptr %str* %out, i32 0, i32 1
+	%s.data = getelementptr %str* %out, i32 0, i32 2
 	store i8* %s, i8** %s.data
 	ret void
 }
@@ -198,7 +198,7 @@ define void @wrapstr(i8* %s, %str* %out) {
 define void @argv(i32 %argc, i8** %argv, %str** %out) {
 	
 	%num = sext i32 %argc to i64
-	%size = mul i64 %num, 16
+	%size = mul i64 %num, 17
 	%array.raw = call i8* @malloc(i64 %size)
 	%array = bitcast i8* %array.raw to %str*
 	%it.first = icmp sgt i64 %num, 0

@@ -1,4 +1,4 @@
-%str = type { i64, i8* }
+%str = type { i1, i64, i8* }
 %intiter = type { i64, i64, i64 }
 
 declare void @bool.__str__(i1 %v, %str* %s)
