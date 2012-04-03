@@ -142,15 +142,6 @@ class Dedent(Terminal):
 class NL(Terminal):
 	pass
 
-class Comment(Terminal):
-	op = '#'
-	fields = ()
-	def nud(self, p):
-		while not isinstance(p.token, NL):
-			p.advance()
-		p.advance(NL)
-		return self
-
 class Call(BinaryOp, Node):
 	
 	op = '('
@@ -361,7 +352,6 @@ OPERATORS = {
 	'==': Eq,
 	'!=': NEq,
 	'<': LT,
-	'#': Comment,
 	'not': Not,
 	'and': And,
 	'or': Or,
@@ -404,6 +394,8 @@ class Pratt(object):
 				yield Dedent((s, e))
 			elif t == 'nl':
 				yield NL((s, e))
+			elif t == 'com':
+				continue
 		yield End((s, e))
 	
 	def advance(self, id=None):
