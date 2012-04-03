@@ -160,7 +160,7 @@ class LT(BinaryOp):
 	lbp = 20
 	fields = 'left', 'right'
 
-class Call(BinaryOp, Node):
+class Call(BinaryOp):
 	
 	op = '('
 	lbp = 70
