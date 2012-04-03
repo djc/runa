@@ -224,6 +224,7 @@ class Argument(Node):
 
 class Function(Node):
 	
+	kw = 'def'
 	lbp = 0
 	fields = 'name', 'args', 'rtype', 'suite'
 	
@@ -264,8 +265,11 @@ class Function(Node):
 		return self
 
 class Return(Node):
+	
+	kw = 'return'
 	lbp = 0
 	fields = 'value',
+	
 	def nud(self, p):
 		self.value = p.expr()
 		return self
@@ -286,6 +290,7 @@ class Ternary(Node):
 
 class If(Statement):
 	
+	kw = 'if'
 	lbp = 10
 	fields = 'blocks',
 	
@@ -315,16 +320,19 @@ class If(Statement):
 		return self
 
 class Elif(Node):
+	kw = 'elif'
 	lbp = 0
 	def nud(self, p):
 		return self
 
 class Else(Node):
+	kw = 'else'
 	lbp = 0
 	def nud(self, p):
 		return self
 
 class For(Statement):
+	kw = 'for'
 	fields = 'lvar', 'source', 'suite'
 	def nud(self, p):
 		self.lvar = p.advance(Name)
@@ -335,6 +343,7 @@ class For(Statement):
 		return self
 
 class While(Statement):
+	kw = 'while'
 	fields = 'cond', 'suite'
 	def nud(self, p):
 		self.cond = p.expr()
@@ -343,16 +352,7 @@ class While(Statement):
 		return self
 
 OPERATORS = {cls.op: cls for cls in Registry.types if hasattr(cls, 'op')}
-
-KEYWORDS = {
-	'def': Function,
-	'return': Return,
-	'if': If,
-	'elif': Elif,
-	'else': Else,
-	'for': For,
-	'while': While,
-}
+KEYWORDS = {cls.kw: cls for cls in Registry.types if hasattr(cls, 'kw')}
 
 class Pratt(object):
 	
