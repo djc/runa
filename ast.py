@@ -346,8 +346,6 @@ OPERATORS = {
 	':': Colon,
 	'[': Elem,
 	']': ElemEnd,
-	'{': Elem, # tmp
-	'}': ElemEnd, # tmp
 	'->': RType,
 	'==': Eq,
 	'!=': NEq,
