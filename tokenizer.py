@@ -1,4 +1,4 @@
-import sys, re
+import sys, re, itertools
 
 KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for', 'while'}
 OPERATORS = {'not', 'and', 'or', 'in'}
@@ -18,40 +18,39 @@ REGEX = [(re.compile(e), t) for (e, t) in MATCHERS]
 
 def tokenize(src):
 	pos, line, base = 0, 0, 0
-	while True:
-		for m, t in REGEX:
-			
-			if pos == len(src):
-				return
-			
-			m = m.match(src, pos)
-			if not m: continue
-			start = line, pos - base
-			#print 'MATCHED', line, pos - base, repr(m.group())
-			pos = m.end()
-			end = line, pos - base
-			
-			val = m.group()
-			if m.groups():
-				val = m.groups()[0]
-			
-			if t == 'nl':
-				yield t, val, start, end
-				line, base = line + 1, pos
-				sp = SPACES.match(src, pos).group()
-				pos += len(sp)
-				start = line, pos - base - len(sp)
-				yield 'indent', len(sp), start, (line, pos - base)
-				continue
-			
-			if t[0] == '!':
-				continue
-			elif t == 'name' and val in OPERATORS:
-				t = 'op'
-			elif t == 'name' and val in KEYWORDS:
-				t = 'kw'
-			
+	for m, t in itertools.cycle(REGEX):
+		
+		if pos == len(src):
+			return
+		
+		m = m.match(src, pos)
+		if not m: continue
+		start = line, pos - base
+		#print 'MATCHED', line, pos - base, repr(m.group())
+		pos = m.end()
+		end = line, pos - base
+		
+		val = m.group()
+		if m.groups():
+			val = m.groups()[0]
+		
+		if t == 'nl':
 			yield t, val, start, end
+			line, base = line + 1, pos
+			sp = SPACES.match(src, pos).group()
+			pos += len(sp)
+			start = line, pos - base - len(sp)
+			yield 'indent', len(sp), start, (line, pos - base)
+			continue
+		
+		if t[0] == '!':
+			continue
+		elif t == 'name' and val in OPERATORS:
+			t = 'op'
+		elif t == 'name' and val in KEYWORDS:
+			t = 'kw'
+		
+		yield t, val, start, end
 
 def indented(gen):
 	level, future, hold = 0, None, []
