@@ -186,6 +186,8 @@ class Call(BinaryOp):
 		p.token = p.next()
 		return expr
 
+# Statement-level
+
 class Statement(Node):
 	lbp = 0
 
@@ -350,6 +352,8 @@ class While(Statement):
 		p.advance(Colon)
 		self.suite = Suite(p, self.pos)
 		return self
+
+# The core of the parsing algorithm
 
 OPERATORS = {cls.op: cls for cls in Registry.types if hasattr(cls, 'op')}
 KEYWORDS = {cls.kw: cls for cls in Registry.types if hasattr(cls, 'kw')}
