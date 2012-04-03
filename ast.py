@@ -4,7 +4,13 @@ import sys, tokenizer
 
 IGNORE = {'p', 'pos'}
 
+class Registry(type):
+	types = []
+	def __init__(cls, name, bases, dict):
+		Registry.types.append(cls)
+
 class Node(object):
+	__metaclass__ = Registry
 	def __init__(self, pos):
 		self.pos = pos
 	def __repr__(self):
@@ -115,6 +121,7 @@ class Assign(BinaryOp):
 	fields = 'left', 'right'
 
 class Not(Node):
+	op = 'not'
 	lbp = 0
 	fields = 'value',
 	def nud(self, p):
@@ -122,6 +129,7 @@ class Not(Node):
 		return self
 
 class In(Node):
+	op = 'in'
 	lbp = 70
 	fields = 'left', 'right'
 	def nud(self, p):
@@ -334,27 +342,7 @@ class While(Statement):
 		self.suite = Suite(p, self.pos)
 		return self
 
-OPERATORS = {
-	'(': Call,
-	')': RightPar,
-	'+': Add,
-	'-': Sub,
-	'*': Mul,
-	'/': Div,
-	'=': Assign,
-	',': Comma,
-	':': Colon,
-	'[': Elem,
-	']': ElemEnd,
-	'->': RType,
-	'==': Eq,
-	'!=': NEq,
-	'<': LT,
-	'not': Not,
-	'and': And,
-	'or': Or,
-	'in': In,
-}
+OPERATORS = {cls.op: cls for cls in Registry.types if hasattr(cls, 'op')}
 
 KEYWORDS = {
 	'def': Function,
