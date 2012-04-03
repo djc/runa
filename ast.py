@@ -429,7 +429,7 @@ class Module(Node):
 def fromfile(fn):
 	
 	src = open(fn).read()
-	tokens = tokenizer.indented(tokenizer.tokenize(src))
+	tokens = tokenizer.tokenize(src)
 	p = Pratt(tokens)
 	
 	mod = Module()

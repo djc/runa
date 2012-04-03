@@ -18,9 +18,15 @@ REGEX = [(re.compile(e), t) for (e, t) in MATCHERS]
 
 def tokenize(src):
 	pos, line, base = 0, 0, 0
+	hold, level = None, 0
 	for m, t in itertools.cycle(REGEX):
 		
 		if pos == len(src):
+			lend = hold[2][0], hold[2][1] + 1
+			yield 'nl', hold[0], hold[2], lend
+			ipos = (hold[2][0] + 1, 0), (hold[2][0] + 1, hold[1])
+			for i in range(level):
+				yield 'indent', -1, ipos[0], ipos[1]
 			return
 		
 		m = m.match(src, pos)
@@ -35,13 +41,22 @@ def tokenize(src):
 			val = m.groups()[0]
 		
 		if t == 'nl':
-			yield t, val, start, end
 			line, base = line + 1, pos
 			sp = SPACES.match(src, pos).group()
 			pos += len(sp)
-			start = line, pos - base - len(sp)
-			yield 'indent', len(sp), start, (line, pos - base)
+			hold = val, len(sp), start, pos - base
 			continue
+		elif hold:
+			lend = hold[2][0], hold[2][1] + 1
+			yield 'nl', hold[0], hold[2], lend
+			ipos = (hold[2][0] + 1, 0), (hold[2][0] + 1, hold[1])
+			if hold[1] > level:
+				yield 'indent', 1, ipos[0], ipos[1]
+				level = hold[1]
+			elif hold[1] < level:
+				yield 'indent', -1, ipos[0], ipos[1]
+				level = hold[1]
+			hold = None
 		
 		if t[0] == '!':
 			continue
@@ -52,33 +67,8 @@ def tokenize(src):
 		
 		yield t, val, start, end
 
-def indented(gen):
-	level, future, hold = 0, None, []
-	for t, v, s, e in gen:
-		if t == 'nl':
-			future = None
-			hold = [(t, v, s, e)]
-			continue
-		elif t != 'indent':
-			if future is not None:
-				level, future = future, None
-			for x in hold:
-				yield x
-			hold = []
-			yield t, v, s, e
-		elif v > level:
-			future = v
-			hold.append(('indent', 1, s, e))
-		elif v < level:
-			future = v
-			hold += [('indent', -1, s, e)] * (level - v)
-		elif v == level:
-			continue
-	for x in hold:
-		yield x
-
 def show(src):
-	for x in indented(tokenize(src)):
+	for x in tokenize(src):
 		print x
 
 if __name__ == '__main__':
