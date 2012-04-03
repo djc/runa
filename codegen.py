@@ -36,6 +36,10 @@ class Type(object):
 			'__str__': ('@int.__str__', 'str'),
 			'__eq__': ('@int.__eq__', 'bool', 'int'),
 			'__lt__': ('@int.__lt__', 'bool', 'int'),
+			'__add__': ('@int.__add__', 'int', 'int'),
+			'__sub__': ('@int.__sub__', 'int', 'int'),
+			'__mul__': ('@int.__mul__', 'int', 'int'),
+			'__div__': ('@int.__div__', 'int', 'int'),
 		}
 	
 	class str(base):
@@ -224,19 +228,10 @@ class CodeGen(object):
 		return [self.visit(i, frame) for i in nodes]
 	
 	def binop(self, node, frame, op):
-		
 		args = self.args((node.left, node.right), frame)
-		if op == 'div':
-			op = 'sdiv'
-		
-		left = self.value(args[0], frame)
-		right = self.value(args[1], frame)
-		
-		rtype = args[0].type
-		store = frame.varname()
-		bits = store, op, rtype.ir, left.split()[1], right.split()[1]
-		self.writeline('%s = %s %s %s, %s' % bits)
-		return Value(args[0].type, val=store)
+		mdata = args[0].type.methods['__' + op + '__']
+		assert args[1].type == TYPES[mdata[2]]()
+		return self.call((args[0].type, '__' + op + '__'), args, frame)
 	
 	def boolean(self, val, frame):
 		if val.type == Type.bool():
@@ -317,10 +312,7 @@ class CodeGen(object):
 		return self.binop(node, frame, 'div')
 	
 	def Eq(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		mdata = args[0].type.methods['__eq__']
-		assert args[1].type == TYPES[mdata[2]]()
-		return self.call((args[0].type, '__eq__'), args, frame)
+		return self.binop(node, frame, 'eq')
 	
 	def NEq(self, node, frame):
 		args = self.args((node.left, node.right), frame)
@@ -333,10 +325,7 @@ class CodeGen(object):
 		return Value(Type.bool(), val=res)
 	
 	def LT(self, node, frame):
-		args = self.args((node.left, node.right), frame)
-		mdata = args[0].type.methods['__lt__']
-		assert args[1].type == TYPES[mdata[2]]()
-		return self.call((args[0].type, '__lt__'), args, frame)
+		return self.binop(node, frame, 'lt')
 	
 	def Assign(self, node, frame):
 		

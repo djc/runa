@@ -72,6 +72,30 @@ define void @int.__lt__(i64 %a, i64 %b, i1* %res) {
 	ret void
 }
 
+define void @int.__add__(i64 %a, i64 %b, i64* %res) {
+	%1 = add i64 %a, %b
+	store i64 %1, i64* %res
+	ret void
+}
+
+define void @int.__sub__(i64 %a, i64 %b, i64* %res) {
+	%1 = sub i64 %a, %b
+	store i64 %1, i64* %res
+	ret void
+}
+
+define void @int.__mul__(i64 %a, i64 %b, i64* %res) {
+	%1 = mul i64 %a, %b
+	store i64 %1, i64* %res
+	ret void
+}
+
+define void @int.__div__(i64 %a, i64 %b, i64* %res) {
+	%1 = sdiv i64 %a, %b
+	store i64 %1, i64* %res
+	ret void
+}
+
 define void @str.__bool__(%str* %s, i1* %res) {
 	%s.len = getelementptr %str* %s, i32 0, i32 0
 	%len = load i64* %s.len
