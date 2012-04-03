@@ -15,15 +15,41 @@ class Node(object):
 		values = tuple(sorted((k, v) for (k, v) in self.__dict__.iteritems()))
 		return hash((self.__class__.__name__,) + values)
 
-# Expression-level
+# Terminals
 
 class Terminal(Node):
 	lbp = 0
 	def nud(self, p):
 		return self
 
-class Statement(Node):
+class End(Terminal):
+	pass
+
+class RightPar(Terminal):
+	op = ')'
+
+class ElemEnd(Terminal):
+	op = ']'
+
+class Colon(Terminal):
+	op = ':'
+	fields = 'left', 'right'
+
+class Comma(Terminal):
+	op = ','
 	lbp = 0
+
+class RType(Terminal):
+	op = '->'
+
+class Indent(Terminal):
+	pass
+
+class Dedent(Terminal):
+	pass
+
+class NL(Terminal):
+	pass
 
 class Bool(Terminal):
 	def __init__(self, val, pos):
@@ -40,22 +66,18 @@ class Int(Terminal):
 		Node.__init__(self, pos)
 		self.val = num
 
-class End(Terminal):
-	op = 'end'
-
 class String(Terminal):
 	def __init__(self, value, pos):
 		Node.__init__(self, pos)
 		self.value = value
+
+# Expression-level
 
 class BinaryOp(Node):
 	def led(self, p, left):
 		self.left = left
 		self.right = p.expr(self.lbp)
 		return self
-
-class RightPar(Terminal):
-	op = ')'
 
 class Elem(BinaryOp):
 	
@@ -68,9 +90,6 @@ class Elem(BinaryOp):
 		self.key = p.expr()
 		p.advance(ElemEnd)
 		return self
-
-class ElemEnd(Terminal):
-	op = ']'
 
 class Add(BinaryOp):
 	op = '+'
@@ -97,6 +116,19 @@ class Assign(BinaryOp):
 	lbp = 5
 	fields = 'left', 'right'
 
+class Not(Node):
+	lbp = 0
+	fields = 'value',
+	def nud(self, p):
+		self.value = p.expr()
+		return self
+
+class In(Node):
+	lbp = 70
+	fields = 'left', 'right'
+	def nud(self, p):
+		return self
+
 class And(BinaryOp):
 	op = 'and'
 	lbp = 40
@@ -121,26 +153,6 @@ class LT(BinaryOp):
 	op = '<'
 	lbp = 20
 	fields = 'left', 'right'
-
-class Colon(Terminal):
-	op = ':'
-	fields = 'left', 'right'
-
-class Comma(Terminal):
-	op = ','
-	lbp = 0
-
-class RType(Terminal):
-	op = '->'
-
-class Indent(Terminal):
-	pass
-
-class Dedent(Terminal):
-	pass
-
-class NL(Terminal):
-	pass
 
 class Call(BinaryOp, Node):
 	
@@ -167,6 +179,9 @@ class Call(BinaryOp, Node):
 		expr = p.expr()
 		p.token = p.next()
 		return expr
+
+class Statement(Node):
+	lbp = 0
 
 class Suite(Node):
 	
@@ -319,19 +334,6 @@ class While(Statement):
 		self.cond = p.expr()
 		p.advance(Colon)
 		self.suite = Suite(p, self.pos)
-		return self
-
-class Not(Node):
-	lbp = 0
-	fields = 'value',
-	def nud(self, p):
-		self.value = p.expr()
-		return self
-
-class In(Node):
-	lbp = 70
-	fields = 'left', 'right'
-	def nud(self, p):
 		return self
 
 OPERATORS = {
