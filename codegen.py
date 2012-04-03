@@ -48,6 +48,7 @@ class Type(object):
 			'__bool__': ('@str.__bool__', 'bool'),
 			'__eq__': ('@str.__eq__', 'bool', 'str'),
 			'__lt__': ('@str.__lt__', 'bool', 'str'),
+			'__add__': ('@str.__add__', 'str', 'str'),
 		}
 	
 	class array(base):

@@ -154,6 +154,27 @@ NotLess:
 	ret void
 }
 
+define void @str.__add__(%str* %a, %str* %b, %str* %res) {
+	%a.len.ptr = getelementptr %str* %a, i32 0, i32 0
+	%a.len = load i64* %a.len.ptr
+	%b.len.ptr = getelementptr %str* %b, i32 0, i32 0
+	%b.len = load i64* %b.len.ptr
+	%total = add i64 %a.len, %b.len
+	%res.len.ptr = getelementptr %str* %res, i32 0, i32 0
+	store i64 %total, i64* %res.len.ptr
+	%res.data.ptr = getelementptr %str* %res, i32 0, i32 1
+	%buf = call i8* @malloc(i64 %total)
+	store i8* %buf, i8** %res.data.ptr
+	%a.data.ptr = getelementptr %str* %a, i32 0, i32 1
+	%a.data = load i8** %a.data.ptr
+	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %buf, i8* %a.data, i64 %a.len, i32 1, i1 false)
+	%rest = getelementptr i8* %buf, i64 %a.len
+	%b.data.ptr = getelementptr %str* %b, i32 0, i32 1
+	%b.data = load i8** %b.data.ptr
+	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %rest, i8* %b.data, i64 %b.len, i32 1, i1 false)
+	ret void
+}
+
 define void @print(%str* %s) {
 	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 1
 	%s.data = load i8** %s.data.ptr
