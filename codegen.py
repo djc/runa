@@ -43,6 +43,12 @@ class Type(object):
 			'__div__': ('@int.__div__', 'int', 'int'),
 		}
 	
+	class float(base):
+		ir = 'double'
+		methods = {
+			'__str__': ('@float.__str__', 'str'),
+		}
+	
 	class str(base):
 		ir = '%str'
 		methods = {
@@ -71,7 +77,7 @@ for t in dir(Type):
 	if t[0] == '_': continue
 	TYPES[t] = getattr(Type, t)
 
-BYVAL = {'bool', 'int'}
+BYVAL = {'bool', 'int', 'float'}
 
 LIBRARY = {
 	'print': ('void', 'str'),
@@ -121,10 +127,16 @@ class Constants(object):
 		return Value(Type.bool(), ptr=id, const=True)
 	
 	def Int(self, node):
-		id = self.id('num')
+		id = self.id('int')
 		bits = id, Type.int().ir, node.val
 		self.lines.append('%s = constant %s %s\n' % bits)
 		return Value(Type.int(), ptr=id, const=True)
+	
+	def Float(self, node):
+		id = self.id('flt')
+		bits = id, Type.float().ir, node.val
+		self.lines.append('%s = constant %s %s\n' % bits)
+		return Value(Type.float(), ptr=id, const=True)
 	
 	def String(self, node):
 		
@@ -308,6 +320,9 @@ class CodeGen(object):
 	
 	def Int(self, node, frame):
 		return self.const.Int(node)
+	
+	def Float(self, node, frame):
+		return self.const.Float(node)
 	
 	def String(self, node, frame):
 		return self.const.String(node)

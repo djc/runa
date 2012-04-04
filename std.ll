@@ -15,6 +15,7 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 @bool_FALSE = constant [5 x i8] c"False"
 @str_NL = constant [1 x i8] c"\0a"
 @fmt_INT = constant [4 x i8] c"%ld\00"
+@fmt_FLT = constant [3 x i8] c"%f\00"
 
 define void @bool.__str__(i1 %v, %str* %s) {
 	%s.owner = getelementptr %str* %s, i32 0, i32 0
@@ -98,6 +99,18 @@ define void @int.__mul__(i64 %a, i64 %b, i64* %res) {
 define void @int.__div__(i64 %a, i64 %b, i64* %res) {
 	%1 = sdiv i64 %a, %b
 	store i64 %1, i64* %res
+	ret void
+}
+
+define void @float.__str__(double %n, %str* %s) {
+	%s.owner = getelementptr %str* %s, i32 0, i32 0
+	store i1 true, i1* %s.owner
+	%s.data = getelementptr %str* %s, i32 0, i32 2
+	%fmt = getelementptr inbounds [3 x i8]* @fmt_FLT, i32 0, i32 0
+	%fmt.len = call i32 (i8**, i8*, ...)* @asprintf(i8** %s.data, i8* %fmt, double %n)
+	%fmt.len64 = sext i32 %fmt.len to i64
+	%s.len = getelementptr inbounds %str* %s, i32 0, i32 1
+	store i64 %fmt.len64, i64* %s.len
 	ret void
 }
 

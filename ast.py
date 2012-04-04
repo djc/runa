@@ -70,6 +70,11 @@ class Int(Terminal):
 		Node.__init__(self, pos)
 		self.val = num
 
+class Float(Terminal):
+	def __init__(self, num, pos):
+		Node.__init__(self, pos)
+		self.val = num
+
 class String(Terminal):
 	def __init__(self, value, pos):
 		Node.__init__(self, pos)
@@ -372,6 +377,8 @@ class Pratt(object):
 				yield Name(v, (s, e))
 			elif t == 'num' and '.' not in v:
 				yield Int(v, (s, e))
+			elif t == 'num' and '.' in v:
+				yield Float(v, (s, e))
 			elif t == 'kw':
 				yield KEYWORDS[v]((s, e))
 			elif t == 'str':
