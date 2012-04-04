@@ -1,6 +1,7 @@
 target triple = "x86_64-apple-darwin11.0.0"
 
 declare i8* @malloc(i64)
+declare void @free(i8*)
 declare i64 @write(i32, i8*, i64)
 declare i32 @asprintf(i8**, i8*, ...)
 declare i64 @strlen(i8*) nounwind readonly
@@ -16,6 +17,8 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 @fmt_INT = constant [4 x i8] c"%ld\00"
 
 define void @bool.__str__(i1 %v, %str* %s) {
+	%s.owner = getelementptr %str* %s, i32 0, i32 0
+	store i1 true, i1* %s.owner
 	%s.data = getelementptr %str* %s, i32 0, i32 2
 	%s.len = getelementptr inbounds %str* %s, i32 0, i32 1
 	br i1 %v, label %True, label %False
@@ -51,6 +54,8 @@ define void @int.__bool__(i64 %n, i1* %res) {
 }
 
 define void @int.__str__(i64 %n, %str* %s) {
+	%s.owner = getelementptr %str* %s, i32 0, i32 0
+	store i1 true, i1* %s.owner
 	%s.data = getelementptr %str* %s, i32 0, i32 2
 	%fmt = getelementptr inbounds [4 x i8]* @fmt_INT, i32 0, i32 0
 	%fmt.len = call i32 (i8**, i8*, ...)* @asprintf(i8** %s.data, i8* %fmt, i64 %n)
@@ -160,6 +165,8 @@ define void @str.__add__(%str* %a, %str* %b, %str* %res) {
 	%b.len.ptr = getelementptr %str* %b, i32 0, i32 1
 	%b.len = load i64* %b.len.ptr
 	%total = add i64 %a.len, %b.len
+	%res.owner = getelementptr %str* %res, i32 0, i32 0
+	store i1 true, i1* %res.owner
 	%res.len.ptr = getelementptr %str* %res, i32 0, i32 1
 	store i64 %total, i64* %res.len.ptr
 	%res.data.ptr = getelementptr %str* %res, i32 0, i32 2
@@ -175,6 +182,19 @@ define void @str.__add__(%str* %a, %str* %b, %str* %res) {
 	ret void
 }
 
+define void @str.__del__(%str* %s) {
+	%owner.ptr = getelementptr %str* %s, i32 0, i32 0
+	%owner = load i1* %owner.ptr
+	br i1 %owner, label %Free, label %Done
+Free:
+	%data.ptr = getelementptr %str* %s, i32 0, i32 2
+	%data = load i8** %data.ptr
+	call void @free(i8* %data)
+	br label %Done
+Done:
+	ret void
+}
+
 define void @print(%str* %s) {
 	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 2
 	%s.data = load i8** %s.data.ptr
@@ -187,6 +207,8 @@ define void @print(%str* %s) {
 }
 
 define void @wrapstr(i8* %s, %str* %out) {
+	%out.owner = getelementptr %str* %out, i32 0, i32 0
+	store i1 false, i1* %out.owner
 	%s.len = getelementptr inbounds %str* %out, i32 0, i32 1
 	%len = call i64 @strlen(i8* %s) nounwind readonly
 	store i64 %len, i64* %s.len

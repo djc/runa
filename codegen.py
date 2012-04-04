@@ -21,6 +21,7 @@ class Type(object):
 	
 	class void(base):
 		ir = 'void'
+		methods = {}
 	
 	class bool(base):
 		ir = 'i1'
@@ -49,6 +50,7 @@ class Type(object):
 			'__eq__': ('@str.__eq__', 'bool', 'str'),
 			'__lt__': ('@str.__lt__', 'bool', 'str'),
 			'__add__': ('@str.__add__', 'str', 'str'),
+			'__del__': ('@str.__del__', 'void'),
 		}
 	
 	class array(base):
@@ -83,11 +85,12 @@ PROTOCOL = {
 }
 
 class Value(object):
-	def __init__(self, type, ptr=None, val=None, var=False):
+	def __init__(self, type, ptr=None, val=None, var=False, const=False):
 		self.type = type
 		self.ptr = ptr
 		self.val = val
 		self.var = var
+		self.const = const
 	def __repr__(self):
 		s = ['<value[%s]' % self.type.name]
 		if self.ptr:
@@ -115,13 +118,13 @@ class Constants(object):
 			self.lines.append('@bool1 = constant i1 1\n')
 			self.bools = True
 		id = '@bool1' if node.val else '@bool0'
-		return Value(Type.bool(), ptr=id)
+		return Value(Type.bool(), ptr=id, const=True)
 	
 	def Int(self, node):
 		id = self.id('num')
 		bits = id, Type.int().ir, node.val
 		self.lines.append('%s = constant %s %s\n' % bits)
-		return Value(Type.int(), ptr=id)
+		return Value(Type.int(), ptr=id, const=True)
 	
 	def String(self, node):
 		
@@ -137,7 +140,7 @@ class Constants(object):
 		bits.append('{ i1 0, i64 %s,' % l)
 		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}\n' % data)
 		self.lines.append(' '.join(bits))
-		return Value(Type.str(), ptr=id)
+		return Value(Type.str(), ptr=id, const=True)
 
 class Frame(object):
 	
@@ -146,6 +149,7 @@ class Frame(object):
 		self.labels = 1
 		self.parent = parent
 		self.defined = {}
+		self.allocated = []
 	
 	def __contains__(self, key):
 		return key in self.defined or (self.parent and key in self.parent)
@@ -255,6 +259,14 @@ class CodeGen(object):
 			val.val = None
 		return val.type.ir + '* ' + val.ptr
 	
+	def cleanup(self, val):
+		if not val.ptr: return
+		if val.var or val.const: return
+		if '__del__' not in val.type.methods: return
+		method = val.type.methods['__del__']
+		ir = '%s* %s' % (val.type.ir, val.ptr)
+		self.writeline('call void %s(%s)' % (method[0], ir))
+	
 	def call(self, fun, args, frame):
 		
 		seq = []
@@ -284,6 +296,9 @@ class CodeGen(object):
 		
 		call = name + '(' + ', '.join(seq) + ')'
 		self.writeline(' '.join(('call void', call)))
+		for val in args:
+			self.cleanup(val)
+		
 		return rval
 	
 	# Node visitation methods
@@ -559,8 +574,8 @@ class CodeGen(object):
 		for ln in lines:
 			self.writeline(ln)
 		
-		frame['name'] = Value(Type.str(), ptr='%a0.p')
-		frame['args'] = Value(Type.array(Type.str()), ptr='%args')
+		frame['name'] = Value(Type.str(), ptr='%a0.p', var=True)
+		frame['args'] = Value(Type.array(Type.str()), ptr='%args', var=True)
 		self.visit(node.suite, frame)
 		
 		self.writeline('ret i32 0')

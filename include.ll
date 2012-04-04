@@ -17,6 +17,7 @@ declare void @str.__bool__(%str* %s, i1* %res)
 declare void @str.__eq__(%str* %a, %str* %b, i1* %res)
 declare void @str.__lt__(%str* %a, %str* %b, i1* %res)
 declare void @str.__add__(%str* %a, %str* %b, %str* %res)
+declare void @str.__del__(%str* %s)
 
 declare void @argv(i32 %argc, i8** %argv, %str** %out)
 declare void @print(%str* %s)
