@@ -1,4 +1,5 @@
-import tokenizer, ast, codegen
+#!/usr/bin/env python
+from lang import tokenizer, ast, codegen
 import optparse, sys, subprocess, os
 
 def llir(fn, inline=None):
