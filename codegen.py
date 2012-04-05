@@ -1,4 +1,4 @@
-import sys, ast, tokenizer
+import sys, ast
 
 TRIPLES = {
 	'darwin': 'x86_64-apple-darwin11.0.0',

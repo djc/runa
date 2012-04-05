@@ -1,4 +1,4 @@
-import codegen, lang
+import lang
 import sys, os, unittest, subprocess, json
 
 DIR = os.path.dirname(__file__)

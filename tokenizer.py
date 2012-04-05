@@ -1,4 +1,4 @@
-import sys, re, itertools
+import re, itertools
 
 KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for', 'while'}
 OPERATORS = {'not', 'and', 'or', 'in'}

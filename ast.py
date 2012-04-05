@@ -1,5 +1,3 @@
-import sys, tokenizer
-
 # Base class
 
 IGNORE = {'p', 'pos'}
