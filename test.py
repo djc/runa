@@ -21,7 +21,7 @@ def run(self, key):
 		if h.startswith('# test: '):
 			spec.update(json.loads(h[8:]))
 	
-	lang.compile(fullname, bin)
+	lang.compile(fullname, outfn=bin)
 	out = subprocess.check_output([bin] + spec.get('args', []))
 	if os.path.exists(base + '.out'):
 		expected = open(base + '.out').read()

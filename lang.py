@@ -1,10 +1,10 @@
 import tokenizer, ast, codegen
-import sys, subprocess, os
+import optparse, sys, subprocess, os
 
-def llir(fn):
-	return codegen.source(ast.parse(tokenizer.tokenize(open(fn))))
+def llir(fn, inline=None):
+	return codegen.source(ast.parse(tokenizer.tokenize(open(fn))), inline)
 
-def compile(fn, outfn=None):
+def compile(fn, opts=None, outfn=None):
 	
 	llfn = fn + '.ll'
 	with open(llfn, 'w') as f:
@@ -14,15 +14,15 @@ def compile(fn, outfn=None):
 	subprocess.check_call(('clang', '-o', outfn, 'std.ll', llfn))
 	os.unlink(llfn)
 	
-def tokens(fn):
+def tokens(fn, opts):
 	for x in tokenizer.tokenize(open(fn)):
 		print x
 
-def parse(fn):
+def parse(fn, opts):
 	print ast.parse(tokenizer.tokenize(open(fn)))
 
-def generate(fn):
-	print llir(fn)
+def generate(fn, opts):
+	print llir(fn, opts.inline)
 
 COMMANDS = {
 	'tokens': tokens,
@@ -32,5 +32,7 @@ COMMANDS = {
 }
 
 if __name__ == '__main__':
-	cmd = sys.argv[1]
-	COMMANDS[cmd](*sys.argv[2:])
+	parser = optparse.OptionParser(description='the lang utility')
+	parser.add_option('--inline', help='inline stdlib', action='store_true')
+	opts, args = parser.parse_args()
+	COMMANDS[args[0]](args[1], opts)
