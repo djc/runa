@@ -209,7 +209,7 @@ class CodeGen(object):
 		
 		seq = []
 		for val in args:
-			if val.type.name in types.BYVAL:
+			if val.type.byval:
 				seq.append(self.value(val, frame))
 			else:
 				seq.append(self.ptr(val, frame))
@@ -540,7 +540,7 @@ class CodeGen(object):
 			self.write(atype.ir)
 			self.write(' ')
 			self.write('%' + arg.name.name)
-			if atype.name in types.BYVAL:
+			if atype.byval:
 				val = Value(atype, val='%' + arg.name.name)
 			else:
 				val = Value(atype, ptr='%' + arg.name.name)
