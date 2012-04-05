@@ -523,6 +523,9 @@ class CodeGen(object):
 		self.dedent()
 		self.writeline('}')
 	
+	def Class(self, node, frame):
+		pass
+	
 	def Function(self, node, frame):
 		
 		frame = Frame(frame)
@@ -561,16 +564,24 @@ class CodeGen(object):
 		self.writeline('}')
 		self.newline()
 	
+	def declare(self, type):
+		fields = sorted(type.attribs.itervalues())
+		s = ', '.join([i[1].ir for i in fields])
+		self.writeline('%%%s = type { %s }' % (type.name, s))
+	
 	def Module(self, node, frame=None):
 		
 		defined = {}
 		for n in node.suite:
-			if isinstance(n, ast.Function):
+			if isinstance(n, ast.Class):
+				self.declare(types.add(n))
+			elif isinstance(n, ast.Function):
 				defined[n.name.name] = n
 				if n.name.name == '__main__': continue
 				atypes = tuple(a.type.name for a in n.args)
 				LIBRARY[n.name.name] = (n.rtype.name,) + atypes
 		
+		self.newline()
 		frame = Frame()
 		for name, n in defined.iteritems():
 			self.visit(n, frame)
@@ -588,10 +599,10 @@ def prologue(mod):
 	return ['target triple = "%s"' % TRIPLES[sys.platform]]
 
 def include():
-	return open('include.ll').read().splitlines() + ['']
+	return open('include.ll').read().splitlines()
 
 def stdlib():
-	return open('std.ll').read().splitlines()[2:] + ['']
+	return open('std.ll').read().splitlines()[2:]
 
 def source(mod, inline=False):
 	lines = prologue(mod) + ['']

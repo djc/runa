@@ -68,6 +68,22 @@ class intiter(base):
 		'__next__': ('@intiter.__next__', 'int', 'intiter'),
 	}
 
+def add(node):
+	
+	attribs = {}
+	for i, (atype, name) in enumerate(node.attribs):
+		attribs[name.name] = i, ALL[atype.name]
+	
+	vars = {
+		'ir': '%' + node.name.name,
+		'methods': {},
+		'attribs': attribs,
+	}
+	
+	cls = type(node.name.name, (base,), vars)
+	ALL[node.name.name] = cls
+	return cls()
+
 ALL = {}
 for k in globals().keys():
 	obj = globals()[k]
