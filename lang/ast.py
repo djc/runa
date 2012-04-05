@@ -87,9 +87,15 @@ class BinaryOp(Node):
 		return self
 
 class Attrib(BinaryOp):
+	
 	op = '.'
 	lbp = 100
 	fields = 'obj', 'attrib'
+	
+	def led(self, p, left):
+		self.obj = left
+		self.attrib = p.advance(Name)
+		return self
 
 class Elem(BinaryOp):
 	
@@ -383,15 +389,16 @@ class Class(Statement):
 		p.advance(Indent)
 		self.advance()
 		
-		self.attribs = {}
+		self.attribs = []
 		while isinstance(p.token, Name):
 			field = p.expr()
 			p.advance(Colon)
 			type = p.expr()
 			self.advance()
-			self.attribs[field] = type
+			self.attribs.append((type, field))
 		
 		p.advance(Dedent)
+		return self
 
 # The core of the parsing algorithm
 
