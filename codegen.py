@@ -672,12 +672,3 @@ def source(mod, inline=False):
 	lines += include() if not inline else stdlib()
 	lines += CodeGen().Module(mod)
 	return '\n'.join(lines)
-
-if __name__ == '__main__':
-	
-	inline = False
-	if '--inline' in sys.argv:
-		sys.argv.remove('--inline')
-		inline = True
-	
-	print source(ast.fromfile(sys.argv[1]), inline)

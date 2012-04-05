@@ -21,9 +21,13 @@ def tokens(fn):
 def parse(fn):
 	print ast.parse(tokenizer.tokenize(open(fn)))
 
+def generate(fn):
+	print llir(fn)
+
 COMMANDS = {
 	'tokens': tokens,
 	'parse': parse,
+	'generate': generate,
 	'compile': compile,
 }
 
