@@ -1,4 +1,4 @@
-import codegen, compile
+import codegen, lang
 import sys, os, unittest, subprocess, json
 
 DIR = os.path.dirname(__file__)
@@ -21,7 +21,7 @@ def run(self, key):
 		if h.startswith('# test: '):
 			spec.update(json.loads(h[8:]))
 	
-	compile.compile(fullname, bin)
+	lang.compile(fullname, bin)
 	out = subprocess.check_output([bin] + spec.get('args', []))
 	if os.path.exists(base + '.out'):
 		expected = open(base + '.out').read()
