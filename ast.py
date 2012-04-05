@@ -415,12 +415,9 @@ class Module(Node):
 	def __init__(self):
 		self.suite = []
 
-def fromfile(fn):
+def parse(tokens):
 	mod = Module()
-	p = Pratt(tokenizer.tokenize(open(fn)))
+	p = Pratt(tokens)
 	while not isinstance(p.token, End):
 		mod.suite.append(p.expr())
 	return mod
-
-if __name__ == '__main__':
-	print fromfile(sys.argv[1])

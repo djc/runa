@@ -2,7 +2,7 @@ import tokenizer, ast, codegen
 import sys, subprocess, os
 
 def llir(fn):
-	return codegen.source(ast.fromfile(fn))
+	return codegen.source(ast.parse(tokenizer.tokenize(open(fn))))
 
 def compile(fn, outfn=None):
 	
@@ -18,8 +18,12 @@ def tokens(fn):
 	for x in tokenizer.tokenize(open(fn)):
 		print x
 
+def parse(fn):
+	print ast.parse(tokenizer.tokenize(open(fn)))
+
 COMMANDS = {
 	'tokens': tokens,
+	'parse': parse,
 	'compile': compile,
 }
 
