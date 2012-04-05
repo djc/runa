@@ -62,10 +62,3 @@ def tokenize(f):
 	yield 'nl', '\n', (line, pos), (line, pos + 1)
 	for i in range(level):
 		yield 'indent', -1, (line + 1, 0), (line + 1, 0)
-	
-def show(src):
-	for x in tokenize(src):
-		print x
-
-if __name__ == '__main__':
-	show(open(sys.argv[1]))

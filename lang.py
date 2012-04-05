@@ -1,4 +1,4 @@
-import ast, codegen
+import tokenizer, ast, codegen
 import sys, subprocess, os
 
 def llir(fn):
@@ -13,8 +13,13 @@ def compile(fn, outfn=None):
 	outfn = outfn if outfn else fn.rsplit('.', 1)[0]
 	subprocess.check_call(('clang', '-o', outfn, 'std.ll', llfn))
 	os.unlink(llfn)
+	
+def tokens(fn):
+	for x in tokenizer.tokenize(open(fn)):
+		print x
 
 COMMANDS = {
+	'tokens': tokens,
 	'compile': compile,
 }
 
