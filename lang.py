@@ -14,5 +14,10 @@ def compile(fn, outfn=None):
 	subprocess.check_call(('clang', '-o', outfn, 'std.ll', llfn))
 	os.unlink(llfn)
 
+COMMANDS = {
+	'compile': compile,
+}
+
 if __name__ == '__main__':
-	compile(sys.argv[1])
+	cmd = sys.argv[1]
+	COMMANDS[cmd](*sys.argv[2:])
