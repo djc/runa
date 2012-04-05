@@ -1,19 +1,8 @@
 #!/usr/bin/env python
+
 from lang import tokenizer, ast, codegen
+import lang
 import optparse, sys, subprocess, os
-
-def llir(fn, inline=None):
-	return codegen.source(ast.parse(tokenizer.tokenize(open(fn))), inline)
-
-def compile(fn, opts=None, outfn=None):
-	
-	llfn = fn + '.ll'
-	with open(llfn, 'w') as f:
-		f.write(llir(fn))
-	
-	outfn = outfn if outfn else fn.rsplit('.', 1)[0]
-	subprocess.check_call(('clang', '-o', outfn, 'std.ll', llfn))
-	os.unlink(llfn)
 	
 def tokens(fn, opts):
 	for x in tokenizer.tokenize(open(fn)):
@@ -23,7 +12,10 @@ def parse(fn, opts):
 	print ast.parse(tokenizer.tokenize(open(fn)))
 
 def generate(fn, opts):
-	print llir(fn, opts.inline)
+	print lang.llir(fn, opts.inline)
+
+def compile(fn, opts):
+	lang.compile(fn, os.path.basename(fn).rsplit('.lng')[0])
 
 COMMANDS = {
 	'tokens': tokens,
