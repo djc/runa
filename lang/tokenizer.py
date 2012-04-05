@@ -1,6 +1,6 @@
 import re, itertools
 
-KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for', 'while'}
+KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for', 'while', 'class'}
 OPERATORS = {'not', 'and', 'or', 'in'}
 SPACES = re.compile('[ \t]*')
 
@@ -8,7 +8,7 @@ MATCHERS = [
 	(r'\n', 'nl'),
 	(r'#(.*)', 'com'),
 	(r' ', '!sp'),
-	(r'->|==|!=|[,\[\]:()+=*\-/{}<]', 'op'),
+	(r'->|==|!=|[,\[\]:()+=*\-/{}<.]', 'op'),
 	(r'[a-zA-Z_][a-zA-Z0-9_]*', 'name'),
 	(r'[-+]?[0-9]*\.?[0-9]+', 'num'),
 	(r"'(.*?)'", 'str'),

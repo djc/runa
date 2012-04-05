@@ -86,6 +86,11 @@ class BinaryOp(Node):
 		self.right = p.expr(self.lbp)
 		return self
 
+class Attrib(BinaryOp):
+	op = '.'
+	lbp = 100
+	fields = 'obj', 'attrib'
+
 class Elem(BinaryOp):
 	
 	op = '['
@@ -358,6 +363,35 @@ class While(Statement):
 		p.advance(Colon)
 		self.suite = Suite(p, self.pos)
 		return self
+
+class Class(Statement):
+	
+	kw = 'class'
+	fields = 'name', 'attribs'
+	
+	def advance(self):
+		while isinstance(self.p.token, NL):
+			self.p.advance()
+	
+	def nud(self, p):
+		
+		self.p = p
+		self.name = p.advance(Name)
+		
+		p.advance(Colon)
+		self.advance()
+		p.advance(Indent)
+		self.advance()
+		
+		self.attribs = {}
+		while isinstance(p.token, Name):
+			field = p.expr()
+			p.advance(Colon)
+			type = p.expr()
+			self.advance()
+			self.attribs[field] = type
+		
+		p.advance(Dedent)
 
 # The core of the parsing algorithm
 
