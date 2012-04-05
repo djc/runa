@@ -173,6 +173,9 @@ class Call(BinaryOp):
 		
 		self.name = left
 		self.args = []
+		if isinstance(p.token, RightPar):
+			p.advance(RightPar)
+			return self
 		
 		next = p.expr()
 		while isinstance(p.token, Comma):
