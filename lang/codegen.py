@@ -653,12 +653,6 @@ class CodeGen(object):
 		lines = self.const.lines + ['\n'] + self.buf
 		return ''.join(lines).split('\n')
 
-def layout(data):
-	bits = []
-	for decl in data:
-		bits.append(':'.join(str(i) for i in decl))
-	return '-'.join(bits)
-
 def prologue(mod):
 	return ['target triple = "%s"' % TRIPLES[sys.platform]]
 
