@@ -1,10 +1,10 @@
 import ast, types
 
 LIBRARY = {
-	'print': ('void', 'str'),
-	'str': ('str', 'int'),
-	'range': ('intiter', 'int', 'int', 'int'),
-	'fopen': ('file', 'str'),
+	'print': ('@print', 'void', 'str'),
+	'str': ('@str', 'str', 'int'),
+	'range': ('@range', 'intiter', 'int', 'int', 'int'),
+	'open': ('@fopen', 'file', 'str'),
 }
 
 PROTOCOL = {
@@ -231,7 +231,7 @@ class CodeGen(object):
 			objtype = args[0].type
 			name, rtype = objtype.methods[PROTOCOL[fun[0]]][:2]
 		elif fun[0] in LIBRARY:
-			name, rtype = '@' + fun[0], LIBRARY[fun[0]][0]
+			name, rtype = LIBRARY[fun[0]][:2]
 		elif isinstance(fun[0], types.base):
 			name, rtype = fun[0].methods[fun[1]][:2]
 		elif fun[0] in types.ALL:
@@ -651,7 +651,8 @@ class CodeGen(object):
 				defined[n.name.name] = n
 				if n.name.name == '__main__': continue
 				atypes = tuple(a.type.name for a in n.args)
-				LIBRARY[n.name.name] = (n.rtype.name,) + atypes
+				data = ('@' + n.name.name, n.rtype.name) + atypes
+				LIBRARY[n.name.name] = data
 		
 		if typedefs: self.newline()
 		frame = Frame()

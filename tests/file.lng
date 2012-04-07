@@ -1,4 +1,4 @@
 def __main__(name: str, args: list[str]) -> int:
-	f = fopen('tests/file.lng')
+	f = open('tests/file.lng')
 	print(f.read(40))
 	f.close()
