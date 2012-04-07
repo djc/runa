@@ -629,8 +629,10 @@ class CodeGen(object):
 	def Module(self, node, frame=None):
 		
 		defined = {}
+		typedefs = False
 		for n in node.suite:
 			if isinstance(n, ast.Class):
+				typedefs = True
 				self.declare(types.add(n))
 				for method in n.methods:
 					defined[method.irname] = method
@@ -640,7 +642,7 @@ class CodeGen(object):
 				atypes = tuple(a.type.name for a in n.args)
 				LIBRARY[n.name.name] = (n.rtype.name,) + atypes
 		
-		self.newline()
+		if typedefs: self.newline()
 		frame = Frame()
 		for name, n in defined.iteritems():
 			self.visit(n, frame)
