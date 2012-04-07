@@ -18,13 +18,11 @@ MATCHERS = [
 REGEX = [(re.compile(e), t) for (e, t) in MATCHERS]
 
 def tokenize(f):
-	indent, level, prev = None, 0, None
+	level = 0
 	for line, src in enumerate(f):
 		
 		sp = SPACES.match(src).group()
 		pos = len(sp)
-		if prev is not None:
-			indent = len(sp)
 		
 		for m, t in itertools.cycle(REGEX):
 			
@@ -40,13 +38,12 @@ def tokenize(f):
 			if m.groups():
 				val = m.groups()[0]
 			
-			if indent is not None and indent != level:
-				yield 'nl', '\n', (line - 1, prev - 1), (line - 1, prev)
-				yield 'indent', cmp(indent, level), (line, 0), (line, indent)
-				level, indent = indent, None
-			elif indent is not None:
-				yield 'nl', '\n', (line - 1, prev - 1), (line - 1, prev)
-				indent = None
+			indent = len(sp) - level
+			if indent:
+				dir = cmp(indent, 0)
+				for i in range(0, indent, dir):
+					yield 'indent', dir, (line, 0), (line, len(sp))
+				level = len(sp)
 			
 			if t[0] == '!':
 				continue
@@ -57,7 +54,7 @@ def tokenize(f):
 			
 			yield t, val, start, end
 		
-		prev = len(src)
+		yield 'nl', '\n', (line, pos), (line, pos + 1)
 	
 	yield 'nl', '\n', (line, pos), (line, pos + 1)
 	for i in range(level):
