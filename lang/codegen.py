@@ -4,6 +4,7 @@ LIBRARY = {
 	'print': ('void', 'str'),
 	'str': ('str', 'int'),
 	'range': ('intiter', 'int', 'int', 'int'),
+	'fopen': ('file', 'str'),
 }
 
 PROTOCOL = {
@@ -456,8 +457,18 @@ class CodeGen(object):
 		return Value(left.type if typed else types.bool(), ptr=finvar)
 	
 	def Call(self, node, frame):
+		
 		args = self.args(node.args, frame)
-		return self.call((node.name.name,), args, frame)
+		if isinstance(node.name, ast.Name):
+			return self.call((node.name.name,), args, frame)
+		
+		if isinstance(node.name, ast.Attrib):
+			obj = self.visit(node.name.obj, frame)
+			fun = obj.type, node.name.attrib.name
+			return self.call(fun, [obj] + args, frame)
+		
+		else:
+			assert False, "don't know how to call %s" % node.name
 	
 	def Return(self, node, frame):
 		value = self.visit(node.value, frame)

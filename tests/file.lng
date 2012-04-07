@@ -1,0 +1,4 @@
+def __main__(name: str, args: list[str]) -> int:
+	f = fopen('tests/file.lng')
+	print(f.read(40))
+	f.close()

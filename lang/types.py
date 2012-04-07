@@ -55,6 +55,13 @@ class str(base):
 		'__del__': ('@str.__del__', 'void'),
 	}
 
+class file(base):
+	ir = '%file'
+	methods = {
+		'read': ('@file.read', 'str', 'file', 'int'),
+		'close': ('@file.close', 'void'),
+	}
+
 class array(base):
 	def __init__(self, over):
 		self.over = over
