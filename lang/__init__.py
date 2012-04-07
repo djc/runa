@@ -10,7 +10,7 @@ def llir(fn, full=True):
 	src = codegen.source(ast.parse(tokenizer.tokenize(open(fn))))
 	if not full: return src
 	triple = 'target triple = "%s"\n' % TRIPLES[sys.platform]
-	std = open('std.ll').read()
+	std = open('rt/std.ll').read()
 	return triple + std + src
 
 def compile(fn, outfn):
