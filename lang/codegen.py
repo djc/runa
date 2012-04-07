@@ -152,6 +152,7 @@ class CodeGen(object):
 		self.start = False
 	
 	def writeline(self, ln):
+		if not ln: return
 		self.write(ln + '\n')
 		self.start = True
 	
@@ -185,7 +186,7 @@ class CodeGen(object):
 		return self.call(('bool',), [val], frame)
 	
 	def materialize(self, val, name, alloc=True):
-		if alloc:
+		if alloc and not val.var:
 			self.writeline('%s = alloca %s' % (name, val.type.ir))
 		for ln in val.code:
 			self.writeline(ln.replace('%RET', name))
@@ -237,6 +238,11 @@ class CodeGen(object):
 			name, rtype = '@' + fun[0], LIBRARY[fun[0]][0]
 		elif isinstance(fun[0], types.base):
 			name, rtype = fun[0].methods[fun[1]][:2]
+		elif fun[0] in types.ALL:
+			type = types.ALL[fun[0]]()
+			rval = Value(type, ptr='%RET')
+			rval.code = ['']
+			return rval
 		else:
 			assert False, 'unknown function %s' % fun
 		
@@ -298,20 +304,27 @@ class CodeGen(object):
 	
 	def Assign(self, node, frame):
 		
-		name = node.left.name
 		val = self.visit(node.right, frame)
 		type = val.type
 		
-		if name not in frame:
-			self.writeline('%%%s = alloca %s' % (name, type.ir))
+		if isinstance(node.left, ast.Name):
+			name = '%' + node.left.name
+			if name[1:] not in frame:
+				self.writeline('%s = alloca %s' % (name, type.ir))
+			target = Value(type, ptr=name, var=True)
+		else:
+			target = self.visit(node.left, frame)
+			if target.code:
+				name = frame.varname()
+				target = self.materialize(target, name, alloc=False)
 		
 		if val.code:
-			val = self.materialize(val, '%' + name, False)
+			val = self.materialize(val, name, False)
 		else:
 			val = self.value(val, frame)
-			self.writeline('store %s, %s* %%%s' % (val, type.ir, name))
+			self.writeline('store %s, %s* %s' % (val, type.ir, name))
 		
-		frame[name] = Value(type, ptr='%%%s' % name, var=True)
+		frame[name[1:]] = Value(type, ptr=name, var=True)
 	
 	def Elem(self, node, frame):
 		
@@ -323,6 +336,16 @@ class CodeGen(object):
 		res = frame.varname()
 		self.writeline('%s = load %%str** %%tmp.ptr' % res)
 		return Value(obj.type.over, ptr=res)
+	
+	def Attrib(self, node, frame):
+		
+		obj = self.visit(node.obj, frame)
+		idx, atype = obj.type.attribs[node.attrib.name]
+		
+		rval = Value(atype(), ptr='%RET', var=True)
+		bits = self.ptr(obj, frame), idx
+		rval.code = ['%%RET = getelementptr %s, i32 0, i32 %s' % bits]
+		return rval
 	
 	def Not(self, node, frame):
 		val = self.boolean(self.visit(node.value, frame), frame)

@@ -1,9 +1,9 @@
-class range:
+class xrange:
 	start: int
 	stop: int
 	step: int
 
 def __main__(name: str, args: list[str]) -> int:
-	r = range()
+	r = xrange()
 	r.start = 1
 	print(str(r.start))
