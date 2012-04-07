@@ -5,6 +5,7 @@ LIBRARY = {
 	'str': ('@str', 'str', 'int'),
 	'range': ('@range', 'intiter', 'int', 'int', 'int'),
 	'open': ('@fopen', 'file', 'str'),
+	'strtoi': ('@strtoi', 'int', 'str'),
 }
 
 PROTOCOL = {
