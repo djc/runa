@@ -241,7 +241,13 @@ class CodeGen(object):
 		elif fun[0] in types.ALL:
 			type = types.ALL[fun[0]]()
 			rval = Value(type, ptr='%RET')
-			rval.code = ['']
+			if '__init__' not in type.methods:
+				rval.code = ['']
+			else:
+				name = type.methods['__init__'][0]
+				seq.insert(0, '%s* %%RET' % type.ir)
+				call = 'call void ' + name + '(' + ', '.join(seq) + ')'
+				rval.code = [call]
 			return rval
 		else:
 			assert False, 'unknown function %s' % fun
@@ -578,9 +584,10 @@ class CodeGen(object):
 		if node.name.name == '__main__':
 			return self.main(node, frame)
 		
-		self.write('define void @')
-		self.write(node.name.name)
-		self.write('(')
+		name = '@' + node.name.name
+		if hasattr(node, 'irname'):
+			name = node.irname
+		self.write('define void %s(' % name)
 		
 		first = True
 		for arg in node.args:
@@ -630,6 +637,8 @@ class CodeGen(object):
 		for n in node.suite:
 			if isinstance(n, ast.Class):
 				self.declare(types.add(n))
+				for method in n.methods:
+					defined[method.irname] = method
 			elif isinstance(n, ast.Function):
 				defined[n.name.name] = n
 				if n.name.name == '__main__': continue
