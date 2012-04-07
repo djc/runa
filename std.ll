@@ -1,5 +1,3 @@
-target triple = "x86_64-apple-darwin11.0.0"
-
 declare i8* @malloc(i64)
 declare void @free(i8*)
 declare i64 @write(i32, i8*, i64)

@@ -12,7 +12,7 @@ def parse(fn, opts):
 	print ast.parse(tokenizer.tokenize(open(fn)))
 
 def generate(fn, opts):
-	print lang.llir(fn, opts.inline)
+	print lang.llir(fn, opts.full)
 
 def compile(fn, opts):
 	lang.compile(fn, os.path.basename(fn).rsplit('.lng')[0])
@@ -39,6 +39,6 @@ def find(cmd):
 
 if __name__ == '__main__':
 	parser = optparse.OptionParser(description='the lang utility')
-	parser.add_option('--inline', help='inline stdlib', action='store_true')
+	parser.add_option('--full', help='include stdlib', action='store_true')
 	opts, args = parser.parse_args()
 	find(args[0])(args[1], opts)

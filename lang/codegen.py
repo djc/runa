@@ -1,9 +1,4 @@
-import sys, ast, types
-
-TRIPLES = {
-	'darwin': 'x86_64-apple-darwin11.0.0',
-	'linux2': 'x86_64-pc-linux-gnu',
-}
+import ast, types
 
 LIBRARY = {
 	'print': ('void', 'str'),
@@ -653,17 +648,5 @@ class CodeGen(object):
 		lines = self.const.lines + ['\n'] + self.buf
 		return ''.join(lines).split('\n')
 
-def prologue(mod):
-	return ['target triple = "%s"' % TRIPLES[sys.platform]]
-
-def include():
-	return open('include.ll').read().splitlines()
-
-def stdlib():
-	return open('std.ll').read().splitlines()[2:]
-
-def source(mod, inline=False):
-	lines = prologue(mod) + ['']
-	lines += include() if not inline else stdlib()
-	lines += CodeGen().Module(mod)
-	return '\n'.join(lines)
+def source(mod):
+	return '\n'.join(CodeGen().Module(mod))
