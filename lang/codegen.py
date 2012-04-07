@@ -596,15 +596,18 @@ class CodeGen(object):
 			frame[arg.name.name] = val
 			first = False
 		
-		self.write(', ')
-		self.write(types.ALL[node.rtype.name].ir + '*')
-		self.write(' %lang.res')
+		if node.rtype:
+			self.write(', ')
+			self.write(types.ALL[node.rtype.name].ir + '*')
+			self.write(' %lang.res')
 		
 		self.write(') {')
 		self.newline()
 		self.indent()
 		
 		self.visit(node.suite, frame)
+		if not node.rtype:
+			self.writeline('ret void')
 		
 		self.dedent()
 		self.writeline('}')
