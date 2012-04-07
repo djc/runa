@@ -156,7 +156,9 @@ class CodeGen(object):
 		self.start = True
 	
 	def writelines(self, lines):
-		self.buf.append(('\n' + self.tabs()).join(lines))
+		prefix = self.tabs() if self.start else ''
+		self.buf.append(prefix + ('\n' + self.tabs()).join(lines) + '\n')
+		self.start = True
 	
 	def label(self, label, hint=None):
 		self.dedent()
