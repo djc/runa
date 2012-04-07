@@ -23,6 +23,7 @@ class Value(object):
 		self.val = val
 		self.var = var
 		self.const = const
+		self.code = []
 	def __repr__(self):
 		s = ['<value[%s]' % self.type.name]
 		if self.ptr:
@@ -181,7 +182,16 @@ class CodeGen(object):
 			return val
 		return self.call(('bool',), [val], frame)
 	
+	def materialize(self, val, name, alloc=True):
+		if alloc:
+			self.writeline('%s = alloca %s' % (name, val.type.ir))
+		for ln in val.code:
+			self.writeline(ln.replace('%RET', name))
+		return Value(val.type, ptr=name)
+	
 	def value(self, val, frame):
+		if val.code:
+			val = self.materialize(val, frame.varname())
 		if not val.val:
 			res = frame.varname()
 			bits = (res, val.type.ir + '*', val.ptr)
@@ -191,24 +201,28 @@ class CodeGen(object):
 		return val.type.ir + ' ' + (val.val if val.val else res)
 	
 	def ptr(self, val, frame):
-		if not val.ptr:
-			val.ptr = frame.varname()
-			self.writeline('%s = alloca %s' % (val.ptr, val.type.ir))
-			val.val = None
+		if val.code:
+			val = self.materialize(val, frame.varname())
+		assert val.ptr
 		return val.type.ir + '* ' + val.ptr
 	
-	def cleanup(self, val):
-		if not val.ptr: return
-		if val.var or val.const: return
-		if '__del__' not in val.type.methods: return
-		method = val.type.methods['__del__']
-		ir = '%s* %s' % (val.type.ir, val.ptr)
-		self.writeline('call void %s(%s)' % (method[0], ir))
+	def cleanups(self, *args):
+		lines = []
+		for val in args:
+			if not val.ptr: continue
+			if val.var or val.const: continue
+			if '__del__' not in val.type.methods: continue
+			method = val.type.methods['__del__']
+			ir = '%s* %s' % (val.type.ir, val.ptr)
+			lines.append('call void %s(%s)' % (method[0], ir))
+		return lines
 	
 	def call(self, fun, args, frame):
 		
 		seq = []
-		for val in args:
+		for i, val in enumerate(args):
+			if val.code:
+				val = args[i] = self.materialize(val, frame.varname())
 			if val.type.byval:
 				seq.append(self.value(val, frame))
 			else:
@@ -227,15 +241,15 @@ class CodeGen(object):
 		rtype = types.ALL[rtype]()
 		rval = Value(rtype)
 		if rtype != types.void():
-			store = frame.varname()
-			self.writeline('%s = alloca %s' % (store, rtype.ir))
-			rval = Value(rtype, ptr=store)
+			rval = Value(rtype, ptr='%RET')
 			seq.append(self.ptr(rval, frame))
 		
-		call = name + '(' + ', '.join(seq) + ')'
-		self.writeline(' '.join(('call void', call)))
-		for val in args:
-			self.cleanup(val)
+		call = 'call void ' + name + '(' + ', '.join(seq) + ')'
+		lines = [call] + self.cleanups(*args)
+		if rtype == types.void():
+			self.writelines(lines)
+		else:
+			rval.code = lines
 		
 		return rval
 	
@@ -283,13 +297,18 @@ class CodeGen(object):
 	def Assign(self, node, frame):
 		
 		name = node.left.name
-		right = self.visit(node.right, frame)
-		type = right.type
-		val = self.value(right, frame)
+		val = self.visit(node.right, frame)
+		type = val.type
 		
 		if name not in frame:
 			self.writeline('%%%s = alloca %s' % (name, type.ir))
-		self.writeline('store %s, %s* %%%s' % (val, type.ir, name))
+		
+		if val.code:
+			val = self.materialize(val, '%' + name, False)
+		else:
+			val = self.value(val, frame)
+			self.writeline('store %s, %s* %%%s' % (val, type.ir, name))
+		
 		frame[name] = Value(type, ptr='%%%s' % name, var=True)
 	
 	def Elem(self, node, frame):
@@ -416,8 +435,7 @@ class CodeGen(object):
 	
 	def Return(self, node, frame):
 		value = self.visit(node.value, frame)
-		bits = self.value(value, frame), value.type.ir + '*', '%lang.res'
-		self.writeline('store %s, %s %s' % bits)
+		self.materialize(value, '%lang.res', False)
 		self.writeline('ret void')
 	
 	def Suite(self, node, frame):
@@ -455,12 +473,15 @@ class CodeGen(object):
 	def For(self, node, frame):
 		
 		source = self.visit(node.source, frame)
-		self.newline()
+		if source.code:
+			source = self.materialize(source, frame.varname())
 		
+		self.newline()
 		next = source.type.methods['__next__']
 		lval = Value(types.ALL[next[1]](), ptr='%' + node.lvar.name)
 		frame.defined[node.lvar.name] = lval
 		self.writeline('%s = alloca %s' % (lval.ptr, lval.type.ir))
+		
 		lhead, lbody, lend = [frame.labelname() for i in range(3)]
 		self.writeline('br label %%%s' % lhead)
 		
