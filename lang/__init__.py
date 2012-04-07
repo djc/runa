@@ -7,11 +7,18 @@ TRIPLES = {
 }
 
 def llir(fn, full=True):
+	
 	src = codegen.source(ast.parse(tokenizer.tokenize(open(fn))))
-	if not full: return src
-	triple = 'target triple = "%s"\n' % TRIPLES[sys.platform]
-	std = open('rt/std.ll').read()
-	return triple + std + src
+	if not full:
+		return src
+	
+	std = []
+	for fn in sorted(os.listdir('rt')):
+		with open(os.path.join('rt', fn)) as f:
+			std.append(f.read() + '\n')
+	
+	triple = 'target triple = "%s"\n\n' % TRIPLES[sys.platform]
+	return triple + ''.join(std) + src
 
 def compile(fn, outfn):
 	
