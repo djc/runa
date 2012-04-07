@@ -80,6 +80,20 @@ def add(node):
 		'attribs': attribs,
 	}
 	
+	for method in node.methods:
+		
+		name = method.name.name
+		irname = '@%s.%s' % (node.name.name, name)
+		rtype = 'void' if not method.rtype else method.rtype.name
+		
+		args = []
+		for arg in method.args:
+			args.append(arg.type.name)
+		
+		meta = (irname, rtype) + tuple(args)
+		vars['methods'][name] = meta
+		method.irname = irname
+	
 	cls = type(node.name.name, (base,), vars)
 	ALL[node.name.name] = cls
 	return cls()
