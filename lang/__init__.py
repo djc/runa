@@ -1,6 +1,9 @@
 from . import tokenizer, ast, codegen
 import sys, os, subprocess
 
+BASE = os.path.dirname(__path__[0])
+RT_DIR = os.path.join(BASE, 'rt')
+
 TRIPLES = {
 	'darwin': 'x86_64-apple-darwin11.0.0',
 	'linux2': 'x86_64-pc-linux-gnu',
@@ -13,8 +16,8 @@ def llir(fn, full=True):
 		return src
 	
 	std = []
-	for fn in sorted(os.listdir('rt')):
-		with open(os.path.join('rt', fn)) as f:
+	for fn in sorted(os.listdir(RT_DIR)):
+		with open(os.path.join(RT_DIR, fn)) as f:
 			std.append(f.read() + '\n')
 	
 	triple = 'target triple = "%s"\n\n' % TRIPLES[sys.platform]
