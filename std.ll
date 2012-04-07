@@ -14,6 +14,7 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 @str_NL = constant [1 x i8] c"\0a"
 @fmt_INT = constant [4 x i8] c"%ld\00"
 @fmt_FLT = constant [3 x i8] c"%f\00"
+@str.size = constant i64 ptrtoint (%str* getelementptr (%str* null, i32 1) to i64)
 
 define void @bool.__str__(i1 %v, %str* %s) {
 	%s.owner = getelementptr %str* %s, i32 0, i32 0
@@ -231,7 +232,8 @@ define void @wrapstr(i8* %s, %str* %out) {
 define void @argv(i32 %argc, i8** %argv, %str** %out) {
 	
 	%num = sext i32 %argc to i64
-	%size = mul i64 %num, 17
+	%str.size = load i64* @str.size
+	%size = mul i64 %num, %str.size
 	%array.raw = call i8* @malloc(i64 %size)
 	%array = bitcast i8* %array.raw to %str*
 	%it.first = icmp sgt i64 %num, 0
