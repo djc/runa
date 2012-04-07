@@ -584,15 +584,21 @@ class CodeGen(object):
 		
 		first = True
 		for arg in node.args:
-			if not first: self.write(', ')
+			
+			if not first:
+				self.write(', ')
+			
 			atype = types.ALL[arg.type.name]()
 			self.write(atype.ir)
+			if not atype.byval: self.write('*')
 			self.write(' ')
 			self.write('%' + arg.name.name)
+			
 			if atype.byval:
 				val = Value(atype, val='%' + arg.name.name)
 			else:
 				val = Value(atype, ptr='%' + arg.name.name)
+			
 			frame[arg.name.name] = val
 			first = False
 		
