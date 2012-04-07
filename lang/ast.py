@@ -373,7 +373,7 @@ class While(Statement):
 class Class(Statement):
 	
 	kw = 'class'
-	fields = 'name', 'attribs'
+	fields = 'name', 'attribs', 'methods'
 	
 	def advance(self):
 		while isinstance(self.p.token, NL):
@@ -394,8 +394,13 @@ class Class(Statement):
 			field = p.expr()
 			p.advance(Colon)
 			type = p.expr()
-			self.advance()
 			self.attribs.append((type, field))
+			self.advance()
+		
+		self.methods = []
+		while isinstance(p.token, Function):
+			self.methods.append(p.expr())
+			self.advance()
 		
 		p.advance(Dedent)
 		return self
