@@ -212,23 +212,19 @@ class Suite(Node):
 	
 	fields = 'stmts',
 	
-	def advance(self):
-		while isinstance(self.p.token, NL):
-			self.p.advance()
-	
 	def __init__(self, p, pos):
 		
 		Node.__init__(self, pos)
 		self.p = p
 		self.stmts = []
 		
-		self.advance()
+		p.eat(NL)
 		p.advance(Indent)
-		self.advance()
+		p.eat(NL)
 		
 		while True:
 			self.stmts.append(p.expr())
-			self.advance()
+			p.eat(NL)
 			if isinstance(p.token, Dedent):
 				break
 		
@@ -375,19 +371,15 @@ class Class(Statement):
 	kw = 'class'
 	fields = 'name', 'attribs', 'methods'
 	
-	def advance(self):
-		while isinstance(self.p.token, NL):
-			self.p.advance()
-	
 	def nud(self, p):
 		
 		self.p = p
 		self.name = p.advance(Name)
 		
 		p.advance(Colon)
-		self.advance()
+		p.eat(NL)
 		p.advance(Indent)
-		self.advance()
+		p.eat(NL)
 		
 		self.attribs = []
 		while isinstance(p.token, Name):
@@ -395,12 +387,12 @@ class Class(Statement):
 			p.advance(Colon)
 			type = p.expr()
 			self.attribs.append((type, field))
-			self.advance()
+			p.eat(NL)
 		
 		self.methods = []
 		while isinstance(p.token, Function):
 			self.methods.append(p.expr())
-			self.advance()
+			p.eat(NL)
 		
 		p.advance(Dedent)
 		return self
@@ -441,6 +433,10 @@ class Pratt(object):
 			elif t == 'com':
 				continue
 		yield End((s, e))
+	
+	def eat(self, type):
+		while isinstance(self.token, type):
+			self.token = self.next()
 	
 	def advance(self, id=None):
 		if id and not isinstance(self.token, id):
