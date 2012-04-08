@@ -7,7 +7,7 @@ TESTS_DIR = os.path.join(DIR, 'tests')
 TESTS = [
 	'hello', 'multi-stmt', 'arith-int', 'print-var', 'function', 'ternary',
 	'bool-ops', 'if', 'for', 'cmp', 'while', 'str-ops', 'float', 'class',
-	'file',
+	'file', 'const',
 ]
 
 def run(self, key):

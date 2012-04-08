@@ -1,0 +1,7 @@
+
+URL = 'http://dirkjan.ochtman.nl/'
+YEAR = 1983
+
+def __main__(name: str, args: list[str]) -> int:
+	print(URL)
+	print(str(YEAR))

@@ -50,21 +50,21 @@ class Constants(object):
 		id = '@bool1' if node.val else '@bool0'
 		return Value(types.bool(), ptr=id, const=True)
 	
-	def Int(self, node):
-		id = self.id('int')
+	def Int(self, node, name=None):
+		id = self.id('int') if name is None else ('@' + name)
 		bits = id, types.int().ir, node.val
 		self.lines.append('%s = constant %s %s\n' % bits)
 		return Value(types.int(), ptr=id, const=True)
 	
-	def Float(self, node):
-		id = self.id('flt')
+	def Float(self, node, name=None):
+		id = self.id('flt') if name is None else ('@' + name)
 		bits = id, types.float().ir, node.val
 		self.lines.append('%s = constant %s %s\n' % bits)
 		return Value(types.float(), ptr=id, const=True)
 	
-	def String(self, node):
+	def String(self, node, name=None):
 		
-		id = self.id('str')
+		id = self.id('str') if name is None else ('@' + name)
 		l = len(node.value)
 		type = '[%i x i8]' % l
 		bits = [id + '_data', '=', 'constant']
@@ -305,7 +305,15 @@ class CodeGen(object):
 	def LT(self, node, frame):
 		return self.binop(node, frame, 'lt')
 	
-	def Assign(self, node, frame):
+	def Assign(self, node, frame, const=False):
+		
+		if const:
+			assert isinstance(node.left, ast.Name)
+			ctype = node.right.__class__.__name__
+			assert hasattr(self.const, ctype)
+			fun = getattr(self.const, ctype)
+			frame[node.left.name] = fun(node.right, node.left.name)
+			return
 		
 		val = self.visit(node.right, frame)
 		type = val.type
@@ -558,7 +566,7 @@ class CodeGen(object):
 		self.writeline(decl)
 		self.indent()
 		
-		frame = Frame()
+		frame = Frame(frame)
 		self.writeline('%args$ = alloca %str*')
 		args = 'i32 %argc', 'i8** %argv', '%str** %args$'
 		self.writeline('call void @argv(%s)' % ', '.join(args))
@@ -641,22 +649,30 @@ class CodeGen(object):
 	def Module(self, node, frame=None):
 		
 		defined = {}
+		frame = Frame()
+		
 		typedefs = False
 		for n in node.suite:
+			
 			if isinstance(n, ast.Class):
+				
 				typedefs = True
 				self.declare(types.add(n))
 				for method in n.methods:
 					defined[method.irname] = method
+			
 			elif isinstance(n, ast.Function):
+				
 				defined[n.name.name] = n
 				if n.name.name == '__main__': continue
 				atypes = tuple(a.type.name for a in n.args)
 				data = ('@' + n.name.name, n.rtype.name) + atypes
 				LIBRARY[n.name.name] = data
+				
+			elif isinstance(n, ast.Assign):
+				self.Assign(n, frame, const=True)
 		
 		if typedefs: self.newline()
-		frame = Frame()
 		for name, n in defined.iteritems():
 			self.visit(n, frame)
 		
