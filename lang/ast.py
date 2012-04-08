@@ -462,5 +462,6 @@ def parse(tokens):
 	mod = Module()
 	p = Pratt(tokens)
 	while not isinstance(p.token, End):
+		p.eat(NL)
 		mod.suite.append(p.expr())
 	return mod
