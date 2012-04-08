@@ -1,3 +1,5 @@
+%array.str = type { i64, %str* }
+
 define void @print(%str* %s) {
 	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 2
 	%s.data = load i8** %s.data.ptr
@@ -9,8 +11,9 @@ define void @print(%str* %s) {
 	ret void
 }
 
-define void @argv(i32 %argc, i8** %argv, %str** %out) {
+define void @argv(i32 %argc, i8** %argv, %array.str* %res) {
 	
+	%res.data = getelementptr %array.str* %res, i32 0, i32 1
 	%num = sext i32 %argc to i64
 	%str.size = load i64* @str.size
 	%size = mul i64 %num, %str.size
@@ -33,7 +36,9 @@ define void @argv(i32 %argc, i8** %argv, %str** %out) {
 		br i1 %more, label %Next, label %Done
 	
 	Done:
-		store %str* %array, %str** %out
+		%len.ptr = getelementptr %array.str* %res, i32 0, i32 0
+		store i64 %num, i64* %len.ptr
+		store %str* %array, %str** %res.data
 		ret void
 	
 }

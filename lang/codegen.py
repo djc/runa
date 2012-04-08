@@ -13,6 +13,20 @@ PROTOCOL = {
 	'str': '__str__',
 }
 
+MAIN_SETUP = [
+	'; convert argc/argv to argument array',
+	'%args = alloca %array.str',
+	'call void @argv(i32 %argc, i8** %argv, %array.str* %args)',
+	'%a.data = getelementptr %array.str* %args, i32 0, i32 1',
+	'%name = load %str** %a.data, align 8',
+	'%a1.p = getelementptr inbounds %str* %name, i64 1',
+	'%a.len.ptr = getelementptr %array.str* %args, i32 0, i32 0',
+	'%a.len = load i64* %a.len.ptr',
+	'%newlen = sub i64 %a.len, 1',
+	'store i64 %newlen, i64* %a.len.ptr',
+	'store %str* %a1.p, %str** %a.data',
+]
+
 class Value(object):
 	def __init__(self, type, ptr=None, val=None, var=False, const=False):
 		self.type = type
@@ -338,12 +352,16 @@ class CodeGen(object):
 		
 		obj = self.visit(node.obj, frame)
 		key = self.visit(node.key, frame)
-		bits = self.ptr(obj, frame), self.value(key, frame)
-		self.writeline('%%tmp.ptr = getelementptr %s, %s' % bits)
 		
-		res = frame.varname()
-		self.writeline('%s = load %%str** %%tmp.ptr' % res)
-		return Value(obj.type.over, ptr=res)
+		bits = frame.varname(), obj.type.ir, obj.ptr
+		self.writeline('%s = getelementptr %s* %s, i32 0, i32 1' % bits)
+		bits = frame.varname(), bits[0]
+		self.writeline('%s = load %%str** %s' % bits)
+		
+		keyval = self.value(key, frame)
+		bits = frame.varname(), '%%str* %s' % bits[0], keyval
+		self.writeline('%s = getelementptr %s, %s' % bits)
+		return Value(obj.type.over, ptr=bits[0])
 	
 	def Attrib(self, node, frame):
 		
@@ -564,26 +582,17 @@ class CodeGen(object):
 		self.indent()
 		
 		frame = Frame(frame)
-		self.writeline('%args$ = alloca %str*')
-		args = 'i32 %argc', 'i8** %argv', '%str** %args$'
-		self.writeline('call void @argv(%s)' % ', '.join(args))
-		
-		lines = [
-			'%a0.p = load %str** %args$, align 8',
-			'%name = getelementptr inbounds %str* %a0.p, i64 0',
-			'%a1.p = getelementptr inbounds %str* %a0.p, i64 1',
-			'%args = alloca %str*',
-			'store %str* %a1.p, %str** %args',
-		]
-		
-		for ln in lines:
+		self.newline()
+		for ln in MAIN_SETUP:
 			self.writeline(ln)
+		self.newline()
 		
-		frame['name'] = Value(types.str(), ptr='%a0.p', var=True)
+		frame['name'] = Value(types.str(), ptr='%name', var=True)
 		frame['args'] = Value(types.array(types.str()), ptr='%args', var=True)
 		self.visit(node.suite, frame)
 		
 		self.writeline('ret i32 0')
+		self.newline()
 		self.dedent()
 		self.writeline('}')
 	

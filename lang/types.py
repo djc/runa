@@ -67,7 +67,7 @@ class array(base):
 		self.over = over
 	@property
 	def ir(self):
-		return self.over.ir + '*'
+		return '%array.' + self.over.ir[1:]
 
 class intiter(base):
 	ir = '%intiter'
