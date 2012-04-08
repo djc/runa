@@ -1,4 +1,4 @@
-def __main__(name: str, args: list[str]) -> int:
+def main(name: str, args: list[str]) -> int:
 	f = open('tests/file.lng')
-	print(f.read(40))
+	print(f.read(36))
 	f.close()

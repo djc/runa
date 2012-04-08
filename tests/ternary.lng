@@ -1,4 +1,4 @@
-def __main__(name: str, args: list[str]) -> int:
+def main(name: str, args: list[str]) -> int:
 	
 	print(str(1 if 0 else 2))
 	print(str(2 if 111 else 1))

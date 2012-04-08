@@ -593,7 +593,7 @@ class CodeGen(object):
 	def Function(self, node, frame):
 		
 		frame = Frame(frame)
-		if node.name.name == '__main__':
+		if node.name.name == 'main':
 			return self.main(node, frame)
 		
 		name = '@' + node.name.name
@@ -661,7 +661,7 @@ class CodeGen(object):
 			elif isinstance(n, ast.Function):
 				
 				defined[n.name.name] = n
-				if n.name.name == '__main__': continue
+				if n.name.name == 'main': continue
 				atypes = tuple(a.type.name for a in n.args)
 				data = ('@' + n.name.name, n.rtype.name) + atypes
 				LIBRARY[n.name.name] = data
