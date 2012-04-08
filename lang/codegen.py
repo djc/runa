@@ -35,19 +35,16 @@ class Constants(object):
 	def __init__(self):
 		self.next = 0
 		self.lines = []
-		self.bools = False
 	
 	def id(self, type):
 		s = '@%s%s' % (type, self.next)
 		self.next += 1
 		return s
 	
-	def Bool(self, node):
-		if not self.bools:
-			self.lines.append('@bool0 = constant i1 0\n')
-			self.lines.append('@bool1 = constant i1 1\n')
-			self.bools = True
-		id = '@bool1' if node.val else '@bool0'
+	def Bool(self, node, name=None):
+		id = self.id('bool') if name is None else ('@' + name)
+		val = '1' if node.val else '0'
+		self.lines.append('%s = constant i1 %s\n' % (id, val))
 		return Value(types.bool(), ptr=id, const=True)
 	
 	def Int(self, node, name=None):
