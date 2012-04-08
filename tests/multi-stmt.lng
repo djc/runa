@@ -1,4 +1,4 @@
-def main(name: str, args: list[str]) -> int:
+def main(name: str, args: array[str]) -> int:
 	print('Asara')
 	print(str(16384))
 	print('thunderstorm')

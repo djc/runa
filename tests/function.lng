@@ -1,5 +1,5 @@
 def add(x: int, y: int) -> int:
 	return x + y
 
-def main(name: str, args: list[str]) -> int:
+def main(name: str, args: array[str]) -> int:
 	print(str(add(3, 4)))

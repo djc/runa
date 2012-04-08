@@ -1,4 +1,4 @@
-def main(name: str, args: list[str]) -> int:
+def main(name: str, args: array[str]) -> int:
 	print('a' and 'b')
 	print('' and 'a')
 	print('a' and '')

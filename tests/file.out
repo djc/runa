@@ -1,1 +1,1 @@
-def main(name: str, args: list[str])
+def main(name: str, args: array[str])
