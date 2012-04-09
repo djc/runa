@@ -15,7 +15,7 @@ def generate(fn, opts):
 	try:
 		print lang.llir(fn, opts.full)
 	except codegen.Error as e:
-		print e.show(fn)
+		sys.stderr.write(e.show(fn))
 
 def compile(fn, opts):
 	lang.compile(fn, os.path.basename(fn).rsplit('.lng')[0])
