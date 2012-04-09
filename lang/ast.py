@@ -409,7 +409,7 @@ class Pratt(object):
 		self.token = self.next()
 	
 	def wrap(self, tokens):
-		for t, v, s, e in tokens:
+		for t, v, s, e, l in tokens:
 			if t == 'name' and v in {'True', 'False'}:
 				yield Bool(v, (s, e))
 			elif t == 'name':
