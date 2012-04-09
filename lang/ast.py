@@ -411,25 +411,25 @@ class Pratt(object):
 	def wrap(self, tokens):
 		for t, v, s, e, l in tokens:
 			if t == 'name' and v in {'True', 'False'}:
-				yield Bool(v, (s, e))
+				yield Bool(v, (s, e, l))
 			elif t == 'name':
-				yield Name(v, (s, e))
+				yield Name(v, (s, e, l))
 			elif t == 'num' and '.' not in v:
-				yield Int(v, (s, e))
+				yield Int(v, (s, e, l))
 			elif t == 'num' and '.' in v:
-				yield Float(v, (s, e))
+				yield Float(v, (s, e, l))
 			elif t == 'kw':
-				yield KEYWORDS[v]((s, e))
+				yield KEYWORDS[v]((s, e, l))
 			elif t == 'str':
-				yield String(v, (s, e))
+				yield String(v, (s, e, l))
 			elif t == 'op':
-				yield OPERATORS[v]((s, e))
+				yield OPERATORS[v]((s, e, l))
 			elif t == 'indent' and v > 0:
-				yield Indent((s, e))
+				yield Indent((s, e, l))
 			elif t == 'indent' and v < 0:
-				yield Dedent((s, e))
+				yield Dedent((s, e, l))
 			elif t == 'nl':
-				yield NL((s, e))
+				yield NL((s, e, l))
 			elif t == 'com':
 				continue
 		yield End((s, e))
