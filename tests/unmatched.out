@@ -1,0 +1,3 @@
+tests/unmatched.lng [2.10]: unmatched types 'int', 'str'
+    print(1 == 'a')
+            ^

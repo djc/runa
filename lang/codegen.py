@@ -196,7 +196,9 @@ class CodeGen(object):
 	def binop(self, node, frame, op):
 		args = self.args((node.left, node.right), frame)
 		mdata = args[0].type.methods['__' + op + '__']
-		assert args[1].type == types.ALL[mdata[2]]()
+		if args[0].type != args[1].type:
+			bits = args[0].type.name, args[1].type.name
+			raise Error(node, "unmatched types '%s', '%s'" % bits)
 		return self.call((args[0].type, '__' + op + '__'), args, frame)
 	
 	def boolean(self, val, frame):
