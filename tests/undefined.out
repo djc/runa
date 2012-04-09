@@ -1,0 +1,3 @@
+tests/undefined.lng [2.8]: undefined name 'x'
+    print(x)
+          ^

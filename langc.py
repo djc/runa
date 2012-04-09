@@ -12,7 +12,10 @@ def parse(fn, opts):
 	print ast.parse(tokenizer.tokenize(open(fn)))
 
 def generate(fn, opts):
-	print lang.llir(fn, opts.full)
+	try:
+		print lang.llir(fn, opts.full)
+	except codegen.Error as e:
+		print e.show(fn)
 
 def compile(fn, opts):
 	lang.compile(fn, os.path.basename(fn).rsplit('.lng')[0])

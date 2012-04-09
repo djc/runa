@@ -1,4 +1,5 @@
 from . import tokenizer, ast, codegen
+from codegen import Error
 import sys, os, subprocess
 
 BASE = os.path.dirname(__path__[0])

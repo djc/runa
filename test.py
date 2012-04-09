@@ -7,7 +7,7 @@ TESTS_DIR = os.path.join(DIR, 'tests')
 TESTS = [
 	'hello', 'multi-stmt', 'arith-int', 'print-var', 'function', 'ternary',
 	'bool-ops', 'if', 'for', 'cmp', 'while', 'str-ops', 'float', 'class',
-	'file', 'const',
+	'file', 'const', 'undefined',
 ]
 
 def run(self, key):
@@ -22,14 +22,21 @@ def run(self, key):
 		if h.startswith('# test: '):
 			spec.update(json.loads(h[8:]))
 	
-	lang.compile(fullname, bin)
-	out = subprocess.check_output([bin] + spec.get('args', []))
+	out = None
+	try:
+		lang.compile(fullname, bin)
+	except lang.Error as e:
+		out = e.show(fullname)
+	
+	if not out:
+		out = subprocess.check_output([bin] + spec.get('args', []))
+	
 	if os.path.exists(base + '.out'):
 		expected = open(base + '.out').read()
 	else:
 		expected = ''
 	
-	self.assertEquals(out, expected)
+	self.assertMultiLineEqual(out, expected)
 
 def testfunc(key):
 	def do(self):
