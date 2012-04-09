@@ -21,7 +21,6 @@ def tokenize(f):
 	level = 0
 	for line, src in enumerate(f):
 		
-		ln = src.strip()
 		sp = SPACES.match(src).group()
 		pos = len(sp)
 		
@@ -43,7 +42,7 @@ def tokenize(f):
 			if indent:
 				dir = cmp(indent, 0)
 				for i in range(0, indent, dir):
-					yield 'indent', dir, (line, 0), (line, len(sp)), ln
+					yield 'indent', dir, (line, 0), (line, len(sp)), src
 				level = len(sp)
 			
 			if t[0] == '!':
@@ -53,9 +52,9 @@ def tokenize(f):
 			elif t == 'name' and val in KEYWORDS:
 				t = 'kw'
 			
-			yield t, val, start, end, ln
+			yield t, val, start, end, src
 		
-		yield 'nl', '\n', (line, pos), (line, pos + 1), ln
+		yield 'nl', '\n', (line, pos), (line, pos + 1), src
 	
 	for i in range(level):
 		yield 'indent', -1, (line + 1, 0), (line + 1, 0), ''
