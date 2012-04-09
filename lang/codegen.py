@@ -683,7 +683,7 @@ class CodeGen(object):
 			self.visit(n, frame)
 		
 		lines = self.const.lines + ['\n'] + self.buf
-		return ''.join(lines).split('\n')
+		return ''.join(lines)
 
 def source(mod):
-	return '\n'.join(CodeGen().Module(mod))
+	return CodeGen().Module(mod)
