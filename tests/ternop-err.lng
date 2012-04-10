@@ -1,0 +1,2 @@
+def main(name: str, args: array[str]) -> int:
+	a = 1 if True else 'a'

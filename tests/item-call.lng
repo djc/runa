@@ -1,0 +1,2 @@
+def main(name: str, args: array[str]) -> int:
+	args[0]()

@@ -1,0 +1,3 @@
+tests/ternop-err.lng [2.8]: unmatched types 'int', 'str'
+    a = 1 if True else 'a'
+          ^
