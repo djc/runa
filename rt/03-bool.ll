@@ -1,7 +1,8 @@
 @bool_TRUE = constant [4 x i8] c"True"
 @bool_FALSE = constant [5 x i8] c"False"
 
-define void @bool.__str__(i1 %v, %str* %s) {
+define void @bool.__str__(i1* %p, %str* %s) {
+	%v = load i1* %p
 	%s.owner = getelementptr %str* %s, i32 0, i32 0
 	store i1 true, i1* %s.owner
 	%s.data = getelementptr %str* %s, i32 0, i32 2
@@ -25,7 +26,9 @@ Done:
 	ret void
 }
 
-define void @bool.__eq__(i1 %a, i1 %b, i1* %res) {
+define void @bool.__eq__(i1* %a.ptr, i1* %b.ptr, i1* %res) {
+	%a = load i1* %a.ptr
+	%b = load i1* %b.ptr
 	%1 = xor i1 %a, %b
 	%2 = select i1 %1, i1 false, i1 true
 	store i1 %2, i1* %res

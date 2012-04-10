@@ -1,12 +1,14 @@
 @fmt_INT = constant [4 x i8] c"%ld\00"
 
-define void @int.__bool__(i64 %n, i1* %res) {
+define void @int.__bool__(i64* %n.ptr, i1* %res) {
+	%n = load i64* %n.ptr
 	%1 = icmp ne i64 %n, 0
 	store i1 %1, i1* %res
 	ret void
 }
 
-define void @int.__str__(i64 %n, %str* %s) {
+define void @int.__str__(i64* %n.ptr, %str* %s) {
+	%n = load i64* %n.ptr
 	%s.owner = getelementptr %str* %s, i32 0, i32 0
 	store i1 true, i1* %s.owner
 	%s.data = getelementptr %str* %s, i32 0, i32 2
@@ -18,37 +20,49 @@ define void @int.__str__(i64 %n, %str* %s) {
 	ret void
 }
 
-define void @int.__eq__(i64 %a, i64 %b, i1* %res) {
+define void @int.__eq__(i64* %a.ptr, i64* %b.ptr, i1* %res) {
+	%a = load i64* %a.ptr
+	%b = load i64* %b.ptr
 	%1 = icmp eq i64 %a, %b
 	store i1 %1, i1* %res
 	ret void
 }
 
-define void @int.__lt__(i64 %a, i64 %b, i1* %res) {
+define void @int.__lt__(i64* %a.ptr, i64* %b.ptr, i1* %res) {
+	%a = load i64* %a.ptr
+	%b = load i64* %b.ptr
 	%1 = icmp slt i64 %a, %b
 	store i1 %1, i1* %res
 	ret void
 }
 
-define void @int.__add__(i64 %a, i64 %b, i64* %res) {
+define void @int.__add__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
+	%a = load i64* %a.ptr
+	%b = load i64* %b.ptr
 	%1 = add i64 %a, %b
 	store i64 %1, i64* %res
 	ret void
 }
 
-define void @int.__sub__(i64 %a, i64 %b, i64* %res) {
+define void @int.__sub__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
+	%a = load i64* %a.ptr
+	%b = load i64* %b.ptr
 	%1 = sub i64 %a, %b
 	store i64 %1, i64* %res
 	ret void
 }
 
-define void @int.__mul__(i64 %a, i64 %b, i64* %res) {
+define void @int.__mul__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
+	%a = load i64* %a.ptr
+	%b = load i64* %b.ptr
 	%1 = mul i64 %a, %b
 	store i64 %1, i64* %res
 	ret void
 }
 
-define void @int.__div__(i64 %a, i64 %b, i64* %res) {
+define void @int.__div__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
+	%a = load i64* %a.ptr
+	%b = load i64* %b.ptr
 	%1 = sdiv i64 %a, %b
 	store i64 %1, i64* %res
 	ret void

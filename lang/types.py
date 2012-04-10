@@ -1,5 +1,4 @@
 class base(object):
-	byval = False
 	@property
 	def name(self):
 		return self.__class__.__name__
@@ -13,12 +12,10 @@ class base(object):
 
 class void(base):
 	ir = 'void'
-	byval = True
 	methods = {}
 
 class bool(base):
 	ir = 'i1'
-	byval = True
 	methods = {
 		'__str__': ('@bool.__str__', 'str'),
 		'__eq__': ('@bool.__eq__', 'bool', 'bool'),
@@ -26,7 +23,6 @@ class bool(base):
 
 class int(base):
 	ir = 'i64'
-	byval = True
 	methods = {
 		'__bool__': ('@int.__bool__', 'bool'),
 		'__str__': ('@int.__str__', 'str'),
@@ -40,7 +36,6 @@ class int(base):
 
 class float(base):
 	ir = 'double'
-	byval = True
 	methods = {
 		'__str__': ('@float.__str__', 'str'),
 	}

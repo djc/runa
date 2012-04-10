@@ -1,6 +1,7 @@
 @fmt_FLT = constant [3 x i8] c"%f\00"
 
-define void @float.__str__(double %n, %str* %s) {
+define void @float.__str__(double* %n.ptr, %str* %s) {
+	%n = load double* %n.ptr
 	%s.owner = getelementptr %str* %s, i32 0, i32 0
 	store i1 true, i1* %s.owner
 	%s.data = getelementptr %str* %s, i32 0, i32 2

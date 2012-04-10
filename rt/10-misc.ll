@@ -45,12 +45,15 @@ define void @argv(i32 %argc, i8** %argv, %array.str* %res) {
 
 %intiter = type { i64, i64, i64 }
 
-define void @range(i64 %start, i64 %stop, i64 %step, %intiter* %res) {
+define void @range(i64* %start.ptr, i64* %stop.ptr, i64* %step.ptr, %intiter* %res) {
 	%1 = getelementptr inbounds %intiter* %res, i64 0, i32 0
+	%start = load i64* %start.ptr
 	store i64 %start, i64* %1
 	%2 = getelementptr inbounds %intiter* %res, i64 0, i32 1
+	%stop = load i64* %stop.ptr
 	store i64 %stop, i64* %2
 	%3 = getelementptr inbounds %intiter* %res, i64 0, i32 2
+	%step = load i64* %step.ptr
 	store i64 %step, i64* %3
 	ret void
 }

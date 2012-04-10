@@ -237,10 +237,7 @@ class CodeGen(object):
 		for i, val in enumerate(args):
 			if val.code:
 				val = args[i] = self.materialize(val, frame.varname())
-			if val.type.byval:
-				seq.append(self.value(val, frame))
-			else:
-				seq.append(self.ptr(val, frame))
+			seq.append(self.ptr(val, frame))
 		
 		if fun[0] in PROTOCOL:
 			objtype = args[0].type
@@ -313,10 +310,15 @@ class CodeGen(object):
 		return self.binop(node, frame, 'eq')
 	
 	def NEq(self, node, frame):
-		arg = self.value(self.binop(node, frame, 'eq'), frame)
-		res = frame.varname()
-		self.writeline(res + ' = select %s, i1 false, i1 true' % arg)
-		return Value(types.bool(), val=res)
+		res = self.ptr(self.binop(node, frame, 'eq'), frame)
+		inter = frame.varname(), frame.varname()
+		self.writeline('%s = load %s' % (inter[0], res))
+		inter = inter[1], inter[0]
+		self.writeline('%s = select i1 %s, i1 false, i1 true' % inter)
+		ret = frame.varname()
+		self.writeline('%s = alloca i1' % ret)
+		self.writeline('store i1 %s, i1* %s' % (inter[1], ret))
+		return Value(type=types.bool(), ptr=ret)
 	
 	def LT(self, node, frame):
 		return self.binop(node, frame, 'lt')
@@ -624,17 +626,8 @@ class CodeGen(object):
 				self.write(', ')
 			
 			atype = types.ALL[arg.type.name]()
-			self.write(atype.ir)
-			if not atype.byval: self.write('*')
-			self.write(' ')
-			self.write('%' + arg.name.name)
-			
-			if atype.byval:
-				val = Value(atype, val='%' + arg.name.name)
-			else:
-				val = Value(atype, ptr='%' + arg.name.name)
-			
-			frame[arg.name.name] = val
+			self.write(atype.ir + '* %' + arg.name.name)
+			frame[arg.name.name] = Value(atype, ptr='%' + arg.name.name)
 			first = False
 		
 		if node.rtype:

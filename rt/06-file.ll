@@ -16,7 +16,8 @@ define void @fopen(%str* %fn, %file* %f) {
 	ret void
 }
 
-define void @file.read(%file* %self, i64 %sz, %str* %res) {
+define void @file.read(%file* %self, i64* %sz.ptr, %str* %res) {
+	%sz = load i64* %sz.ptr
 	%fd.ptr = getelementptr %file* %self, i32 0, i32 0
 	%fd = load i32* %fd.ptr
 	%data = call i8* @malloc(i64 %sz)
