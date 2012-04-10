@@ -25,6 +25,18 @@ define void @str.__bool__(%str* %s, i1* %res) {
 
 @IBool.str = constant %IBool { void (i8*, i1*)* bitcast ( void (%str*, i1*)* @str.__bool__ to void (i8*, i1*)*) }
 
+define void @str.__str__(%str* %src, %str* %dst) {
+	%src.ptr = bitcast %str* %src to i8*
+	%dst.ptr = bitcast %str* %dst to i8*
+	%sz = load i64* @str.size
+	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %dst.ptr, i8* %src.ptr, i64 %sz, i32 0, i1 false)
+	%owner.ptr = getelementptr %str* %dst, i32 0, i32 0
+	store i1 false, i1* %owner.ptr
+	ret void
+}
+
+@IStr.str = constant %IStr { void (i8*, %str*)* bitcast ( void (%str*, %str*)* @str.__str__ to void (i8*, %str*)* )}
+
 define void @str.__eq__(%str* %a, %str* %b, i1* %res) {
 	%a.len.ptr = getelementptr %str* %a, i32 0, i32 1
 	%a.len = load i64* %a.len.ptr
