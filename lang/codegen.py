@@ -413,7 +413,10 @@ class CodeGen(object):
 		self.label(lelse, 'ternary-else')
 		right = self.visit(node.values[1], frame)
 		self.writeline('br label %%%s' % lfin)
-		assert left.type == right.type
+		
+		if left.type != right.type:
+			bits = left.type.name, right.type.name
+			raise Error(node, "unmatched types '%s', '%s'" % bits)
 		
 		self.label(lfin, 'ternary-fin')
 		finvar = frame.varname()
