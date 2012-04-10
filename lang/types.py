@@ -1,4 +1,5 @@
 class base(object):
+	iface = False
 	@property
 	def name(self):
 		return self.__class__.__name__
@@ -49,6 +50,12 @@ class str(base):
 		'__add__': ('@str.__add__', 'str', 'str'),
 		'__del__': ('@str.__del__', 'void'),
 	}
+
+class IStr(base):
+	ir = '%IStr.wrap'
+	iface = True
+	vttype = '%IStr'
+	impl = '@IStr'
 
 class file(base):
 	ir = '%file'

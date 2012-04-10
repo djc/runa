@@ -2,6 +2,19 @@ declare i64 @strlen(i8*) nounwind readonly
 declare i32 @strncmp(i8*, i8*, i64)
 
 %str = type { i1, i64, i8* }
+%IStr = type { void (i8*, %str*)* }
+%IStr.wrap = type { %IStr*, i8* }
+
+define void @str(%IStr.wrap* %if, %str* %res) {
+	%vtable.ptr = getelementptr %IStr.wrap* %if, i32 0, i32 0
+	%vtable = load %IStr** %vtable.ptr
+	%fun.ptr = getelementptr %IStr* %vtable, i32 0, i32 0
+	%fun = load void (i8*, %str*)** %fun.ptr
+	%arg.ptr = getelementptr %IStr.wrap* %if, i32 0, i32 1
+	%arg = load i8** %arg.ptr
+	call void (i8*, %str*)* %fun(i8* %arg, %str* %res)
+	ret void
+}
 
 @str_NL = constant [1 x i8] c"\0a"
 @str.size = constant i64 ptrtoint (%str* getelementptr (%str* null, i32 1) to i64)

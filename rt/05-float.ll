@@ -12,3 +12,5 @@ define void @float.__str__(double* %n.ptr, %str* %s) {
 	store i64 %fmt.len64, i64* %s.len
 	ret void
 }
+
+@IStr.float = constant %IStr { void (i8*, %str*)* bitcast ( void (double*, %str*)* @float.__str__ to void (i8*, %str*)*) }

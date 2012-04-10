@@ -26,6 +26,8 @@ Done:
 	ret void
 }
 
+@IStr.bool = constant %IStr { void (i8*, %str*)* bitcast ( void (i1*, %str*)* @bool.__str__ to void (i8*, %str*)*) }
+
 define void @bool.__eq__(i1* %a.ptr, i1* %b.ptr, i1* %res) {
 	%a = load i1* %a.ptr
 	%b = load i1* %b.ptr

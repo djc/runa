@@ -20,6 +20,8 @@ define void @int.__str__(i64* %n.ptr, %str* %s) {
 	ret void
 }
 
+@IStr.int = constant %IStr { void (i8*, %str*)* bitcast ( void (i64*, %str*)* @int.__str__ to void (i8*, %str*)*) }
+
 define void @int.__eq__(i64* %a.ptr, i64* %b.ptr, i1* %res) {
 	%a = load i64* %a.ptr
 	%b = load i64* %b.ptr

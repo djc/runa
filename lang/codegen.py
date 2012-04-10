@@ -3,7 +3,7 @@ import ast, types
 
 LIBRARY = {
 	'print': ('@print', 'void', 'str'),
-	'str': ('@str', 'str', 'int'),
+	'str': ('@str', 'str', 'IStr'),
 	'range': ('@range', 'intiter', 'int', 'int', 'int'),
 	'open': ('@fopen', 'file', 'str'),
 	'strtoi': ('@strtoi', 'int', 'str'),
@@ -11,7 +11,6 @@ LIBRARY = {
 
 PROTOCOL = {
 	'bool': '__bool__',
-	'str': '__str__',
 }
 
 MAIN_SETUP = [
@@ -231,6 +230,32 @@ class CodeGen(object):
 			lines.append('call void %s(%s)' % (method[0], ir))
 		return lines
 	
+	def iwrap(self, atype, val, frame):
+		
+		wobj = frame.varname()
+		bits = wobj, atype.ir
+		self.writeline('%s = alloca %s' % bits)
+		
+		vtptr = frame.varname()
+		bits = vtptr, atype.ir, wobj
+		self.writeline('%s = getelementptr %s* %s, i32 0, i32 0' % bits)
+		
+		bits = atype.vttype, atype.impl, val.type.name, atype.vttype, vtptr
+		self.writeline('store %s* %s.%s, %s** %s' % bits)
+		
+		argptr = frame.varname()
+		bits = argptr, atype.ir, wobj
+		self.writeline('%s = getelementptr %s* %s, i32 0, i32 1' % bits)
+		
+		cast = frame.varname()
+		bits = cast, self.ptr(val, frame)
+		self.writeline('%s = bitcast %s to i8*' % bits)
+		
+		bits = cast, argptr
+		self.writeline('store i8* %s, i8** %s' % bits)
+		
+		return Value(atype, ptr=wobj)
+	
 	def call(self, node, fun, args, frame):
 		
 		if fun[0] in PROTOCOL:
@@ -245,13 +270,23 @@ class CodeGen(object):
 		else:
 			raise Error(node, 'not a function or method')
 		
+		name, rtype, atypes = meta[0], meta[1], meta[2:]
+		if isinstance(fun[0], types.base):
+			atypes = (fun[0].name,) + atypes
+		
 		seq = []
 		for i, val in enumerate(args):
+			
 			if val.code:
 				val = args[i] = self.materialize(val, frame.varname())
+			
+			if fun[0] not in PROTOCOL:
+				atype = types.ALL[atypes[i]]()
+				if atype.iface:
+					val = self.iwrap(atype, val, frame)
+			
 			seq.append(self.ptr(val, frame))
 		
-		name, rtype, atypes = meta[0], meta[1], meta[2:]
 		if '__init__' in meta[0]:
 			type = types.ALL[fun[0]]()
 			rval = Value(type, ptr='%RET')
