@@ -509,8 +509,7 @@ class CodeGen(object):
 			fun = obj.type, node.name.attrib.name
 			return self.call(node, fun, [obj] + args, frame)
 		
-		else:
-			assert False, "don't know how to call %s" % node.name
+		self.call(node, (None, None), args, frame)
 	
 	def Return(self, node, frame):
 		value = self.visit(node.value, frame)
