@@ -2,18 +2,12 @@ import lang
 import sys, os, unittest, subprocess, json
 
 DIR = os.path.dirname(__file__)
-TESTS_DIR = os.path.join(DIR, 'tests')
-
-TESTS = [
-	'hello', 'multi-stmt', 'arith-int', 'print-var', 'function', 'ternary',
-	'bool-ops', 'if', 'for', 'cmp', 'while', 'str-ops', 'float', 'class',
-	'file', 'const', 'undefined', 'unmatched', 'no-func', 'item-call',
-	'ternop-err',
-]
+TEST_DIR = os.path.join(DIR, 'tests')
+TESTS = [i[:-4] for i in os.listdir(TEST_DIR) if i.endswith('.lng')]
 
 def run(self, key):
 	
-	fullname = os.path.join(TESTS_DIR, key + '.lng')
+	fullname = os.path.join(TEST_DIR, key + '.lng')
 	base = fullname.rsplit('.lng', 1)[0]
 	bin = base + '.test'
 	
