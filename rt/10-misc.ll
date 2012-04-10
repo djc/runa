@@ -1,6 +1,8 @@
 %array.str = type { i64, %str* }
 
-define void @print(%str* %s) {
+define void @print(%IStr.wrap* %ss) {
+	%s = alloca %str
+	call void @str(%IStr.wrap* %ss, %str* %s)
 	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 2
 	%s.data = load i8** %s.data.ptr
 	%s.len.ptr = getelementptr inbounds %str* %s, i64 0, i32 1
@@ -8,6 +10,7 @@ define void @print(%str* %s) {
 	call i64 @write(i32 1, i8* %s.data, i64 %s.len)
 	%nl.ptr = getelementptr inbounds [1 x i8]* @str_NL, i64 0, i64 0
 	call i64 @write(i32 1, i8* %nl.ptr, i64 1)
+	call void @str.__del__(%str* %s)
 	ret void
 }
 

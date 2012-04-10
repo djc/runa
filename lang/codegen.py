@@ -2,7 +2,7 @@ from util import Error
 import ast, types
 
 LIBRARY = {
-	'print': ('@print', 'void', 'str'),
+	'print': ('@print', 'void', 'IStr'),
 	'str': ('@str', 'str', 'IStr'),
 	'bool': ('@bool', 'bool', 'IBool'),
 	'range': ('@range', 'intiter', 'int', 'int', 'int'),
