@@ -57,6 +57,12 @@ class IStr(base):
 	vttype = '%IStr'
 	impl = '@IStr'
 
+class IBool(base):
+	ir = '%IBool.wrap'
+	iface = True
+	vttype = '%IBool'
+	impl = '@IBool'
+
 class file(base):
 	ir = '%file'
 	methods = {

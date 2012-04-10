@@ -1,6 +1,17 @@
 @bool_TRUE = constant [4 x i8] c"True"
 @bool_FALSE = constant [5 x i8] c"False"
 
+define void @bool(%IBool.wrap* %if, i1* %res) {
+	%vtable.ptr = getelementptr %IBool.wrap* %if, i32 0, i32 0
+	%vtable = load %IBool** %vtable.ptr
+	%fun.ptr = getelementptr %IBool* %vtable, i32 0, i32 0
+	%fun = load void (i8*, i1*)** %fun.ptr
+	%arg.ptr = getelementptr %IBool.wrap* %if, i32 0, i32 1
+	%arg = load i8** %arg.ptr
+	call void (i8*, i1*)* %fun(i8* %arg, i1* %res)
+	ret void
+}
+
 define void @bool.__str__(i1* %p, %str* %s) {
 	%v = load i1* %p
 	%s.owner = getelementptr %str* %s, i32 0, i32 0

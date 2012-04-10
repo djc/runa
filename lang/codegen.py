@@ -4,13 +4,10 @@ import ast, types
 LIBRARY = {
 	'print': ('@print', 'void', 'str'),
 	'str': ('@str', 'str', 'IStr'),
+	'bool': ('@bool', 'bool', 'IBool'),
 	'range': ('@range', 'intiter', 'int', 'int', 'int'),
 	'open': ('@fopen', 'file', 'str'),
 	'strtoi': ('@strtoi', 'int', 'str'),
-}
-
-PROTOCOL = {
-	'bool': '__bool__',
 }
 
 MAIN_SETUP = [
@@ -258,10 +255,7 @@ class CodeGen(object):
 	
 	def call(self, node, fun, args, frame):
 		
-		if fun[0] in PROTOCOL:
-			objtype = args[0].type
-			meta = objtype.methods[PROTOCOL[fun[0]]]
-		elif fun[0] in LIBRARY:
+		if fun[0] in LIBRARY:
 			meta = LIBRARY[fun[0]]
 		elif isinstance(fun[0], types.base):
 			meta = fun[0].methods[fun[1]]
@@ -280,10 +274,9 @@ class CodeGen(object):
 			if val.code:
 				val = args[i] = self.materialize(val, frame.varname())
 			
-			if fun[0] not in PROTOCOL:
-				atype = types.ALL[atypes[i]]()
-				if atype.iface:
-					val = self.iwrap(atype, val, frame)
+			atype = types.ALL[atypes[i]]()
+			if atype.iface:
+				val = self.iwrap(atype, val, frame)
 			
 			seq.append(self.ptr(val, frame))
 		

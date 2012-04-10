@@ -1,10 +1,6 @@
 declare i64 @strlen(i8*) nounwind readonly
 declare i32 @strncmp(i8*, i8*, i64)
 
-%str = type { i1, i64, i8* }
-%IStr = type { void (i8*, %str*)* }
-%IStr.wrap = type { %IStr*, i8* }
-
 define void @str(%IStr.wrap* %if, %str* %res) {
 	%vtable.ptr = getelementptr %IStr.wrap* %if, i32 0, i32 0
 	%vtable = load %IStr** %vtable.ptr
@@ -26,6 +22,8 @@ define void @str.__bool__(%str* %s, i1* %res) {
 	store i1 %bool, i1* %res
 	ret void
 }
+
+@IBool.str = constant %IBool { void (i8*, i1*)* bitcast ( void (%str*, i1*)* @str.__bool__ to void (i8*, i1*)*) }
 
 define void @str.__eq__(%str* %a, %str* %b, i1* %res) {
 	%a.len.ptr = getelementptr %str* %a, i32 0, i32 1

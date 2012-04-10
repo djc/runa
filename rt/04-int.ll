@@ -7,6 +7,8 @@ define void @int.__bool__(i64* %n.ptr, i1* %res) {
 	ret void
 }
 
+@IBool.int = constant %IBool { void (i8*, i1*)* bitcast ( void (i64*, i1*)* @int.__bool__ to void (i8*, i1*)*) }
+
 define void @int.__str__(i64* %n.ptr, %str* %s) {
 	%n = load i64* %n.ptr
 	%s.owner = getelementptr %str* %s, i32 0, i32 0
