@@ -27,8 +27,12 @@ def llir(fn, full=True):
 def compile(fn, outfn):
 	
 	llfn = fn + '.ll'
-	with open(llfn, 'w') as f:
-		f.write(llir(fn))
+	try:
+		with open(llfn, 'w') as f:
+			f.write(llir(fn))
+	except Exception:
+		os.unlink(llfn)
+		raise
 	
 	subprocess.check_call(('clang', '-o', outfn, llfn))
 	os.unlink(llfn)
