@@ -2,7 +2,7 @@ import re, itertools
 
 KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for', 'while', 'class'}
 OPERATORS = {'not', 'and', 'or', 'in'}
-SPACES = re.compile('[ \t]*')
+SPACES = re.compile('\t*')
 
 MATCHERS = [
 	(r'\n', 'nl'),
