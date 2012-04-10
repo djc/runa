@@ -1,3 +1,5 @@
+from util import Error
+
 # Base class
 
 IGNORE = {'p', 'pos'}
@@ -438,9 +440,10 @@ class Pratt(object):
 		while isinstance(self.token, type):
 			self.token = self.next()
 	
-	def advance(self, id=None):
-		if id and not isinstance(self.token, id):
-			raise Exception('expected %r, got %r' % (id, self.token))
+	def advance(self, id):
+		if not isinstance(self.token, id):
+			bits = self.token.__class__.__name__, id.__name__
+			raise Error(self.token, 'expected %r, got %r' % bits)
 		t = self.token
 		self.token = self.next()
 		return t
