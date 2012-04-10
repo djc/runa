@@ -233,20 +233,26 @@ class CodeGen(object):
 	
 	def call(self, node, fun, args, frame):
 		
+		if fun[0] in PROTOCOL:
+			objtype = args[0].type
+			meta = objtype.methods[PROTOCOL[fun[0]]]
+		elif fun[0] in LIBRARY:
+			meta = LIBRARY[fun[0]]
+		elif isinstance(fun[0], types.base):
+			meta = fun[0].methods[fun[1]]
+		elif fun[0] in types.ALL:
+			meta = types.ALL[fun[0]].methods['__init__']
+		else:
+			raise Error(node, 'not a function or method')
+		
 		seq = []
 		for i, val in enumerate(args):
 			if val.code:
 				val = args[i] = self.materialize(val, frame.varname())
 			seq.append(self.ptr(val, frame))
 		
-		if fun[0] in PROTOCOL:
-			objtype = args[0].type
-			name, rtype = objtype.methods[PROTOCOL[fun[0]]][:2]
-		elif fun[0] in LIBRARY:
-			name, rtype = LIBRARY[fun[0]][:2]
-		elif isinstance(fun[0], types.base):
-			name, rtype = fun[0].methods[fun[1]][:2]
-		elif fun[0] in types.ALL:
+		name, rtype, atypes = meta[0], meta[1], meta[2:]
+		if '__init__' in meta[0]:
 			type = types.ALL[fun[0]]()
 			rval = Value(type, ptr='%RET')
 			if '__init__' not in type.methods:
@@ -257,8 +263,6 @@ class CodeGen(object):
 				call = 'call void ' + name + '(' + ', '.join(seq) + ')'
 				rval.code = [call]
 			return rval
-		else:
-			raise Error(node, 'not a function or method')
 		
 		rtype = types.ALL[rtype]()
 		rval = Value(rtype)
