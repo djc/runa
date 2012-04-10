@@ -199,12 +199,12 @@ class CodeGen(object):
 		if args[0].type != args[1].type:
 			bits = args[0].type.name, args[1].type.name
 			raise Error(node, "unmatched types '%s', '%s'" % bits)
-		return self.call((args[0].type, '__' + op + '__'), args, frame)
+		return self.call(node, (args[0].type, '__' + op + '__'), args, frame)
 	
-	def boolean(self, val, frame):
+	def boolean(self, node, val, frame):
 		if val.type == types.bool():
 			return val
-		return self.call(('bool',), [val], frame)
+		return self.call(node, ('bool',), [val], frame)
 	
 	def materialize(self, val, name, alloc=True):
 		if alloc and not val.var:
@@ -241,7 +241,7 @@ class CodeGen(object):
 			lines.append('call void %s(%s)' % (method[0], ir))
 		return lines
 	
-	def call(self, fun, args, frame):
+	def call(self, node, fun, args, frame):
 		
 		seq = []
 		for i, val in enumerate(args):
@@ -271,7 +271,7 @@ class CodeGen(object):
 				rval.code = [call]
 			return rval
 		else:
-			assert False, 'unknown function %s' % fun
+			raise Error(node, 'not a function or method')
 		
 		rtype = types.ALL[rtype]()
 		rval = Value(rtype)
@@ -389,7 +389,7 @@ class CodeGen(object):
 		return rval
 	
 	def Not(self, node, frame):
-		val = self.boolean(self.visit(node.value, frame), frame)
+		val = self.boolean(node.value, self.visit(node.value, frame), frame)
 		arg = self.value(val, frame)
 		res = frame.varname()
 		self.writeline(res + ' = select %s, i1 false, i1 true' % arg)
@@ -397,7 +397,7 @@ class CodeGen(object):
 	
 	def Ternary(self, node, frame):
 		
-		cond = self.boolean(self.visit(node.cond, frame), frame)
+		cond = self.boolean(node.cond, self.visit(node.cond, frame), frame)
 		lif, lelse = frame.labelname(), frame.labelname()
 		lfin = frame.labelname()
 		
@@ -431,7 +431,7 @@ class CodeGen(object):
 		lif, lelse, lfin = [frame.labelname() for i in range(3)]
 		self.newline()
 		left = self.visit(node.left, frame)
-		lbool = self.value(self.boolean(left, frame), frame)
+		lbool = self.value(self.boolean(node.left, left, frame), frame)
 		self.write('br ' + lbool + ', ')
 		self.write('label %%%s, label %%%s' % (lif, lelse))
 		self.newline()
@@ -452,7 +452,7 @@ class CodeGen(object):
 			self.write(' [ %s, %%%s ],' % (right.ptr, lif))
 			self.write(' [ %s, %%%s ]' % (left.ptr, lelse))
 		else:
-			rbool = self.value(self.boolean(right, frame), frame)
+			rbool = self.value(self.boolean(node.right, right, frame), frame)
 			self.write('%s = phi i1' % finvar)
 			self.write(' [ %s, %%%s ],' % (rbool.split()[1], lif))
 			self.write(' [ %s, %%%s ]' % (lbool.split()[1], lelse))
@@ -466,7 +466,7 @@ class CodeGen(object):
 		lif, lelse, lfin = [frame.labelname() for i in range(3)]
 		self.newline()
 		left = self.visit(node.left, frame)
-		lbool = self.value(self.boolean(left, frame), frame)
+		lbool = self.value(self.boolean(node.left, left, frame), frame)
 		self.write('br ' + lbool + ', ')
 		self.write('label %%%s, label %%%s' % (lif, lelse))
 		self.newline()
@@ -486,7 +486,7 @@ class CodeGen(object):
 			self.write(' [ %s, %%%s ],' % (left.ptr, lif))
 			self.write(' [ %s, %%%s ]' % (right.ptr, lelse))
 		else:
-			rbool = self.value(self.boolean(right, frame), frame)
+			rbool = self.value(self.boolean(node.right, right, frame), frame)
 			self.write('%s = phi i1' % finvar)
 			self.write(' [ %s, %%%s ],' % (lbool.split()[1], lif))
 			self.write(' [ %s, %%%s ]' % (rbool.split()[1], lelse))
@@ -499,12 +499,12 @@ class CodeGen(object):
 		
 		args = self.args(node.args, frame)
 		if isinstance(node.name, ast.Name):
-			return self.call((node.name.name,), args, frame)
+			return self.call(node, (node.name.name,), args, frame)
 		
 		if isinstance(node.name, ast.Attrib):
 			obj = self.visit(node.name.obj, frame)
 			fun = obj.type, node.name.attrib.name
-			return self.call(fun, [obj] + args, frame)
+			return self.call(node, fun, [obj] + args, frame)
 		
 		else:
 			assert False, "don't know how to call %s" % node.name
@@ -534,7 +534,7 @@ class CodeGen(object):
 				if i:
 					self.label(lbranch, 'if-cond-%s' % i)
 					lbranch = frame.labelname()
-				condvar = self.boolean(self.visit(cond, frame), frame)
+				condvar = self.boolean(cond, self.visit(cond, frame), frame)
 				condval = self.value(condvar, frame)
 				self.write('br ' + condval + ', ')
 				self.write('label %%%s, label %%%s' % (lbranch, lnext))
@@ -581,7 +581,7 @@ class CodeGen(object):
 		
 		self.label(lhead, 'while-head')
 		cond = self.visit(node.cond, frame)
-		check = self.value(self.boolean(cond, frame), frame)
+		check = self.value(self.boolean(node.cond, cond, frame), frame)
 		bits = check, lbody, lend
 		self.writeline('br %s, label %%%s, label %%%s' % bits)
 		

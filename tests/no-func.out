@@ -1,0 +1,3 @@
+tests/no-func.lng [2.6]: not a function or method
+    blah()
+        ^
