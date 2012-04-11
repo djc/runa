@@ -1,0 +1,5 @@
+- More cleaning up (array elements, variables)
+- Control flow graph
+- Extending the array type
+- Generators (stacksave, stackrestore and switch?) 
+- Error handling/exceptions
