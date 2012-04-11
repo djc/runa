@@ -60,11 +60,6 @@ class Bool(Terminal):
 		Node.__init__(self, pos)
 		self.val = True if val == 'True' else False
 
-class Name(Terminal):
-	def __init__(self, name, pos):
-		Node.__init__(self, pos)
-		self.name = name
-
 class Int(Terminal):
 	def __init__(self, num, pos):
 		Node.__init__(self, pos)
@@ -78,7 +73,12 @@ class Float(Terminal):
 class String(Terminal):
 	def __init__(self, value, pos):
 		Node.__init__(self, pos)
-		self.value = value
+		self.val = value
+
+class Name(Terminal):
+	def __init__(self, name, pos):
+		Node.__init__(self, pos)
+		self.name = name
 
 # Expression-level
 

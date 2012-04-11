@@ -73,10 +73,10 @@ class Constants(object):
 	def String(self, node, name=None):
 		
 		id = self.id('str') if name is None else ('@' + name)
-		l = len(node.value)
+		l = len(node.val)
 		type = '[%i x i8]' % l
 		bits = [id + '_data', '=', 'constant']
-		bits += ['%s c"%s"\n' % (type, node.value)]
+		bits += ['%s c"%s"\n' % (type, node.val)]
 		self.lines.append(' '.join(bits))
 		
 		data = type, id
