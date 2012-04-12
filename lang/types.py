@@ -76,6 +76,8 @@ class array(base):
 	@property
 	def ir(self):
 		return '%array.' + self.over.ir[1:]
+	def __repr__(self):
+		return '<type: %s[%s]>' % (self.__class__.__name__, self.over.name)
 
 class intiter(base):
 	ir = '%intiter'
