@@ -274,14 +274,14 @@ class CodeGen(object):
 			if val.code:
 				val = args[i] = self.materialize(val, frame.varname())
 			
-			atype = types.ALL[atypes[i]]()
+			atype = types.get(atypes[i])
 			if atype.iface:
 				val = self.iwrap(atype, val, frame)
 			
 			seq.append(self.ptr(val, frame))
 		
 		if '__init__' in meta[0]:
-			type = types.ALL[fun[0]]()
+			type = types.get(fun[0])
 			rval = Value(type, ptr='%RET')
 			if '__init__' not in type.methods:
 				rval.code = ['']
@@ -292,7 +292,7 @@ class CodeGen(object):
 				rval.code = [call]
 			return rval
 		
-		rtype = types.ALL[rtype]()
+		rtype = types.get(rtype)
 		rval = Value(rtype)
 		if rtype != types.void():
 			rval = Value(rtype, ptr='%RET')
@@ -580,7 +580,7 @@ class CodeGen(object):
 		
 		self.newline()
 		next = source.type.methods['__next__']
-		lval = Value(types.ALL[next[1]](), ptr='%' + node.lvar.name)
+		lval = Value(types.get(next[1]), ptr='%' + node.lvar.name)
 		frame.defined[node.lvar.name] = lval
 		self.writeline('%s = alloca %s' % (lval.ptr, lval.type.ir))
 		
@@ -657,14 +657,14 @@ class CodeGen(object):
 			if not first:
 				self.write(', ')
 			
-			atype = types.ALL[arg.type.name]()
+			atype = types.get(arg.type.name)
 			self.write(atype.ir + '* %' + arg.name.name)
 			frame[arg.name.name] = Value(atype, ptr='%' + arg.name.name)
 			first = False
 		
 		if node.rtype:
 			self.write(', ')
-			self.write(types.ALL[node.rtype.name].ir + '*')
+			self.write(types.get(node.rtype.name).ir + '*')
 			self.write(' %lang.res')
 		
 		self.write(') {')

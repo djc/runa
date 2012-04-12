@@ -1,3 +1,5 @@
+import ast
+
 class base(object):
 	iface = False
 	@property
@@ -120,3 +122,24 @@ for k in globals().keys():
 	obj = globals()[k]
 	if type(obj) == type and base in obj.__bases__:
 		ALL[k] = globals()[k]
+
+CONST = {
+	ast.Bool: ALL['bool'],
+	ast.Int: ALL['int'],
+	ast.Float: ALL['float'],
+	ast.String: ALL['str'],
+}
+
+def get(t):
+	if isinstance(t, base):
+		return t
+	elif isinstance(t, basestring):
+		return ALL[t]()
+	elif isinstance(t, ast.Name):
+		return ALL[t.name]()
+	elif t.__class__ in CONST:
+		return CONST[t.__class__]()
+	elif isinstance(t, ast.Elem):
+		return ALL[t.obj.name](get(t.key))
+	else:
+		assert False, 'no type %s' % t
