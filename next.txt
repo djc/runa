@@ -3,3 +3,5 @@
 - Extending the array type
 - Generators (stacksave, stackrestore and switch?) 
 - Error handling/exceptions
+- repr(), particularly for strings
+- Default arguments
