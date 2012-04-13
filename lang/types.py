@@ -91,7 +91,7 @@ def add(node):
 	
 	attribs = {}
 	for i, (atype, name) in enumerate(node.attribs):
-		attribs[name.name] = i, ALL[atype.name]
+		attribs[name.name] = i, ALL[atype.name]()
 	
 	vars = {
 		'ir': '%' + node.name.name,

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from lang import tokenizer, ast, codegen
+from lang import tokenizer, ast, flow, codegen
 import lang
 import optparse, sys, subprocess, os
 	
@@ -10,6 +10,18 @@ def tokens(fn, opts):
 
 def parse(fn, opts):
 	print ast.parse(tokenizer.tokenize(open(fn)))
+
+def cfg(fn, opts):
+	node = ast.parse(tokenizer.tokenize(open(fn)))
+	mod = flow.Module(node)
+	for name, fun in mod.functions.iteritems():
+		if fun.rt: continue
+		print 'GRAPH', name
+		for i, block in enumerate(fun.graph):
+			print '%02i' % i, [i.id for i in block.preds]
+			for step in block.steps:
+				print ' ', step
+				pass
 
 def generate(fn, opts):
 	try:
@@ -23,6 +35,7 @@ def compile(fn, opts):
 COMMANDS = {
 	'tokens': tokens,
 	'parse': parse,
+	'flow': cfg,
 	'generate': generate,
 	'compile': compile,
 }

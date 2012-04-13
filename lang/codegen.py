@@ -407,7 +407,7 @@ class CodeGen(object):
 		obj = self.visit(node.obj, frame)
 		idx, atype = obj.type.attribs[node.attrib.name]
 		
-		rval = Value(atype(), ptr='%RET', var=True)
+		rval = Value(atype, ptr='%RET', var=True)
 		bits = self.ptr(obj, frame), idx
 		rval.code = ['%%RET = getelementptr %s, i32 0, i32 %s' % bits]
 		return rval
