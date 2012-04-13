@@ -1,5 +1,5 @@
 
-URL = 'http://dirkjan.ochtman.nl/'
+URL = 'Asara'
 YEAR = 1983
 
 def main(name: str, args: array[str]) -> int:
