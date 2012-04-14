@@ -31,7 +31,10 @@ def run(self, key):
 	else:
 		expected = ''
 	
-	self.assertMultiLineEqual(out, expected)
+	if self is None:
+		return expected == out
+	else:
+		self.assertMultiLineEqual(out, expected)
 
 def testfunc(key):
 	def do(self):
