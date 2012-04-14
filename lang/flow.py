@@ -424,19 +424,23 @@ class GraphBuilder(object):
 	
 	def While(self, node):
 		
+		start = self.cur
 		cond = self.boolean(self.visit(node.cond))
 		header = self.block([self.idx])
 		body = self.block([header.id])
 		self.visit(node.suite)
 		exit = self.block([header.id, body.id])
 		
+		start.push(Branch(None, header.id))
 		header.push(Branch(cond, body.id, exit.id))
 		body.push(Branch(None, header.id))
 	
 	def For(self, node):
 		
+		start = self.cur
 		source = self.visit(node.source)
 		header = self.block([self.idx])
+		start.push(Branch(None, header.id))
 		
 		meta = source.type.methods['__next__']
 		atypes = [types.get(a) for a in meta[2]]
