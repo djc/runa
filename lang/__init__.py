@@ -1,4 +1,4 @@
-from . import tokenizer, ast, codegen
+from . import tokenizer, ast, flow, codegen
 from codegen import Error
 import sys, os, subprocess
 
@@ -12,7 +12,8 @@ TRIPLES = {
 
 def llir(fn, full=True):
 	
-	src = codegen.source(ast.parse(tokenizer.tokenize(open(fn))))
+	node = ast.parse(tokenizer.tokenize(open(fn)))
+	src = codegen.source(flow.Module(node))
 	if not full:
 		return src
 	
