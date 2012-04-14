@@ -236,7 +236,7 @@ class GraphBuilder(object):
 		
 		cond = self.visit(node.value)
 		if cond.type != types.bool():
-			cond = Call('bool', types.bool(), self.visit(node.value))
+			cond = Call('bool', types.bool(), (self.visit(node.value),))
 		
 		true = Constant()
 		true.type = types.bool()
