@@ -1,27 +1,32 @@
 def main(name: str, args: array[str]) -> int:
 	
+	print('bool')
 	print(True)
 	print(False)
 	
+	print('eq, int/bool')
 	print(str(1 == 3))
 	print(str(2 == 2))
-	
 	print(str(True == True))
 	print(str(False == True))
 	
+	print('eq, str')
 	print(str("a" == "b"))
 	print(str("aa" == "b"))
 	print(str("aa" == "bb"))
 	print(str("a" == "a"))
 	
+	print('ne')
 	print(str(1 != 4))
 	print(str(False != False))
 	print(str("a" != "b"))
 	
+	print('lt, int')
 	print(str(1 < 4))
 	print(str(2 < 2))
 	print(str(5 < 4))
 	
+	print('lt, str')
 	print(str('a' < 'aa'))
 	print(str('a' < 'b'))
 	print(str('a' < 'a'))

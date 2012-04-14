@@ -1,19 +1,25 @@
+bool
+True
+False
+eq, int/bool
+False
+True
+True
+False
+eq, str
+False
+False
+False
+True
+ne
+True
+False
+True
+lt, int
 True
 False
 False
-True
-True
-False
-False
-False
-False
-True
-False
-True
-False
-True
-False
-False
+lt, str
 True
 True
 False
