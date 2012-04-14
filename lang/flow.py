@@ -354,22 +354,24 @@ class GraphBuilder(object):
 		args = [self.visit(arg) for arg in node.args]
 		if isinstance(node.name, ast.Attrib):
 			obj = self.visit(node.name.obj)
+			name = node.name.attrib.name
+			fname = '%s.%s' % (obj.type.name, name)
 			meta = obj.type.methods[node.name.attrib.name]
-			return Call(meta[0][1:], types.get(meta[1]), [obj] + args)
+			return Call(fname, types.get(meta[1]), [obj] + args)
 		
 		if not isinstance(node.name, ast.Name):
 			raise Error(node, 'not a function or method')
 		
 		elif node.name.name in self.mod.functions:
 			fun = self.mod.functions[node.name.name]
-			val = Call(fun.name, fun.rtype, args)
+			val = Call(node.name.name, fun.rtype, args)
 			return val
 		
 		elif node.name.name in types.ALL:
 			obj = Object(types.get(node.name))
 			fname = '%s.__init__' % obj.type.name
 			meta = obj.type.methods['__init__']
-			val = Call(meta[0][1:], types.get(meta[1]), args)
+			val = Call(fname, types.get(meta[1]), args)
 			return Multi(obj.type, [obj, val])
 		
 		raise Error(node, 'not a function or method')
