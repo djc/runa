@@ -62,9 +62,6 @@ class Function(Base):
 		assert args[0][1].name == type.name
 		return cls(name, rtype, args)
 
-class Object(Value):
-	pass
-
 class Reference(Value):
 	def __init__(self, type, name):
 		Value.__init__(self, type)
@@ -85,10 +82,10 @@ class Call(Value):
 		self.name = name
 		self.args = args
 
-class Multi(Value):
-	def __init__(self, type, deps):
+class Init(Value):
+	def __init__(self, type, args):
 		Value.__init__(self, type)
-		self.deps = deps
+		self.args = args
 
 class Select(Value):
 	def __init__(self, type, cond, left, right):
@@ -368,11 +365,8 @@ class GraphBuilder(object):
 			return val
 		
 		elif node.name.name in types.ALL:
-			obj = Object(types.get(node.name))
-			fname = '%s.__init__' % obj.type.name
-			meta = obj.type.methods['__init__']
-			val = Call(fname, types.get(meta[1]), args)
-			return Multi(obj.type, [obj, val])
+			type = types.get(node.name)
+			return Init(type, args)
 		
 		raise Error(node, 'not a function or method')
 	
