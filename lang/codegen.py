@@ -86,7 +86,6 @@ class Frame(object):
 		self.vars = 1
 		self.parent = parent
 		self.defined = {}
-		self.allocated = []
 	
 	def __contains__(self, key):
 		return key in self.defined or (self.parent and key in self.parent)
