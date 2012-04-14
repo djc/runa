@@ -257,11 +257,11 @@ class GraphBuilder(object):
 	
 	def Or(self, node):
 		left, right = self.visit(node.left), self.visit(node.right)
-		cond = Call('bool', types.bool(), (right,))
+		cond = Call('bool', types.bool(), (left,))
 		if left.type == right.type:
 			return Select(left.type, cond, left, right)
 		else:
-			cast = Call('bool', types.bool(), (left,))
+			cast = Call('bool', types.bool(), (right,))
 			return Select(types.bool(), cond, cond, cast)
 	
 	# Arithmetic operators
