@@ -266,7 +266,7 @@ class GraphBuilder(object):
 	
 	# Arithmetic operators
 	
-	def binop(self, cls, op, node):
+	def math(self, op, node):
 		
 		left, right = self.visit(node.left), self.visit(node.right)
 		if left.type != right.type:
@@ -275,30 +275,41 @@ class GraphBuilder(object):
 		
 		assert left.type == right.type
 		fname = '%s.__%s__' % (left.type.name, op)
-		return cls(left.type, op, (left, right))
+		return Math(left.type, op, (left, right))
 	
 	def Add(self, node):
-		return self.binop(Math, 'add', node)
+		return self.math('add', node)
 	
 	def Sub(self, node):
-		return self.binop(Math, 'sub', node)
+		return self.math('sub', node)
 	
 	def Mul(self, node):
-		return self.binop(Math, 'mul', node)
+		return self.math('mul', node)
 	
 	def Div(self, node):
-		return self.binop(Math, 'div', node)
+		return self.math('div', node)
 	
 	# Comparison operators
 	
+	def compare(self, op, node):
+		
+		left, right = self.visit(node.left), self.visit(node.right)
+		if left.type != right.type:
+			bits = left.type.name, right.type.name
+			raise Error(node, "unmatched types '%s', '%s'" % bits)
+		
+		assert left.type == right.type
+		fname = '%s.__%s__' % (left.type.name, op)
+		return Compare(types.bool(), op, (left, right))
+	
 	def Eq(self, node):
-		return self.binop(Compare, 'eq', node)
+		return self.compare('eq', node)
 	
 	def NEq(self, node):
-		return self.binop(Compare, 'ne', node)
+		return self.compare('ne', node)
 	
 	def LT(self, node):
-		return self.binop(Compare, 'lt', node)
+		return self.compare('lt', node)
 	
 	# Other operators
 	
