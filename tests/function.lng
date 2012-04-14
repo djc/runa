@@ -2,4 +2,4 @@ def add(x: int, y: int) -> int:
 	return x + y
 
 def main(name: str, args: array[str]) -> int:
-	print(str(add(3, 4)))
+	print(add(3, 4))
