@@ -225,6 +225,8 @@ class GraphBuilder(object):
 		return Constant(node)
 	
 	def Name(self, node):
+		if node.name not in self.cur:
+			raise Error(node, "undefined name '%s'" % node.name)
 		val = self.cur[node.name]
 		return Reference(val.type, node.name)
 	
@@ -265,7 +267,12 @@ class GraphBuilder(object):
 	# Arithmetic operators
 	
 	def binop(self, cls, op, node):
+		
 		left, right = self.visit(node.left), self.visit(node.right)
+		if left.type != right.type:
+			bits = left.type.name, right.type.name
+			raise Error(node, "unmatched types '%s', '%s'" % bits)
+		
 		assert left.type == right.type
 		fname = '%s.__%s__' % (left.type.name, op)
 		return cls(left.type, op, (left, right))
@@ -310,9 +317,15 @@ class GraphBuilder(object):
 		return Access(type, 'attr', obj, attr)
 	
 	def Ternary(self, node):
+		
 		values = [self.visit(i) for i in node.values]
-		assert values[0].type == values[1].type
-		cond = Call('bool', types.bool(), (self.visit(node.cond),))
+		if values[0].type != values[1].type:
+			bits = values[0].type.name, values[1].type.name
+			raise Error(node, "unmatched types '%s', '%s'" % bits)
+		
+		cond = self.visit(node.cond)
+		if cond.type != types.bool():
+			cond = Call('bool', types.bool(), (cond,))
 		return Select(values[0].type, cond, values[0], values[1])
 	
 	def Assign(self, node):
@@ -336,6 +349,9 @@ class GraphBuilder(object):
 			meta = obj.type.methods[node.name.attrib.name]
 			return Call(meta[0][1:], types.get(meta[1]), [obj] + args)
 		
+		if not isinstance(node.name, ast.Name):
+			raise Error(node, 'not a function or method')
+		
 		elif node.name.name in self.mod.functions:
 			fun = self.mod.functions[node.name.name]
 			val = Call(fun.name, fun.rtype, args)
@@ -348,7 +364,7 @@ class GraphBuilder(object):
 			val = Call(meta[0][1:], types.get(meta[1]), args)
 			return Multi(obj.type, [obj, val])
 		
-		assert False
+		raise Error(node, 'not a function or method')
 	
 	# Block statements
 	
