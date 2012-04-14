@@ -102,12 +102,12 @@ def add(node):
 	for method in node.methods:
 		
 		name = method.name.name
-		irname = '@%s.%s' % (node.name.name, name)
+		irname = '%s.%s' % (node.name.name, name)
 		rtype = 'void' if not method.rtype else method.rtype.name
 		
 		args = []
 		for arg in method.args:
-			args.append(arg.type.name)
+			args.append((arg.name.name, arg.type.name))
 		
 		vars['methods'][name] = irname, rtype, args
 		method.irname = irname
