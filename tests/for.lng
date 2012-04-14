@@ -1,3 +1,3 @@
 def main(name: str, args: array[str]) -> int:
 	for i in range(0, 5, 1):
-		print(str(i))
+		print(i)

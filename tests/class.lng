@@ -11,6 +11,6 @@ class xrange:
 
 def main(name: str, args: array[str]) -> int:
 	r = xrange(0, 5, 1)
-	print(str(r.start))
-	print(str(r.stop))
-	print(str(r.step))
+	print(r.start)
+	print(r.stop)
+	print(r.step)
