@@ -431,7 +431,7 @@ class GraphBuilder(object):
 		header = self.block([self.idx])
 		
 		meta = source.type.methods['__next__']
-		atypes = [types.get(a) for a in meta[2:]]
+		atypes = [types.get(a) for a in meta[2]]
 		val = Call(meta[0][1:], types.get(meta[1]), atypes)
 		header.named[node.lvar.name] = val
 		header.push(Assign(self.visit(node.lvar), val))

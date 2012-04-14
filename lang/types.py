@@ -20,37 +20,37 @@ class void(base):
 class bool(base):
 	ir = 'i1'
 	methods = {
-		'__str__': ('@bool.__str__', 'str'),
-		'__eq__': ('@bool.__eq__', 'bool', 'bool'),
+		'__str__': ('bool.__str__', 'str', []),
+		'__eq__': ('bool.__eq__', 'bool', [('v', 'bool')]),
 	}
 
 class int(base):
 	ir = 'i64'
 	methods = {
-		'__bool__': ('@int.__bool__', 'bool'),
-		'__str__': ('@int.__str__', 'str'),
-		'__eq__': ('@int.__eq__', 'bool', 'int'),
-		'__lt__': ('@int.__lt__', 'bool', 'int'),
-		'__add__': ('@int.__add__', 'int', 'int'),
-		'__sub__': ('@int.__sub__', 'int', 'int'),
-		'__mul__': ('@int.__mul__', 'int', 'int'),
-		'__div__': ('@int.__div__', 'int', 'int'),
+		'__bool__': ('int.__bool__', 'bool', []),
+		'__str__': ('int.__str__', 'str', []),
+		'__eq__': ('int.__eq__', 'bool', [('v', 'int')]),
+		'__lt__': ('int.__lt__', 'bool', [('v', 'int')]),
+		'__add__': ('int.__add__', 'int', [('v', 'int')]),
+		'__sub__': ('int.__sub__', 'int', [('v', 'int')]),
+		'__mul__': ('int.__mul__', 'int', [('v', 'int')]),
+		'__div__': ('int.__div__', 'int', [('v', 'int')]),
 	}
 
 class float(base):
 	ir = 'double'
 	methods = {
-		'__str__': ('@float.__str__', 'str'),
+		'__str__': ('float.__str__', 'str', []),
 	}
 
 class str(base):
 	ir = '%str'
 	methods = {
-		'__bool__': ('@str.__bool__', 'bool'),
-		'__eq__': ('@str.__eq__', 'bool', 'str'),
-		'__lt__': ('@str.__lt__', 'bool', 'str'),
-		'__add__': ('@str.__add__', 'str', 'str'),
-		'__del__': ('@str.__del__', 'void'),
+		'__bool__': ('str.__bool__', 'bool', []),
+		'__eq__': ('str.__eq__', 'bool', [('s', 'str')]),
+		'__lt__': ('str.__lt__', 'bool', [('s', 'str')]),
+		'__add__': ('str.__add__', 'str', [('s', 'str')]),
+		'__del__': ('str.__del__', 'void', []),
 	}
 
 class IStr(base):
@@ -68,8 +68,8 @@ class IBool(base):
 class file(base):
 	ir = '%file'
 	methods = {
-		'read': ('@file.read', 'str', 'file', 'int'),
-		'close': ('@file.close', 'void'),
+		'read': ('file.read', 'str', [('size', 'int')]),
+		'close': ('file.close', 'void', []),
 	}
 
 class array(base):
@@ -84,7 +84,7 @@ class array(base):
 class intiter(base):
 	ir = '%intiter'
 	methods = {
-		'__next__': ('@intiter.__next__', 'int', 'intiter'),
+		'__next__': ('intiter.__next__', 'int', []),
 	}
 
 def add(node):
@@ -109,8 +109,7 @@ def add(node):
 		for arg in method.args:
 			args.append(arg.type.name)
 		
-		meta = (irname, rtype) + tuple(args)
-		vars['methods'][name] = meta
+		vars['methods'][name] = irname, rtype, args
 		method.irname = irname
 	
 	cls = type(node.name.name, (base,), vars)
