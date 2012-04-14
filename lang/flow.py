@@ -481,12 +481,12 @@ class Module(object):
 				self.order.append(('fun', n.name.name))
 			elif isinstance(n, ast.Class):
 				t = self.types[n.name.name] = types.add(n)
-				self.order.append(('class', t))
+				self.order.append(('class', n.name.name))
 				for m in n.methods:
 					method = Function.frommethod(t, m)
 					self.functions[method.name] = method
 					bodies[method.name] = m.suite
-					self.order.append(('function', method.name))
+					self.order.append(('fun', method.name))
 		
 		for name, fun in self.functions.iteritems():
 			if fun.rt: continue
