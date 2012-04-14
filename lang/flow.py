@@ -197,6 +197,11 @@ class GraphBuilder(object):
 	def push(self, val):
 		self.cur.push(val)
 	
+	def boolean(self, val):
+		if val.type == types.bool():
+			return val
+		return Call('bool', types.bool(), (val,))
+	
 	def visit(self, node):
 		
 		if hasattr(self, node.__class__.__name__):
@@ -233,11 +238,7 @@ class GraphBuilder(object):
 	# Boolean operators
 	
 	def Not(self, node):
-		
-		cond = self.visit(node.value)
-		if cond.type != types.bool():
-			cond = Call('bool', types.bool(), (self.visit(node.value),))
-		
+		cond = self.boolean(self.visit(node.value))
 		true = Constant()
 		true.type = types.bool()
 		true.value = True
@@ -248,21 +249,19 @@ class GraphBuilder(object):
 	
 	def And(self, node):
 		left, right = self.visit(node.left), self.visit(node.right)
-		cond = Call('bool', types.bool(), (left,))
+		cond = self.boolean(left)
 		if left.type == right.type:
 			return Select(left.type, cond, right, left)
 		else:
-			cast = Call('bool', types.bool(), (right,))
-			return Select(types.bool(), cond, cast, cond)
+			return Select(types.bool(), cond, self.boolean(right), cond)
 	
 	def Or(self, node):
 		left, right = self.visit(node.left), self.visit(node.right)
-		cond = Call('bool', types.bool(), (left,))
+		cond = self.boolean(left)
 		if left.type == right.type:
 			return Select(left.type, cond, left, right)
 		else:
-			cast = Call('bool', types.bool(), (right,))
-			return Select(types.bool(), cond, cond, cast)
+			return Select(types.bool(), cond, cond, self.boolean(right))
 	
 	# Arithmetic operators
 	
@@ -334,9 +333,7 @@ class GraphBuilder(object):
 			bits = values[0].type.name, values[1].type.name
 			raise Error(node, "unmatched types '%s', '%s'" % bits)
 		
-		cond = self.visit(node.cond)
-		if cond.type != types.bool():
-			cond = Call('bool', types.bool(), (cond,))
+		cond = self.boolean(self.visit(node.cond))
 		return Select(values[0].type, cond, values[0], values[1])
 	
 	def Assign(self, node):
@@ -397,7 +394,7 @@ class GraphBuilder(object):
 		for i, (cond, suite) in enumerate(node.blocks):
 			
 			if cond:
-				cond = self.visit(cond)
+				cond = self.boolean(self.visit(cond))
 			
 			if cond and i + 1 == len(node.blocks):
 				exitpreds.append(self.cur.id)
@@ -427,7 +424,7 @@ class GraphBuilder(object):
 	
 	def While(self, node):
 		
-		cond = self.visit(node.cond)
+		cond = self.boolean(self.visit(node.cond))
 		header = self.block([self.idx])
 		body = self.block([header.id])
 		self.visit(node.suite)
