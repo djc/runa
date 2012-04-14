@@ -331,7 +331,7 @@ class CodeGen(object):
 		self.writeline('store %s, %s* %s' % (val, type.ir, name))
 		frame[name[1:]] = Value(type, ptr=name, var=True)
 	
-	def Manipulate(self, node, frame):
+	def SetAttr(self, node, frame):
 		
 		obj = self.visit(node.obj, frame)
 		attrib = obj.type.attribs[node.key]
@@ -347,16 +347,16 @@ class CodeGen(object):
 		bits = val.type.ir, tmp, val.type.ir, var
 		self.writeline('store %s %s, %s* %s' % bits)
 	
-	def Access(self, node, frame):
-		
-		if node.model == 'attr':
-			obj = self.visit(node.obj, frame)
-			idx, atype = obj.type.attribs[node.key]
-			var = frame.varname()
-			rval = Value(atype, ptr=var, var=True)
-			bits = var, self.ptr(obj, frame), idx
-			self.writeline('%s = getelementptr %s, i32 0, i32 %s' % bits)
-			return rval
+	def GetAttr(self, node, frame):
+		obj = self.visit(node.obj, frame)
+		idx, atype = obj.type.attribs[node.key]
+		var = frame.varname()
+		rval = Value(atype, ptr=var, var=True)
+		bits = var, self.ptr(obj, frame), idx
+		self.writeline('%s = getelementptr %s, i32 0, i32 %s' % bits)
+		return rval
+	
+	def GetItem(self, node, frame):
 		
 		obj = self.visit(node.obj, frame)
 		key = self.visit(node.key, frame)

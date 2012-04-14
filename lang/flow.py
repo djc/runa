@@ -112,16 +112,20 @@ class Math(BinOp):
 class Compare(BinOp):
 	pass
 
-class Access(Value):
-	def __init__(self, type, model, obj, key):
+class GetAttr(Value):
+	def __init__(self, type, obj, key):
 		Value.__init__(self, type)
-		self.model = model
 		self.obj = obj
 		self.key = key
 
-class Manipulate(Base):
-	def __init__(self, model, obj, key, value):
-		self.model = model
+class GetItem(Value):
+	def __init__(self, type, obj, key):
+		Value.__init__(self, type)
+		self.obj = obj
+		self.key = key
+
+class SetAttr(Base):
+	def __init__(self, obj, key, value):
 		self.obj = obj
 		self.key = key
 		self.value = value
@@ -315,13 +319,13 @@ class GraphBuilder(object):
 	def Elem(self, node):
 		obj = self.visit(node.obj)
 		key = self.visit(node.key)
-		return Access(types.get(obj.type.over), 'item', obj, key)
+		return GetItem(types.get(obj.type.over), obj, key)
 	
 	def Attrib(self, node):
 		obj = self.visit(node.obj)
 		attr = node.attrib.name
 		type = obj.type.attribs[attr][1]
-		return Access(type, 'attr', obj, attr)
+		return GetAttr(type, obj, attr)
 	
 	def Ternary(self, node):
 		
@@ -339,7 +343,7 @@ class GraphBuilder(object):
 		if isinstance(node.left, ast.Attrib):
 			obj = self.visit(node.left.obj)
 			attr = node.left.attrib.name
-			self.push(Manipulate('attr', obj, attr, value))
+			self.push(SetAttr(obj, attr, value))
 			return
 		
 		assert isinstance(node.left, ast.Name)

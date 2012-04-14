@@ -5,4 +5,3 @@
 - repr(), particularly for strings
 - Default arguments
 - Make the iterable implementation less ugly
-- Untangle Access/Manipulate into {Get,Set}{Item,Attr}
