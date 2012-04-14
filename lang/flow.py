@@ -435,11 +435,13 @@ class GraphBuilder(object):
 		
 		start = self.cur
 		source = self.visit(node.source)
+		self.push(Assign('loop.source', source))
 		header = self.block([self.idx])
 		start.push(Branch(None, header.id))
 		
 		meta = source.type.methods['__next__']
-		atypes = [types.get(a) for a in meta[2]]
+		iter = Reference(source.type, 'loop.source')
+		atypes = [iter] + [types.get(a) for a in meta[2]]
 		val = Call(meta[0], types.get(meta[1]), atypes)
 		header.named[node.lvar.name] = val
 		header.push(Assign(self.visit(node.lvar), val))
@@ -448,6 +450,7 @@ class GraphBuilder(object):
 		self.visit(node.suite)
 		exit = self.block([header.id, body.id])
 		body.push(Branch(None, header.id))
+		header.push(Branch(node.lvar, body.id, exit.id))
 
 class Module(object):
 	
