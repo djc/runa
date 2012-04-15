@@ -1,4 +1,3 @@
-from util import Error
 import ast, types, flow
 
 MAIN_SETUP = [
@@ -289,14 +288,12 @@ class CodeGen(object):
 		return Value(node.type, ptr=res)
 	
 	def Math(self, node, frame):
-		meta = node.type.methods['__' + node.op + '__']
 		name = '%s.__%s__' % (node.type.name, node.op)
 		return self.call(name, node.operands, frame)
 	
 	def Compare(self, node, frame):
 		
 		op = node.op if node.op != 'ne' else 'eq'
-		meta = node.operands[0].type.methods['__' + op + '__']
 		name = '%s.__%s__' % (node.operands[0].type.name, op)
 		
 		val = self.call(name, node.operands, frame)

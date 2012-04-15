@@ -1,5 +1,5 @@
 from . import tokenizer, ast, flow, codegen
-from codegen import Error
+from util import Error
 import sys, os, subprocess
 
 BASE = os.path.dirname(__path__[0])

@@ -267,14 +267,10 @@ class GraphBuilder(object):
 	# Arithmetic operators
 	
 	def math(self, op, node):
-		
 		left, right = self.visit(node.left), self.visit(node.right)
 		if left.type != right.type:
 			bits = left.type.name, right.type.name
 			raise Error(node, "unmatched types '%s', '%s'" % bits)
-		
-		assert left.type == right.type
-		fname = '%s.__%s__' % (left.type.name, op)
 		return Math(left.type, op, (left, right))
 	
 	def Add(self, node):
@@ -292,14 +288,10 @@ class GraphBuilder(object):
 	# Comparison operators
 	
 	def compare(self, op, node):
-		
 		left, right = self.visit(node.left), self.visit(node.right)
 		if left.type != right.type:
 			bits = left.type.name, right.type.name
 			raise Error(node, "unmatched types '%s', '%s'" % bits)
-		
-		assert left.type == right.type
-		fname = '%s.__%s__' % (left.type.name, op)
 		return Compare(types.bool(), op, (left, right))
 	
 	def Eq(self, node):

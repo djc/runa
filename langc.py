@@ -2,7 +2,7 @@
 
 from lang import tokenizer, ast, flow, codegen
 import lang
-import optparse, sys, subprocess, os
+import optparse, sys, os
 	
 def tokens(fn, opts):
 	for x in tokenizer.tokenize(open(fn)):
@@ -42,7 +42,6 @@ COMMANDS = {
 
 def find(cmd):
 	if cmd in COMMANDS: return COMMANDS[cmd]
-	full = set(COMMANDS)
 	matched = sorted(i for i in COMMANDS if i.startswith(cmd))
 	if len(matched) == 1:
 		return COMMANDS[matched[0]]
