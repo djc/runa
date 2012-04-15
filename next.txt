@@ -1,7 +1,8 @@
 - More cleaning up (array elements, variables)
-- Extending the array type
+- Implementing a real array.__getitem__
 - Generators (stacksave, stackrestore and switch?) 
 - Error handling/exceptions
 - repr(), particularly for strings
 - Default arguments
 - Make the iterable implementation less ugly
+- Check argument types
