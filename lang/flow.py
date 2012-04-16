@@ -64,6 +64,10 @@ class Function(Base):
 			raise Error(node.rtype, msg)
 			
 		args = [(a.name.name, a.type) for a in node.args]
+		if args[0][1] != type:
+			msg = "first method argument must be of type '%s'" % type.name
+			raise Error(node.args[0].type, msg)
+		
 		assert args[0][1].name == type.name
 		return cls(name, rtype, args)
 
