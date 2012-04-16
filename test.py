@@ -34,7 +34,7 @@ def run(self, key):
 	if self is None:
 		return expected == out
 	else:
-		self.assertMultiLineEqual(out, expected)
+		self.assertMultiLineEqual(expected, out)
 
 def testfunc(key):
 	def do(self):
