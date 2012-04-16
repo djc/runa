@@ -1,43 +1,43 @@
 declare i64 @strlen(i8*) nounwind readonly
 declare i32 @strncmp(i8*, i8*, i64)
 
-define void @str(%IStr.wrap* %if, %str* %res) {
+define i64 @str(%IStr.wrap* %if, %str* %res) {
 	%vtable.ptr = getelementptr %IStr.wrap* %if, i32 0, i32 0
 	%vtable = load %IStr** %vtable.ptr
 	%fun.ptr = getelementptr %IStr* %vtable, i32 0, i32 0
-	%fun = load void (i8*, %str*)** %fun.ptr
+	%fun = load i64 (i8*, %str*)** %fun.ptr
 	%arg.ptr = getelementptr %IStr.wrap* %if, i32 0, i32 1
 	%arg = load i8** %arg.ptr
-	call void (i8*, %str*)* %fun(i8* %arg, %str* %res)
-	ret void
+	call i64 (i8*, %str*)* %fun(i8* %arg, %str* %res)
+	ret i64 0
 }
 
 @str_NL = constant [1 x i8] c"\0a"
 @str.size = constant i64 ptrtoint (%str* getelementptr (%str* null, i32 1) to i64)
 
-define void @str.__bool__(%str* %s, i1* %res) {
+define i64 @str.__bool__(%str* %s, i1* %res) {
 	%s.len = getelementptr %str* %s, i32 0, i32 1
 	%len = load i64* %s.len
 	%bool = icmp ne i64 %len, 0
 	store i1 %bool, i1* %res
-	ret void
+	ret i64 0
 }
 
-@IBool.str = constant %IBool { void (i8*, i1*)* bitcast ( void (%str*, i1*)* @str.__bool__ to void (i8*, i1*)*) }
+@IBool.str = constant %IBool { i64 (i8*, i1*)* bitcast ( i64 (%str*, i1*)* @str.__bool__ to i64 (i8*, i1*)*) }
 
-define void @str.__str__(%str* %src, %str* %dst) {
+define i64 @str.__str__(%str* %src, %str* %dst) {
 	%src.ptr = bitcast %str* %src to i8*
 	%dst.ptr = bitcast %str* %dst to i8*
 	%sz = load i64* @str.size
 	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %dst.ptr, i8* %src.ptr, i64 %sz, i32 0, i1 false)
 	%owner.ptr = getelementptr %str* %dst, i32 0, i32 0
 	store i1 false, i1* %owner.ptr
-	ret void
+	ret i64 0
 }
 
-@IStr.str = constant %IStr { void (i8*, %str*)* bitcast ( void (%str*, %str*)* @str.__str__ to void (i8*, %str*)* )}
+@IStr.str = constant %IStr { i64 (i8*, %str*)* bitcast ( i64 (%str*, %str*)* @str.__str__ to i64 (i8*, %str*)* )}
 
-define void @str.__eq__(%str* %a, %str* %b, i1* %res) {
+define i64 @str.__eq__(%str* %a, %str* %b, i1* %res) {
 	%a.len.ptr = getelementptr %str* %a, i32 0, i32 1
 	%a.len = load i64* %a.len.ptr
 	%b.len.ptr = getelementptr %str* %b, i32 0, i32 1
@@ -54,13 +54,13 @@ Full:
 	%cmp = call i32 @strncmp(i8* %a.data, i8* %b.data, i64 %cmplen)
 	%check = icmp eq i32 %cmp, 0
 	store i1 %check, i1* %res
-	ret void
+	ret i64 0
 NEq:
 	store i1 false, i1* %res
-	ret void
+	ret i64 0
 }
 
-define void @str.__lt__(%str* %a, %str* %b, i1* %res) {
+define i64 @str.__lt__(%str* %a, %str* %b, i1* %res) {
 	%a.len.ptr = getelementptr %str* %a, i32 0, i32 1
 	%a.len = load i64* %a.len.ptr
 	%b.len.ptr = getelementptr %str* %b, i32 0, i32 1
@@ -81,13 +81,13 @@ EQ:
 	br i1 %less, label %Less, label %NotLess
 Less:
 	store i1 true, i1* %res
-	ret void
+	ret i64 0
 NotLess:
 	store i1 false, i1* %res
-	ret void
+	ret i64 0
 }
 
-define void @str.__add__(%str* %a, %str* %b, %str* %res) {
+define i64 @str.__add__(%str* %a, %str* %b, %str* %res) {
 	%a.len.ptr = getelementptr %str* %a, i32 0, i32 1
 	%a.len = load i64* %a.len.ptr
 	%b.len.ptr = getelementptr %str* %b, i32 0, i32 1
@@ -107,10 +107,10 @@ define void @str.__add__(%str* %a, %str* %b, %str* %res) {
 	%b.data.ptr = getelementptr %str* %b, i32 0, i32 2
 	%b.data = load i8** %b.data.ptr
 	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %rest, i8* %b.data, i64 %b.len, i32 1, i1 false)
-	ret void
+	ret i64 0
 }
 
-define void @str.__del__(%str* %s) {
+define i64 @str.__del__(%str* %s) {
 	%owner.ptr = getelementptr %str* %s, i32 0, i32 0
 	%owner = load i1* %owner.ptr
 	br i1 %owner, label %Free, label %Done
@@ -120,10 +120,10 @@ Free:
 	call void @free(i8* %data)
 	br label %Done
 Done:
-	ret void
+	ret i64 0
 }
 
-define void @wrapstr(i8* %s, %str* %out) {
+define i64 @wrapstr(i8* %s, %str* %out) {
 	%out.owner = getelementptr %str* %out, i32 0, i32 0
 	store i1 false, i1* %out.owner
 	%s.len = getelementptr inbounds %str* %out, i32 0, i32 1
@@ -131,5 +131,5 @@ define void @wrapstr(i8* %s, %str* %out) {
 	store i64 %len, i64* %s.len
 	%s.data = getelementptr %str* %out, i32 0, i32 2
 	store i8* %s, i8** %s.data
-	ret void
+	ret i64 0
 }

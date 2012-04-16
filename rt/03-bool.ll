@@ -1,18 +1,18 @@
 @bool_TRUE = constant [4 x i8] c"True"
 @bool_FALSE = constant [5 x i8] c"False"
 
-define void @bool(%IBool.wrap* %if, i1* %res) {
+define i64 @bool(%IBool.wrap* %if, i1* %res) {
 	%vtable.ptr = getelementptr %IBool.wrap* %if, i32 0, i32 0
 	%vtable = load %IBool** %vtable.ptr
 	%fun.ptr = getelementptr %IBool* %vtable, i32 0, i32 0
-	%fun = load void (i8*, i1*)** %fun.ptr
+	%fun = load i64 (i8*, i1*)** %fun.ptr
 	%arg.ptr = getelementptr %IBool.wrap* %if, i32 0, i32 1
 	%arg = load i8** %arg.ptr
-	call void (i8*, i1*)* %fun(i8* %arg, i1* %res)
-	ret void
+	call i64 (i8*, i1*)* %fun(i8* %arg, i1* %res)
+	ret i64 0
 }
 
-define void @bool.__str__(i1* %p, %str* %s) {
+define i64 @bool.__str__(i1* %p, %str* %s) {
 	%v = load i1* %p
 	%s.owner = getelementptr %str* %s, i32 0, i32 0
 	store i1 true, i1* %s.owner
@@ -34,16 +34,16 @@ False:
 	store i8* %ptr0, i8** %s.data
 	br label %Done
 Done:
-	ret void
+	ret i64 0
 }
 
-@IStr.bool = constant %IStr { void (i8*, %str*)* bitcast ( void (i1*, %str*)* @bool.__str__ to void (i8*, %str*)*) }
+@IStr.bool = constant %IStr { i64 (i8*, %str*)* bitcast ( i64 (i1*, %str*)* @bool.__str__ to i64 (i8*, %str*)*) }
 
-define void @bool.__eq__(i1* %a.ptr, i1* %b.ptr, i1* %res) {
+define i64 @bool.__eq__(i1* %a.ptr, i1* %b.ptr, i1* %res) {
 	%a = load i1* %a.ptr
 	%b = load i1* %b.ptr
 	%1 = xor i1 %a, %b
 	%2 = select i1 %1, i1 false, i1 true
 	store i1 %2, i1* %res
-	ret void
+	ret i64 0
 }

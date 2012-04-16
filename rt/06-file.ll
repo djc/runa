@@ -6,17 +6,17 @@ declare i32 @close(i32)
 
 @file.READ = constant i32 0
 
-define void @fopen(%str* %fn, %file* %f) {
+define i64 @fopen(%str* %fn, %file* %f) {
 	%path.ptr = getelementptr %str* %fn, i32 0, i32 2
 	%path = load i8** %path.ptr
 	%fd.ptr = getelementptr %file* %f, i32 0, i32 0
 	%mode = load i32* @file.READ
 	%fd = call i32 (i8*, i32, ...)* @open(i8* %path, i32 %mode)
 	store i32 %fd, i32* %fd.ptr
-	ret void
+	ret i64 0
 }
 
-define void @file.read(%file* %self, i64* %sz.ptr, %str* %res) {
+define i64 @file.read(%file* %self, i64* %sz.ptr, %str* %res) {
 	%sz = load i64* %sz.ptr
 	%fd.ptr = getelementptr %file* %self, i32 0, i32 0
 	%fd = load i32* %fd.ptr
@@ -28,12 +28,12 @@ define void @file.read(%file* %self, i64* %sz.ptr, %str* %res) {
 	store i64 %read, i64* %len.ptr
 	%data.ptr = getelementptr %str* %res, i32 0, i32 2
 	store i8* %data, i8** %data.ptr
-	ret void
+	ret i64 0
 }
 
-define void @file.close(%file* %self) {
+define i64 @file.close(%file* %self) {
 	%fd.ptr = getelementptr %file* %self, i32 0, i32 0
 	%fd = load i32* %fd.ptr
 	call i32 @close(i32 %fd)
-	ret void
+	ret i64 0
 }

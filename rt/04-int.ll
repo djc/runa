@@ -1,15 +1,15 @@
 @fmt_INT = constant [4 x i8] c"%ld\00"
 
-define void @int.__bool__(i64* %n.ptr, i1* %res) {
+define i64 @int.__bool__(i64* %n.ptr, i1* %res) {
 	%n = load i64* %n.ptr
 	%1 = icmp ne i64 %n, 0
 	store i1 %1, i1* %res
-	ret void
+	ret i64 0
 }
 
-@IBool.int = constant %IBool { void (i8*, i1*)* bitcast ( void (i64*, i1*)* @int.__bool__ to void (i8*, i1*)*) }
+@IBool.int = constant %IBool { i64 (i8*, i1*)* bitcast ( i64 (i64*, i1*)* @int.__bool__ to i64 (i8*, i1*)*) }
 
-define void @int.__str__(i64* %n.ptr, %str* %s) {
+define i64 @int.__str__(i64* %n.ptr, %str* %s) {
 	%n = load i64* %n.ptr
 	%s.owner = getelementptr %str* %s, i32 0, i32 0
 	store i1 true, i1* %s.owner
@@ -19,62 +19,62 @@ define void @int.__str__(i64* %n.ptr, %str* %s) {
 	%fmt.len64 = sext i32 %fmt.len to i64
 	%s.len = getelementptr inbounds %str* %s, i32 0, i32 1
 	store i64 %fmt.len64, i64* %s.len
-	ret void
+	ret i64 0
 }
 
-@IStr.int = constant %IStr { void (i8*, %str*)* bitcast ( void (i64*, %str*)* @int.__str__ to void (i8*, %str*)*) }
+@IStr.int = constant %IStr { i64 (i8*, %str*)* bitcast ( i64 (i64*, %str*)* @int.__str__ to i64 (i8*, %str*)*) }
 
-define void @int.__eq__(i64* %a.ptr, i64* %b.ptr, i1* %res) {
+define i64 @int.__eq__(i64* %a.ptr, i64* %b.ptr, i1* %res) {
 	%a = load i64* %a.ptr
 	%b = load i64* %b.ptr
 	%1 = icmp eq i64 %a, %b
 	store i1 %1, i1* %res
-	ret void
+	ret i64 0
 }
 
-define void @int.__lt__(i64* %a.ptr, i64* %b.ptr, i1* %res) {
+define i64 @int.__lt__(i64* %a.ptr, i64* %b.ptr, i1* %res) {
 	%a = load i64* %a.ptr
 	%b = load i64* %b.ptr
 	%1 = icmp slt i64 %a, %b
 	store i1 %1, i1* %res
-	ret void
+	ret i64 0
 }
 
-define void @int.__add__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
+define i64 @int.__add__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
 	%a = load i64* %a.ptr
 	%b = load i64* %b.ptr
 	%1 = add i64 %a, %b
 	store i64 %1, i64* %res
-	ret void
+	ret i64 0
 }
 
-define void @int.__sub__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
+define i64 @int.__sub__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
 	%a = load i64* %a.ptr
 	%b = load i64* %b.ptr
 	%1 = sub i64 %a, %b
 	store i64 %1, i64* %res
-	ret void
+	ret i64 0
 }
 
-define void @int.__mul__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
+define i64 @int.__mul__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
 	%a = load i64* %a.ptr
 	%b = load i64* %b.ptr
 	%1 = mul i64 %a, %b
 	store i64 %1, i64* %res
-	ret void
+	ret i64 0
 }
 
-define void @int.__div__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
+define i64 @int.__div__(i64* %a.ptr, i64* %b.ptr, i64* %res) {
 	%a = load i64* %a.ptr
 	%b = load i64* %b.ptr
 	%1 = sdiv i64 %a, %b
 	store i64 %1, i64* %res
-	ret void
+	ret i64 0
 }
 
 declare i32 @llvm.bswap.i32(i32)
 
-define void @strtoi(%str* %s, i64* %res) {
+define i64 @strtoi(%str* %s, i64* %res) {
 	%len.ptr = getelementptr %str* %s, i32 0, i32 1
 	%len = load i64* %len.ptr
 	%data.ptr = getelementptr %str* %s, i32 0, i32 2
@@ -84,5 +84,5 @@ define void @strtoi(%str* %s, i64* %res) {
 	%rev = call i32 @llvm.bswap.i32(i32 %num) ; ENDIAN
 	%long = sext i32 %rev to i64
 	store i64 %long, i64* %res
-	ret void
+	ret i64 0
 }

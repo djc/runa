@@ -3,7 +3,7 @@ import ast, types, flow
 MAIN_SETUP = [
 	'; convert argc/argv to argument array',
 	'%args = alloca %array.str',
-	'call void @argv(i32 %argc, i8** %argv, %array.str* %args)',
+	'call i64 @argv(i32 %argc, i8** %argv, %array.str* %args)',
 	'%a.data = getelementptr %array.str* %args, i32 0, i32 1',
 	'%name = load %str** %a.data, align 8',
 	'%a1.p = getelementptr inbounds %str* %name, i64 1',
@@ -184,7 +184,7 @@ class CodeGen(object):
 			if '__del__' not in val.type.methods: continue
 			method = val.type.methods['__del__']
 			ir = '%s* %s' % (val.type.ir, val.ptr)
-			lines.append('call void @%s(%s)' % (method[0], ir))
+			lines.append('call i64 @%s(%s)' % (method[0], ir))
 		return lines
 	
 	def iwrap(self, atype, val, frame):
@@ -249,10 +249,11 @@ class CodeGen(object):
 		if '__next__' in name:
 			call = '%loopvar = call i1 @' + name + '(' + ', '.join(seq) + ')'
 		else:
-			call = 'call void @' + name + '(' + ', '.join(seq) + ')'
+			call = 'call i64 @' + name + '(' + ', '.join(seq) + ')'
 		
 		lines = [call] + self.cleanups(*avals)
 		self.writelines(lines)
+		frame.vars += len(lines) - (1 if '__next__' in name else 0)
 		
 		return rval
 	
@@ -373,7 +374,7 @@ class CodeGen(object):
 		self.writeline('%s = load %s' % (tmp, self.ptr(value, frame)))
 		bits = value.type.ir, tmp, value.type.ir
 		self.writeline('store %s %s, %s* %%lang.res' % bits)
-		self.writeline('ret void')
+		self.writeline('ret i64 0')
 	
 	def Suite(self, node, frame):
 		for stmt in node.stmts:
@@ -399,7 +400,7 @@ class CodeGen(object):
 		
 		frame = Frame(frame)
 		name = '@' + node.name
-		self.write('define void %s(' % name)
+		self.write('define i64 %s(' % name)
 		
 		first = True
 		names = {v: k for (k, v) in node.anames.iteritems()}
@@ -425,7 +426,7 @@ class CodeGen(object):
 			self.visit(block, frame)
 		
 		if node.rtype == types.void():
-			self.writeline('ret void')
+			self.writeline('ret i64 0')
 		
 		self.dedent()
 		self.writeline('}')
@@ -452,6 +453,7 @@ class CodeGen(object):
 			self.writeline(ln)
 		self.newline()
 		
+		frame.vars += 1
 		frame['name'] = Value(types.str(), ptr='%name', var=True)
 		frame['args'] = Value(types.array(types.str()), ptr='%args', var=True)
 		for block in node.graph:

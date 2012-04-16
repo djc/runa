@@ -1,8 +1,8 @@
 %array.str = type { i64, %str* }
 
-define void @print(%IStr.wrap* %ss) {
+define i64 @print(%IStr.wrap* %ss) {
 	%s = alloca %str
-	call void @str(%IStr.wrap* %ss, %str* %s)
+	call i64 @str(%IStr.wrap* %ss, %str* %s)
 	%s.data.ptr = getelementptr inbounds %str* %s, i64 0, i32 2
 	%s.data = load i8** %s.data.ptr
 	%s.len.ptr = getelementptr inbounds %str* %s, i64 0, i32 1
@@ -10,11 +10,11 @@ define void @print(%IStr.wrap* %ss) {
 	call i64 @write(i32 1, i8* %s.data, i64 %s.len)
 	%nl.ptr = getelementptr inbounds [1 x i8]* @str_NL, i64 0, i64 0
 	call i64 @write(i32 1, i8* %nl.ptr, i64 1)
-	call void @str.__del__(%str* %s)
-	ret void
+	call i64 @str.__del__(%str* %s)
+	ret i64 0
 }
 
-define void @argv(i32 %argc, i8** %argv, %array.str* %res) {
+define i64 @argv(i32 %argc, i8** %argv, %array.str* %res) {
 	
 	%res.data = getelementptr %array.str* %res, i32 0, i32 1
 	%num = sext i32 %argc to i64
@@ -34,7 +34,7 @@ define void @argv(i32 %argc, i8** %argv, %array.str* %res) {
 		%arg.ptr = getelementptr inbounds i8** %argv, i64 %i
 		%arg = load i8** %arg.ptr
 		%dst = getelementptr inbounds %str* %array, i64 %i
-		tail call void @wrapstr(i8* %arg, %str* %dst)
+		tail call i64 @wrapstr(i8* %arg, %str* %dst)
 		%more = icmp sgt i64 %i, 0
 		br i1 %more, label %Next, label %Done
 	
@@ -42,13 +42,13 @@ define void @argv(i32 %argc, i8** %argv, %array.str* %res) {
 		%len.ptr = getelementptr %array.str* %res, i32 0, i32 0
 		store i64 %num, i64* %len.ptr
 		store %str* %array, %str** %res.data
-		ret void
+		ret i64 0
 	
 }
 
 %intiter = type { i64, i64, i64 }
 
-define void @range(i64* %start.ptr, i64* %stop.ptr, i64* %step.ptr, %intiter* %res) {
+define i64 @range(i64* %start.ptr, i64* %stop.ptr, i64* %step.ptr, %intiter* %res) {
 	%1 = getelementptr inbounds %intiter* %res, i64 0, i32 0
 	%start = load i64* %start.ptr
 	store i64 %start, i64* %1
@@ -58,7 +58,7 @@ define void @range(i64* %start.ptr, i64* %stop.ptr, i64* %step.ptr, %intiter* %r
 	%3 = getelementptr inbounds %intiter* %res, i64 0, i32 2
 	%step = load i64* %step.ptr
 	store i64 %step, i64* %3
-	ret void
+	ret i64 0
 }
 
 define i1 @intiter.__next__(%intiter* %self, i64* %res) {
