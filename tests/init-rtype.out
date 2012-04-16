@@ -1,0 +1,3 @@
+tests/init-rtype.lng [2.30]: __init__() method return type must be 'void'
+    def __init__(self: test) -> int:
+                                ^

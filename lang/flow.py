@@ -56,8 +56,13 @@ class Function(Base):
 	
 	@classmethod
 	def frommethod(cls, type, node):
+		
 		name = type.name + '.' + node.name.name
 		rtype = types.get(node.rtype.name if node.rtype else 'void')
+		if name == type.name + '.__init__' and rtype != types.void():
+			msg = "__init__() method return type must be 'void'"
+			raise Error(node.rtype, msg)
+			
 		args = [(a.name.name, a.type) for a in node.args]
 		assert args[0][1].name == type.name
 		return cls(name, rtype, args)
