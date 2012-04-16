@@ -26,7 +26,7 @@ def cfg(fn, opts):
 def generate(fn, opts):
 	try:
 		print lang.llir(fn, opts.full)
-	except codegen.Error as e:
+	except lang.Error as e:
 		sys.stderr.write(e.show(fn))
 
 def compile(fn, opts):
