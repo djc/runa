@@ -2,8 +2,8 @@
 
 from lang import tokenizer, ast, flow, codegen
 import lang
-import optparse, sys, os
-	
+import optparse, sys, os, subprocess
+
 def tokens(fn, opts):
 	for x in tokenizer.tokenize(open(fn)):
 		print x
@@ -29,12 +29,20 @@ def generate(fn, opts):
 def compile(fn, opts):
 	lang.compile(fn, os.path.basename(fn).rsplit('.lng')[0])
 
+def run(fn, opts):
+	kwargs = {i: subprocess.PIPE for i in ('stdin', 'stdout', 'stderr')}
+	proc = subprocess.Popen(('lli',), **kwargs)
+	out, err = proc.communicate(lang.llir(fn, True))
+	sys.stdout.write(out)
+	sys.stderr.write(err)
+
 COMMANDS = {
 	'tokens': tokens,
 	'parse': parse,
 	'flow': cfg,
 	'generate': generate,
 	'compile': compile,
+	'run': run,
 }
 
 def find(cmd):
