@@ -318,6 +318,11 @@ class GraphBuilder(object):
 	# Other operators
 	
 	def Return(self, node):
+		val = self.visit(node.value)
+		if val.type != self.fun.rtype:
+			bits = self.fun.name, self.fun.rtype.name
+			msg = "%s() return type must be of type '%s'" % bits
+			raise Error(node.value, msg)
 		self.push(Return(self.visit(node.value)))
 	
 	def Elem(self, node):

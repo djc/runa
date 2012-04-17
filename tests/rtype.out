@@ -1,0 +1,3 @@
+tests/rtype.lng [2.9]: do() return type must be of type 'int'
+    return 's'
+           ^
