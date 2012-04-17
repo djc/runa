@@ -1,2 +1,2 @@
-def main(name: str, args: array[str]) -> int:
+def main(name: str, args: array[str]):
 	print(2.5)

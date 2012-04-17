@@ -1,4 +1,4 @@
-def main(name: str, args: array[str]) -> int:
+def main(name: str, args: array[str]):
 	
 	print(str(1 if 0 else 2))
 	print(str(2 if 111 else 1))

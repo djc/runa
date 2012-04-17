@@ -49,8 +49,12 @@ class Function(Base):
 	
 	@classmethod
 	def fromnode(cls, node):
+		
 		name = node.name.name
 		rtype = node.rtype.name if node.rtype else None
+		if name == 'main' and rtype:
+			raise Error(node.rtype, "'main()' return type should be 'void'")
+		
 		args = [(a.name.name, a.type) for a in node.args]
 		return cls(name, rtype, args)
 	

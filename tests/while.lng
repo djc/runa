@@ -1,4 +1,4 @@
-def main(name: str, args: array[str]) -> int:
+def main(name: str, args: array[str]):
 	
 	i = 0
 	while i < 5:

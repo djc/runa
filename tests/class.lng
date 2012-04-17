@@ -9,7 +9,7 @@ class xrange:
 		self.stop = stop
 		self.step = step
 
-def main(name: str, args: array[str]) -> int:
+def main(name: str, args: array[str]):
 	r = xrange(0, 5, 1)
 	print(r.start)
 	print(r.stop)

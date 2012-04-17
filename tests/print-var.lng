@@ -1,5 +1,5 @@
 # test: {"args": ["cold"]}
-def main(name: str, args: array[str]) -> int:
+def main(name: str, args: array[str]):
 	x = 29
 	print(str(x))
 	y = 'birthday'

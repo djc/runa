@@ -1,0 +1,3 @@
+tests/main-rtype.lng [1.42]: 'main()' return type should be 'void'
+def main(name: str, args: array[str]) -> int:
+                                         ^

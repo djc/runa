@@ -1,4 +1,4 @@
-def main(name: str, args: array[str]) -> int:
+def main(name: str, args: array[str]):
 	
 	if 1:
 		print('T')
