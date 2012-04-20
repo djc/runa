@@ -85,3 +85,14 @@ Can we prevent keeping a pointer to the class inside every object? Only if
 the compiler knows all of the types in advance. Alternative: keep a pointer to
 the type of the contained type in containers. Simple first problem: str()
 should accept any type and call its __str__() method.
+
+
+How a Pratt parser works
+========================
+
+nud: null denotation, used when token appears at beginning of construct
+led: left denotation, used when it appears inside the construct (left of rest)
+lbp: left binding power, controls operator precedence; higher binds to right
+
+- start by looking at first token, calling nud() on it
+- if lbp of next is >= given rbp, call led for next
