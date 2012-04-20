@@ -14,6 +14,11 @@ MAIN_SETUP = [
 	'store %str* %a1.p, %str** %a.data',
 ]
 
+MAIN_TEARDOWN = [
+	'%a.buffer = bitcast %str* %name to i8*',
+	'call void @lang.free(i8* %a.buffer)',
+]
+
 class Value(object):
 	def __init__(self, type, ptr=None, val=None, var=False, const=False):
 		self.type = type
@@ -458,6 +463,11 @@ class CodeGen(object):
 		frame['args'] = Value(types.array(types.str()), ptr='%args', var=True)
 		for block in node.graph:
 			self.visit(block, frame)
+		
+		self.newline()
+		for ln in MAIN_TEARDOWN:
+			self.writeline(ln)
+		self.newline()
 		
 		self.writeline('ret i32 0')
 		self.newline()
