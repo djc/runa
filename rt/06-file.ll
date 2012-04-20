@@ -20,7 +20,7 @@ define i64 @file.read(%file* %self, i64* %sz.ptr, %str* %res) {
 	%sz = load i64* %sz.ptr
 	%fd.ptr = getelementptr %file* %self, i32 0, i32 0
 	%fd = load i32* %fd.ptr
-	%data = call i8* @malloc(i64 %sz)
+	%data = call i8* @lang.malloc(i64 %sz)
 	%read = call i64 @read(i32 %fd, i8* %data, i64 %sz)
 	%owner.ptr = getelementptr %str* %res, i32 0, i32 0
 	store i1 true, i1* %owner.ptr

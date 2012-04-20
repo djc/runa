@@ -10,3 +10,13 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 %str = type { i1, i64, i8* }
 %IStr = type { i64 (i8*, %str*)* }
 %IStr.wrap = type { %IStr*, i8* }
+
+define i8* @lang.malloc(i64 %sz) alwaysinline {
+	%1 = call i8* @malloc(i64 %sz)
+	ret i8* %1
+}
+
+define void @lang.free(i8* %ptr) alwaysinline {
+	call void @free(i8* %ptr)
+	ret void
+}

@@ -21,14 +21,14 @@ define i64 @bool.__str__(i1* %p, %str* %s) {
 	br i1 %v, label %True, label %False
 True:
 	store i64 4, i64* %s.len
-	%ptr1 = call i8* @malloc(i64 4)
+	%ptr1 = call i8* @lang.malloc(i64 4)
 	%val1 = getelementptr inbounds [4 x i8]* @bool_TRUE, i32 0, i32 0
 	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %ptr1, i8* %val1, i64 4, i32 1, i1 false)
 	store i8* %ptr1, i8** %s.data
 	br label %Done
 False:
 	store i64 5, i64* %s.len
-	%ptr0 = call i8* @malloc(i64 5)
+	%ptr0 = call i8* @lang.malloc(i64 5)
 	%val0 = getelementptr inbounds [5 x i8]* @bool_FALSE, i32 0, i32 0
 	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %ptr0, i8* %val0, i64 5, i32 1, i1 false)
 	store i8* %ptr0, i8** %s.data

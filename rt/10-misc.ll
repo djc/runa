@@ -20,7 +20,7 @@ define i64 @argv(i32 %argc, i8** %argv, %array.str* %res) {
 	%num = sext i32 %argc to i64
 	%str.size = load i64* @str.size
 	%size = mul i64 %num, %str.size
-	%array.raw = call i8* @malloc(i64 %size)
+	%array.raw = call i8* @lang.malloc(i64 %size)
 	%array = bitcast i8* %array.raw to %str*
 	%it.first = icmp sgt i64 %num, 0
 	br i1 %it.first, label %Start, label %Done

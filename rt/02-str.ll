@@ -98,7 +98,7 @@ define i64 @str.__add__(%str* %a, %str* %b, %str* %res) {
 	%res.len.ptr = getelementptr %str* %res, i32 0, i32 1
 	store i64 %total, i64* %res.len.ptr
 	%res.data.ptr = getelementptr %str* %res, i32 0, i32 2
-	%buf = call i8* @malloc(i64 %total)
+	%buf = call i8* @lang.malloc(i64 %total)
 	store i8* %buf, i8** %res.data.ptr
 	%a.data.ptr = getelementptr %str* %a, i32 0, i32 2
 	%a.data = load i8** %a.data.ptr
@@ -117,7 +117,7 @@ define i64 @str.__del__(%str* %s) {
 Free:
 	%data.ptr = getelementptr %str* %s, i32 0, i32 2
 	%data = load i8** %data.ptr
-	call void @free(i8* %data)
+	call void @lang.free(i8* %data)
 	br label %Done
 Done:
 	ret i64 0
