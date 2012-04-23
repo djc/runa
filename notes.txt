@@ -96,3 +96,31 @@ lbp: left binding power, controls operator precedence; higher binds to right
 
 - start by looking at first token, calling nud() on it
 - if lbp of next is >= given rbp, call led for next
+
+
+Memory model
+============
+
+Goals:
+
+- Should not leak memory or double-free (d0h!)
+- Should be easy to use, not much of a distraction in the code
+- Should be deterministic; no separate garbage collection
+- Should support the language's semantics
+- Should be efficient/performant
+
+
+Ideas
+-----
+
+Allocate statically-sized variables on the caller's stack. Ignoring global
+variables for now, memory references can only flow up the stack in (a) return
+variables (which got allocated on the upstream stack in the first place) and
+(b) as part of a larger structure that gets returned up the stack.
+
+Dynamically-sized variables must be allocated on the heap. They are always
+wrapped in a stack-allocated variable to keep a reference around. Multiple
+wrappers are allowed to reference to the same block of heap-allocated
+memory (because these blocks may be large and copying them would be expensive
+in both memory and CPU time). The memory must be freed once all wrappers
+get cleaned up; reference counting seems like a good fit for this.
