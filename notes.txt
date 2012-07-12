@@ -64,6 +64,14 @@ Russ Cox
 Go Data Structures: Interfaces
 http://research.swtch.com/interfaces
 
+Leo Meyerov
+Socio-PLT: Principles for Programming Language Adoption
+http://www.eecs.berkeley.edu/~lmeyerov/projects/socioplt/paper0413.pdf
+
+John Graham-Cunning
+Things I like about programming in Go
+http://blog.jgc.org/2012/07/things-i-like-about-programming-in-go.html
+
 
 Implementation notes
 ====================
