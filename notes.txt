@@ -102,6 +102,17 @@ the compiler knows all of the types in advance. Alternative: keep a pointer to
 the type of the contained type in containers. Simple first problem: str()
 should accept any type and call its __str__() method.
 
+Covariance and contravariance:
+
+If B is a subtype of A, then all member functions of B must return the same or
+a narrower set of types as A; the return type is said to be covariant. On the
+other hand, if the member functions of B take the same or broader set of
+arguments compared with the member functions of A, the argument type is said
+to be contravariant. The problem for instances of B is how to be perfectly
+substitutable for instances of A. The only way to guarantee type safety and
+substitutability is to be equally or more liberal than A on inputs, and to
+be equally or more strict than A on outputs.
+
 
 How a Pratt parser works
 ========================
