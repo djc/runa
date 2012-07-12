@@ -64,9 +64,17 @@ Russ Cox
 Go Data Structures: Interfaces
 http://research.swtch.com/interfaces
 
+Ulrich Drepper
+What Every Programmer Should Know About Memory
+http://ftp.linux.org.ua/pub/docs/developer/general/cpumemory.pdf
+
 Leo Meyerov
 Socio-PLT: Principles for Programming Language Adoption
 http://www.eecs.berkeley.edu/~lmeyerov/projects/socioplt/paper0413.pdf
+
+Periklis Akritidis et al.
+Baggy Bounds Checking
+http://research.microsoft.com/pubs/101450/baggy-usenix2009.pdf
 
 John Graham-Cunning
 Things I like about programming in Go
