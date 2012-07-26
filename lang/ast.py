@@ -381,12 +381,21 @@ class While(Statement):
 class Class(Statement):
 	
 	kw = 'class'
-	fields = 'name', 'attribs', 'methods'
+	fields = 'name', 'params', 'attribs', 'methods'
 	
 	def nud(self, p):
 		
 		self.p = p
 		self.name = p.advance(Name)
+		self.params = []
+		
+		if isinstance(p.token, Elem):
+			p.advance(Elem)
+			self.params.append(p.advance(Name))
+			while not isinstance(p.token, ElemEnd):
+				p.advance(Comma)
+				self.params.append(p.advance(Name))
+			p.advance(ElemEnd)
 		
 		p.advance(Colon)
 		p.eat(NL)
