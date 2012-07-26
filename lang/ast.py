@@ -380,6 +380,30 @@ class Else(Node):
 	def nud(self, p):
 		return self
 
+class Import(Statement):
+	kw = 'import'
+	fields = 'names',
+	def nud(self, p):
+		self.names = []
+		while isinstance(p.token, Name):
+			self.names.append(p.expr())
+			if isinstance(p.token, Comma):
+				p.advance(Comma)
+		return self
+
+class RelImport(Statement):
+	kw = 'from'
+	fields = 'base', 'names'
+	def nud(self, p):
+		self.base = p.expr()
+		self.names = []
+		p.advance(Import)
+		while isinstance(p.token, Name):
+			self.names.append(p.expr())
+			if isinstance(p.token, Comma):
+				p.advance(Comma)
+		return self
+
 class For(Statement):
 	kw = 'for'
 	fields = 'lvar', 'source', 'suite'

@@ -1,6 +1,9 @@
 import re, itertools
 
-KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for', 'while', 'class'}
+KEYWORDS = {
+	'class', 'def', 'elif', 'else', 'for', 'from',
+	'if', 'import', 'return', 'while',
+}
 OPERATORS = {'not', 'and', 'or', 'in', 'as'}
 SPACES = re.compile('\t*')
 
