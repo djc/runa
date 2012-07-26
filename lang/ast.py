@@ -99,6 +99,11 @@ class Attrib(BinaryOp):
 		self.attrib = p.advance(Name)
 		return self
 
+class Slice(Node):
+	fields = 'values',
+	def __init__(self, pos, vals):
+		self.values = vals
+
 class Elem(BinaryOp):
 	
 	op = '['
@@ -106,8 +111,25 @@ class Elem(BinaryOp):
 	fields = 'obj', 'key'
 	
 	def led(self, p, left):
+		
+		values = []
+		while not isinstance(p.token, ElemEnd):
+			if isinstance(p.token, Colon):
+				values.append(None)
+				p.advance(Colon)
+			else:
+				values.append(p.expr())
+				if isinstance(p.token, Colon):
+					p.advance(Colon)
+					if isinstance(p.token, ElemEnd):
+						values.append(None)
+		
 		self.obj = left
-		self.key = p.expr()
+		if len(values) > 1:
+			self.key = Slice(left.pos, values)
+		else:
+			self.key = values[0]
+		
 		p.advance(ElemEnd)
 		return self
 
