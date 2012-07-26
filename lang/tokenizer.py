@@ -1,7 +1,7 @@
 import re, itertools
 
 KEYWORDS = {'def', 'return', 'if', 'else', 'elif', 'for', 'while', 'class'}
-OPERATORS = {'not', 'and', 'or', 'in'}
+OPERATORS = {'not', 'and', 'or', 'in', 'as'}
 SPACES = re.compile('\t*')
 
 MATCHERS = [
