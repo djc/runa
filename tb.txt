@@ -1,0 +1,41 @@
+09:30 < djc> is there any sane way with LLVM's EH to get a kind of stack trace?
+09:30 <@baldrick> chandlerc: do we insert "unreachable" after provably infinite
+                  loops?
+09:31 <@baldrick> djc: not sure what getting a stack trace has to do with EH?
+09:31 < djc> baldrick: I would like to make my language emit Python-like
+             tracebacks when there's an uncaught exception
+09:32 <@baldrick> djc: OK, but getting a stack trace isn't anything to do with
+                  EH
+09:32 <@baldrick> djc: there's something for this IIRC, hang on
+09:33 -!- Axman6 [~Axman@eth3953.nsw.adsl.internode.on.net] has quit [Quit:
+          This computer has gone to sleep]
+09:33 < djc> maybe I'm not using the "stack trace" term right
+09:33 < chandlerc> baldrick: no clue?
+09:33 <@baldrick> djc: maybe you can do something with
+                  http://llvm.org/docs/LangRef.html#int_frameaddress
+09:34 <@baldrick> djc: maybe libunwind and/or the eh functions in libgcc have
+                  something that can help you here
+09:34 -!- ehsan [~ehsan@209.20.29.228] has quit [Read error: Connection reset
+          by peer]
+09:34 -!- ehsan [~ehsan@209.20.29.228] has joined #llvm
+09:34 -!- TobiasFar [~prosody@vs0204.flosoft-servers.net] has joined #llvm
+09:34 <@baldrick> chandlerc: so, should infinite loops be deleted or not?
+09:35 < chandlerc> i too wimped out
+09:35 < chandlerc> and lost
+09:35 <@baldrick> when?
+09:35 < chandlerc> dunno
+09:35 < chandlerc> i didn't really argue at the time
+09:35 <@baldrick> you seemed in fine form yesterday!
+09:35 < chandlerc> but folks eventually caved and made llvm not delete infloops
+09:35  * chandlerc glowers at nicholas and others
+09:36 < chandlerc> i think nicholas agreed w/ me, but lost the argument
+09:36 < chandlerc> hell, i think sabre agreed and lost hte argument
+09:39 <@baldrick> djc: take a look at tb-gcc.c in gcc/ada/ from recent versions
+                  of gcc
+09:39 <@baldrick> chandlerc: what does gcc do?
+09:40 < chandlerc> no idea
+09:40 -!- fyolnish [~fyolnish@KD111099002138.ppp-bb.dion.ne.jp] has joined #llvm
+09:40 < djc> baldrick: libunwind looks interesting, thanks for the pointers
+09:40 <@baldrick> djc: that file I mentioned is (a) pretty short, and (b) gets
+                  the backtrace using libgcc's unwind stuff
+
