@@ -285,24 +285,19 @@ class Function(Node):
 		cur = Argument(self.pos)
 		self.args = []
 		next = p.expr()
-		if not isinstance(next, RightPar):
-			while p.token.__class__ in (Comma, Colon):
-				
-				if isinstance(p.token, Colon):
-					cur.name = next
-					p.advance(Colon)
-				else:
-					cur.type = next
-					self.args.append(cur)
-					cur = Argument(self.pos)
-					p.advance(Comma)
-				
-				next = p.expr()
-		
-		if not isinstance(next, RightPar):
-			cur.type = next
+		while not isinstance(next, RightPar):
+			
+			cur.name = next
+			if isinstance(p.token, Colon):
+				p.advance(Colon)
+				cur.type = p.expr()
+			
 			self.args.append(cur)
-			p.advance(RightPar)
+			cur	= Argument(self.pos)
+			next = p.expr()
+			
+			if isinstance(next, Comma):
+				next = p.expr()
 		
 		self.rtype = None
 		if isinstance(p.token, RType):
