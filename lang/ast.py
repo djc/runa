@@ -21,6 +21,11 @@ class Node(object):
 		values = tuple(sorted((k, v) for (k, v) in self.__dict__.iteritems()))
 		return hash((self.__class__.__name__,) + values)
 
+class Expr(Node):
+	def __init__(self, pos):
+		Node.__init__(self, pos)
+		self.type = None
+
 # Terminals
 
 class Terminal(Node):
@@ -55,34 +60,34 @@ class Dedent(Terminal):
 class NL(Terminal):
 	pass
 
-class Bool(Terminal):
+class Bool(Expr, Terminal):
 	def __init__(self, val, pos):
-		Node.__init__(self, pos)
+		Expr.__init__(self, pos)
 		self.val = True if val == 'True' else False
 
-class Int(Terminal):
+class Int(Expr, Terminal):
 	def __init__(self, num, pos):
 		Node.__init__(self, pos)
 		self.val = num
 
-class Float(Terminal):
+class Float(Expr, Terminal):
 	def __init__(self, num, pos):
 		Node.__init__(self, pos)
 		self.val = num
 
-class String(Terminal):
+class String(Expr, Terminal):
 	def __init__(self, value, pos):
 		Node.__init__(self, pos)
 		self.val = value
 
-class Name(Terminal):
+class Name(Expr, Terminal):
 	def __init__(self, name, pos):
 		Node.__init__(self, pos)
 		self.name = name
 
 # Expression-level
 
-class BinaryOp(Node):
+class BinaryOp(Expr):
 	def led(self, p, left):
 		self.left = left
 		self.right = p.expr(self.lbp)
@@ -99,7 +104,7 @@ class Attrib(BinaryOp):
 		self.attrib = p.advance(Name)
 		return self
 
-class Slice(Node):
+class Slice(Expr):
 	fields = 'values',
 	def __init__(self, pos, vals):
 		self.values = vals
@@ -158,7 +163,7 @@ class Assign(BinaryOp):
 	lbp = 5
 	fields = 'left', 'right'
 
-class Not(Node):
+class Not(Expr):
 	op = 'not'
 	lbp = 0
 	fields = 'value',
@@ -166,7 +171,7 @@ class Not(Node):
 		self.value = p.expr()
 		return self
 
-class In(Node):
+class In(Expr):
 	op = 'in'
 	lbp = 70
 	fields = 'left', 'right'
@@ -242,7 +247,7 @@ class Call(BinaryOp):
 class Statement(Node):
 	lbp = 0
 
-class Suite(Node):
+class Suite(Statement):
 	
 	fields = 'stmts',
 	
@@ -308,7 +313,7 @@ class Function(Node):
 		self.suite = Suite(p, self.pos)
 		return self
 
-class Return(Node):
+class Return(Statement):
 	
 	kw = 'return'
 	lbp = 0
@@ -318,7 +323,7 @@ class Return(Node):
 		self.value = p.expr()
 		return self
 
-class Ternary(Node):
+class Ternary(Expr):
 	
 	lbp = 10
 	fields = 'cond', 'values'

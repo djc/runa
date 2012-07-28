@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from lang import tokenizer, ast, flow, codegen
+from lang import tokenizer, ast, typer, codegen
 import lang
 import optparse, sys, os, subprocess
 
@@ -10,6 +10,10 @@ def tokens(fn, opts):
 
 def parse(fn, opts):
 	print ast.parse(tokenizer.tokenize(open(fn)))
+
+def ti(fn, opts):
+	node = ast.parse(tokenizer.tokenize(open(fn)))
+	mod = typer.Module(node)
 
 def cfg(fn, opts):
 	node = ast.parse(tokenizer.tokenize(open(fn)))
@@ -39,6 +43,7 @@ def run(fn, opts):
 COMMANDS = {
 	'tokens': tokens,
 	'parse': parse,
+	'ti': ti,
 	'flow': cfg,
 	'generate': generate,
 	'compile': compile,

@@ -1,21 +1,87 @@
 import ast
 
+class Type(object):
+	pass
+
 class base(object):
+	
 	iface = False
+	forward = False
+	attribs = {}
+	methods = {}
+	type = Type()
+	
 	@property
 	def name(self):
 		return self.__class__.__name__
+	
 	def __repr__(self):
 		return '<type: %s>' % self.__class__.__name__
+	
 	def __eq__(self, other):
-		classes = self.__class__, other.__class__
-		return classes[0] == classes[1] and self.__dict__ == other.__dict__
+		if self.__class__ != other.__class__:
+			return False
+		if getattr(self, 'over', None) != getattr(other, 'over', None):
+			return False
+		return True
+	
 	def __ne__(self, other):
 		return not self.__eq__(other)
+	
+	def __hash__(self):
+		return hash(self.__class__)
+
+class module(base):
+	def __init__(self):
+		self.functions = {}
+
+class __ptr__(base):
+	
+	def __init__(self, over):
+		self.over = over
+		self.methods = {
+			'offset': (
+				'__ptr__.offset',
+				self,
+				[('n', get('u32'))]
+			),
+		}
+	
+	@property
+	def ir(self):
+		return self.over.ir + '*'
+	
+	def __repr__(self):
+		return '<type: %s[%s]>' % (self.__class__.__name__, self.over.name)
+
+class function(base):
+	
+	def __init__(self, rtype, formal):
+		self.over = rtype, formal
+	
+	def __repr__(self):
+		if not self.over[1] or isinstance(self.over[1][0], tuple):
+			formal = ['%r' % i[1] for i in self.over[1]]
+		else:
+			formal = ['%r' % i for i in self.over[1]]
+		return '<fun %r <- [%s]>' % (self.over[0], ', '.join(formal))
+	
+	@property
+	def ir(self):
+		raise NotImplementedError
+
+class float(base):
+	@property
+	def ir(self):
+		raise TypeError('not a concrete type')
+
+class int(base):
+	@property
+	def ir(self):
+		raise TypeError('not a concrete type')
 
 class void(base):
 	ir = 'void'
-	methods = {}
 
 class bool(base):
 	ir = 'i1'
@@ -24,34 +90,36 @@ class bool(base):
 		'__eq__': ('bool.__eq__', 'bool', [('v', 'bool')]),
 	}
 
-class int(base):
-	ir = 'i64'
-	methods = {
-		'__bool__': ('int.__bool__', 'bool', []),
-		'__str__': ('int.__str__', 'str', []),
-		'__eq__': ('int.__eq__', 'bool', [('v', 'int')]),
-		'__lt__': ('int.__lt__', 'bool', [('v', 'int')]),
-		'__add__': ('int.__add__', 'int', [('v', 'int')]),
-		'__sub__': ('int.__sub__', 'int', [('v', 'int')]),
-		'__mul__': ('int.__mul__', 'int', [('v', 'int')]),
-		'__div__': ('int.__div__', 'int', [('v', 'int')]),
-	}
+class byte(base):
+	ir = 'i8'
 
-class float(base):
-	ir = 'double'
-	methods = {
-		'__str__': ('float.__str__', 'str', []),
-	}
+class i32(base):
+	ir = 'i32'
+	bits = 32
+	signed = True
+
+class u32(base):
+	ir = 'i32'
+	bits = 32
+	signed = False
+
+class i64(base):
+	ir = 'i64'
+	bits = 64
+	signed = True
+
+class word(base):
+	ir = 'i64'
+	bits = 64
+	signed = True
+
+class uword(base):
+	ir = 'i64'
+	bits = 64
+	signed = False
 
 class str(base):
-	ir = '%str'
-	methods = {
-		'__bool__': ('str.__bool__', 'bool', []),
-		'__eq__': ('str.__eq__', 'bool', [('s', 'str')]),
-		'__lt__': ('str.__lt__', 'bool', [('s', 'str')]),
-		'__add__': ('str.__add__', 'str', [('s', 'str')]),
-		'__del__': ('str.__del__', 'void', []),
-	}
+	forward = True
 
 class IStr(base):
 	ir = '%IStr.wrap'
@@ -65,13 +133,6 @@ class IBool(base):
 	vttype = '%IBool'
 	impl = '@IBool'
 
-class file(base):
-	ir = '%file'
-	methods = {
-		'read': ('file.read', 'str', [('size', 'int')]),
-		'close': ('file.close', 'void', []),
-	}
-
 class array(base):
 	def __init__(self, over):
 		self.over = over
@@ -81,40 +142,19 @@ class array(base):
 	def __repr__(self):
 		return '<type: %s[%s]>' % (self.__class__.__name__, self.over.name)
 
-class intiter(base):
-	ir = '%intiter'
-	methods = {
-		'__next__': ('intiter.__next__', 'int', []),
-	}
-
-def add(node):
-	
-	attribs = {}
-	for i, (atype, name) in enumerate(node.attribs):
-		attribs[name.name] = i, ALL[atype.name]()
-	
-	vars = {
-		'ir': '%' + node.name.name,
-		'methods': {},
-		'attribs': attribs,
-	}
-	
-	for method in node.methods:
-		
-		name = method.name.name
-		irname = '%s.%s' % (node.name.name, name)
-		rtype = 'void' if not method.rtype else method.rtype.name
-		
-		args = []
-		for arg in method.args:
-			args.append((arg.name.name, arg.type.name))
-		
-		vars['methods'][name] = irname, rtype, args
-		method.irname = irname
-	
-	cls = type(node.name.name, (base,), vars)
-	ALL[node.name.name] = cls
-	return cls()
+def get(t):
+	if t is None:
+		return void()
+	elif isinstance(t, base):
+		return t
+	elif isinstance(t, basestring):
+		return ALL[t]()
+	elif isinstance(t, ast.Name):
+		return ALL[t.name]()
+	elif isinstance(t, ast.Elem):
+		return ALL[t.obj.name](get(t.key))
+	else:
+		assert False, 'no type %s' % t
 
 ALL = {}
 for k in globals().keys():
@@ -122,23 +162,43 @@ for k in globals().keys():
 	if type(obj) == type and base in obj.__bases__:
 		ALL[k] = globals()[k]
 
-CONST = {
-	ast.Bool: ALL['bool'],
-	ast.Int: ALL['int'],
-	ast.Float: ALL['float'],
-	ast.String: ALL['str'],
-}
+for k, cls in ALL.iteritems():
+	for m, mdata in cls.methods.iteritems():
+		rtype = get(mdata[1])
+		atypes = [(n, get(t)) for (n, t) in mdata[2]]
+		cls.methods[m] = (m[0], rtype, atypes)
 
-def get(t):
-	if isinstance(t, base):
-		return t
-	elif isinstance(t, basestring):
-		return ALL[t]()
-	elif isinstance(t, ast.Name):
-		return ALL[t.name]()
-	elif t.__class__ in CONST:
-		return CONST[t.__class__]()
-	elif isinstance(t, ast.Elem):
-		return ALL[t.obj.name](get(t.key))
+INTS = {i32(), u32(), i64(), int(), word(), uword()}
+FLOATS = {float()}
+
+def add(node):
+	
+	if node.name.name in ALL and ALL[node.name.name].forward:
+		cls = ALL[node.name.name]
 	else:
-		assert False, 'no type %s' % t
+		cls = ALL[node.name.name] = type(node.name.name, (base,), {
+			'ir': '%' + node.name.name,
+			'methods': {},
+			'attribs': {},
+		})
+	
+	for i, (atype, name) in enumerate(node.attribs):
+		cls.attribs[name.name] = i, get(atype)
+	
+	for method in node.methods:
+		
+		name = method.name.name
+		irname = '%s.%s' % (node.name.name, name)
+		rtype = get('void' if not method.rtype else method.rtype.name)
+		
+		args = []
+		for i, arg in enumerate(method.args):
+			if not i and arg.name.name == 'self':
+				args.append(('self', get(node.name)))
+			else:
+				args.append((arg.name.name, get(arg.type)))
+		
+		cls.methods[name] = irname, rtype, args
+		method.irname = irname
+	
+	return cls()
