@@ -1,4 +1,4 @@
-from . import tokenizer, ast, flow, codegen
+from . import tokenizer, ast, blocks, flow, codegen
 from util import Error
 import sys, os, subprocess
 
@@ -9,6 +9,15 @@ TRIPLES = {
 	'darwin': 'x86_64-apple-darwin11.0.0',
 	'linux2': 'x86_64-pc-linux-gnu',
 }
+
+def tokenize(f):
+	return tokenizer.tokenize(f)
+
+def parse(tokens):
+	return ast.parse(tokens)
+
+def module(ast):
+	return blocks.Module(ast)
 
 def llir(fn, full=True):
 	

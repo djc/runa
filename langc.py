@@ -1,40 +1,26 @@
 #!/usr/bin/env python
 
-from lang import tokenizer, ast, typer, codegen, blocks
 import lang
 import optparse, sys, os, subprocess
 
 def tokens(fn, opts):
-	for x in tokenizer.tokenize(open(fn)):
+	for x in lang.tokenize(open(fn)):
 		print x
 
 def parse(fn, opts):
-	print ast.parse(tokenizer.tokenize(open(fn)))
+	print lang.parse(lang.tokenize(open(fn)))
 
 def bl(fn, opts):
-	mod = blocks.Module(ast.parse(tokenizer.tokenize(open(fn))))
-	for k, obj in sorted(mod.code.iteritems()):
-		print 'START', k
-		print 'FLOW', obj.flow
-		print
-		print
+	mod = lang.module(lang.parse(lang.tokenize(open(fn))))
+	#for k, obj in sorted(mod.code.iteritems()):
+	#	print 'START', k
+	#	print 'FLOW', obj.flow
+	#	print
+	#	print
 	return mod
 
 def ti(fn, opts):
-	node = ast.parse(tokenizer.tokenize(open(fn)))
-	mod = typer.Module(node)
-
-def cfg(fn, opts):
-	node = ast.parse(tokenizer.tokenize(open(fn)))
-	mod = flow.Module(node)
-	for name, fun in mod.functions.iteritems():
-		if fun.rt: continue
-		print 'GRAPH', name
-		for i, block in enumerate(fun.graph):
-			print '%02i' % i, [i.id for i in block.preds]
-			for step in block.steps:
-				print ' ', step
-				pass
+	pass
 
 def generate(fn, opts):
 	print lang.llir(fn, opts.full)
@@ -54,7 +40,6 @@ COMMANDS = {
 	'parse': parse,
 	'blocks': bl,
 	'ti': ti,
-	'flow': cfg,
 	'generate': generate,
 	'compile': compile,
 	'run': run,
