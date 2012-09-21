@@ -40,7 +40,7 @@ class FlowGraph(object):
 	
 	def __init__(self):
 		self.blocks = {0: Block('entry')}
-		self.edges = {}
+		self.edges = None
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
@@ -172,4 +172,27 @@ class Module(object):
 					self.code[(n.name.name, m.name.name)] = m
 		
 		for k, v in sorted(self.code.iteritems()):
-			self.code[k].flow = FlowFinder().build(v.suite)
+			
+			cfg = self.code[k].flow = FlowFinder().build(v.suite)
+			cfg.edges = {}
+			
+			for i, bl in cfg.blocks.iteritems():
+				
+				if not bl.steps:
+					auto = ast.Return(None)
+					auto.value = None
+					bl.steps.append(auto)
+					continue
+				
+				if isinstance(bl.steps[-1], Branch):
+					cfg.edges.setdefault(i, []).append(bl.steps[-1].label)
+				elif isinstance(bl.steps[-1], CondBranch):
+					cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
+					cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
+			
+			reachable = {0}
+			for src, dst in cfg.edges.iteritems():
+				reachable |= set(dst)
+			
+			for i in set(cfg.blocks) - reachable:
+				del cfg.blocks[i]
