@@ -172,8 +172,4 @@ class Module(object):
 					self.code[(n.name.name, m.name.name)] = m
 		
 		for k, v in sorted(self.code.iteritems()):
-			print 'START', k
 			self.code[k].flow = FlowFinder().build(v.suite)
-			print 'FLOW', self.code[k].flow
-			print
-			print

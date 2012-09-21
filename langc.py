@@ -12,7 +12,13 @@ def parse(fn, opts):
 	print ast.parse(tokenizer.tokenize(open(fn)))
 
 def bl(fn, opts):
-	return blocks.Module(ast.parse(tokenizer.tokenize(open(fn))))
+	mod = blocks.Module(ast.parse(tokenizer.tokenize(open(fn))))
+	for k, obj in sorted(mod.code.iteritems()):
+		print 'START', k
+		print 'FLOW', obj.flow
+		print
+		print
+	return mod
 
 def ti(fn, opts):
 	node = ast.parse(tokenizer.tokenize(open(fn)))
