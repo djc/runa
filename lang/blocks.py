@@ -41,6 +41,7 @@ class FlowGraph(object):
 	def __init__(self):
 		self.blocks = {0: Block('entry')}
 		self.edges = None
+		self.redges = None
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
@@ -196,3 +197,8 @@ class Module(object):
 			
 			for i in set(cfg.blocks) - reachable:
 				del cfg.blocks[i]
+			
+			cfg.redges = {}
+			for src, dsts in cfg.edges.iteritems():
+				for dst in dsts:
+					cfg.redges.setdefault(dst, []).append(src)
