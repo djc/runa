@@ -1,7 +1,8 @@
 import ast
 
 class Type(object):
-	pass
+	def __eq__(self, other):
+		return self.__class__ == other.__class__
 
 class base(object):
 	
