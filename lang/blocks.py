@@ -32,6 +32,9 @@ class Block(object):
 	
 	def push(self, inst):
 		self.steps.append(inst)
+	
+	def needbranch(self):
+		return not isinstance(self.steps[-1], ast.Return)
 
 class FlowGraph(object):
 	
@@ -97,7 +100,8 @@ class FlowFinder(object):
 			
 			self.cur = block
 			self.visit(suite)
-			exits.append(self.cur)
+			if self.cur.needbranch():
+				exits.append(self.cur)
 		
 		exit = self.flow.block('if-exit')
 		if prevcond:
