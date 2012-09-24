@@ -84,6 +84,10 @@ Niko Matsakis
 Borrowed Pointer Tutorial
 http://smallcultfollowing.com/babysteps/blog/2012/07/17/borrowed-pointer-tutorial/
 
+Yossi Kreinin
+Error codes vs exceptions: critical code vs typical code
+http://www.yosefk.com/blog/error-codes-vs-exceptions-critical-code-vs-typical-code.html
+
 
 Implementation notes
 ====================
