@@ -1,4 +1,4 @@
-from . import tokenizer, ast, blocks, flow, codegen
+from . import tokenizer, ast, blocks, ti, flow, codegen
 from util import Error
 import sys, os, subprocess
 
@@ -18,6 +18,9 @@ def parse(tokens):
 
 def module(ast):
 	return blocks.Module(ast)
+
+def type(mod):
+	ti.typer(mod)
 
 def llir(fn, full=True):
 	

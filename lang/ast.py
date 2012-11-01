@@ -22,6 +22,7 @@ class Node(object):
 		return hash((self.__class__.__name__,) + values)
 
 class Expr(Node):
+	fields = ()
 	def __init__(self, pos):
 		Node.__init__(self, pos)
 		self.type = None
@@ -158,11 +159,6 @@ class Div(BinaryOp):
 	lbp = 60
 	fields = 'left', 'right'
 
-class Assign(BinaryOp):
-	op = '='
-	lbp = 5
-	fields = 'left', 'right'
-
 class Not(Expr):
 	op = 'not'
 	lbp = 0
@@ -246,6 +242,17 @@ class Call(BinaryOp):
 
 class Statement(Node):
 	lbp = 0
+
+class Assign(Statement):
+	
+	op = '='
+	lbp = 5
+	fields = 'left', 'right'
+	
+	def led(self, p, left):
+		self.left = left
+		self.right = p.expr(self.lbp)
+		return self
 
 class Suite(Statement):
 	

@@ -20,7 +20,7 @@ def bl(fn, opts):
 	return mod
 
 def ti(fn, opts):
-	pass
+	lang.type(bl(fn, {}))
 
 def generate(fn, opts):
 	print lang.llir(fn, opts.full)

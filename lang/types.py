@@ -33,7 +33,8 @@ class base(object):
 		return hash(self.__class__)
 
 class module(base):
-	def __init__(self):
+	def __init__(self, path=None):
+		self.path = path
 		self.functions = {}
 
 class __ptr__(base):
