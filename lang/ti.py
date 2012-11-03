@@ -269,6 +269,7 @@ class TypeChecker(object):
 		self.visit(node.right, scope)
 		assert node.right.type is not None
 		scope[node.left.name] = Object(node.right.type)
+		node.left.type = node.right.type
 	
 	def Ternary(self, node, scope):
 		self.visit(node.cond, scope)
