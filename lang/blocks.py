@@ -180,7 +180,7 @@ class Module(object):
 					self.refs[name.name] = n.base.name + '.' + name.name
 			
 			elif isinstance(n, ast.Class):
-				self.types[n.name.name] = n
+				self.types[n.name.name] = types.add(n)
 				for m in n.methods:
 					self.code[(n.name.name, m.name.name)] = m
 		

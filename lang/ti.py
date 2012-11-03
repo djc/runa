@@ -314,7 +314,7 @@ def typer(mod):
 		assert False, 'unimplemented'
 	
 	for k, v in mod.types.iteritems():
-		base[k] = types.add(v)
+		base[k] = v
 	
 	for k, fun in mod.code.iteritems():
 		if fun.args[0].type is None:
