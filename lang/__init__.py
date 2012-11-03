@@ -1,4 +1,4 @@
-from . import tokenizer, ast, blocks, ti, codegen
+from . import tokenizer, ast, blocks, ti, specialize, codegen
 from util import Error
 import sys, os, subprocess
 
@@ -21,6 +21,9 @@ def module(ast):
 
 def type(mod):
 	ti.typer(mod)
+
+def spec(mod):
+	specialize.specialize(mod)
 
 def llir(fn, full=True):
 	

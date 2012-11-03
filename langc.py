@@ -20,7 +20,13 @@ def bl(fn, opts):
 	return mod
 
 def ti(fn, opts):
-	lang.type(bl(fn, {}))
+	mod = bl(fn, {})
+	lang.type(mod)
+
+def specialize(fn, opts):
+	mod = bl(fn, {})
+	lang.type(mod)
+	lang.spec(mod)
 
 def generate(fn, opts):
 	print lang.llir(fn, opts.full)
@@ -40,6 +46,7 @@ COMMANDS = {
 	'parse': parse,
 	'blocks': bl,
 	'ti': ti,
+	'specialize': specialize,
 	'generate': generate,
 	'compile': compile,
 	'run': run,

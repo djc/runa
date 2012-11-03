@@ -41,7 +41,7 @@ class Function(object):
 	def __init__(self, decl, type):
 		self.decl = decl
 		self.type = type
-		self.name = None # set in the Module
+		self.name = decl # might be overridden by the Module
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
@@ -84,6 +84,20 @@ ROOT = Module('', {
 		}),
 	}),
 })
+
+def resolve(mod, n):
+	parts = n.split('.')
+	if parts[0] in ROOT:
+		obj = ROOT
+		for p in parts:
+			obj = obj[p]
+		return obj
+	elif parts[0] in mod.types:
+		method = mod.types[parts[0]].methods[parts[1]]
+		return Function(method[0], types.function(method[1], method[2]))
+	elif parts[0] in types.ALL:
+		method = types.get(parts[0]).methods[parts[1]]
+		return Function(method[0], types.function(method[1], method[2]))
 
 class Scope(object):
 	

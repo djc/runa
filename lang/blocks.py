@@ -10,6 +10,7 @@ class Branch(object):
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
 class CondBranch(object):
+	fields = ('cond',)
 	def __init__(self, cond, tg1, tg2):
 		self.cond = cond
 		self.tg1 = tg1
