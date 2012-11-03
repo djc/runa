@@ -20,6 +20,7 @@ class Module(object):
 		for k, val in init.iteritems():
 			if isinstance(val, Function):
 				self.type.functions[k] = val.type
+				val.name = '%s.%s' % (name, k)
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
@@ -40,6 +41,7 @@ class Function(object):
 	def __init__(self, decl, type):
 		self.decl = decl
 		self.type = type
+		self.name = None # set in the Module
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
@@ -250,6 +252,9 @@ class TypeChecker(object):
 		else:
 			node.name.name = '%s.__init__' % node.name.name
 			node.type = obj
+		
+		if isinstance(obj, Function):
+			node.name.name = obj.name
 	
 	def CondBranch(self, node, scope):
 		self.visit(node.cond, scope)
