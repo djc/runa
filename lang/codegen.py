@@ -1,4 +1,4 @@
-import ast, types, flow
+import ast, types
 
 MAIN_SETUP = [
 	'; convert argc/argv to argument array',
