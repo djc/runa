@@ -44,6 +44,7 @@ class FlowGraph(object):
 		self.blocks = {0: Block('entry')}
 		self.edges = None
 		self.redges = None
+		self.exits = None
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
@@ -54,6 +55,15 @@ class FlowGraph(object):
 		id = len(self.blocks)
 		self.blocks[id] = Block(anno)
 		return id, self.blocks[id]
+	
+	def walk(self, path):
+		next = self.edges.get(path[-1], [])
+		if not next:
+			yield path + (None,)
+			return
+		for n in next:
+			for res in self.walk(path + (n,)):
+				yield res
 
 class FlowFinder(object):
 	
@@ -193,9 +203,11 @@ class Module(object):
 					cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
 					cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
 			
-			reachable = {0}
-			for src, dst in cfg.edges.iteritems():
-				reachable |= set(dst)
+			cfg.exits = set()
+			reachable = set()
+			for p in cfg.walk((0,)):
+				reachable |= set(p[:-1])
+				cfg.exits.add(p[-2])
 			
 			for i in set(cfg.blocks) - reachable:
 				del cfg.blocks[i]
