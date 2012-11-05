@@ -302,6 +302,11 @@ class TypeChecker(object):
 def process(base, fun):
 	
 	start = Scope(base)
+	if fun.rtype is None:
+		fun.rtype = types.void()
+	if not isinstance(fun.rtype, types.base):
+		fun.rtype = start.resolve(fun.rtype)
+	
 	for arg in fun.args:
 		if not isinstance(arg.type, types.base):
 			arg.type = start.resolve(arg.type)
