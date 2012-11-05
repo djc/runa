@@ -22,7 +22,8 @@ class CondBranch(object):
 
 class Block(object):
 	
-	def __init__(self, anno=None):
+	def __init__(self, id, anno=None):
+		self.id = id
 		self.anno = anno
 		self.steps = []
 		self.assigns = set()
@@ -42,7 +43,7 @@ class Block(object):
 class FlowGraph(object):
 	
 	def __init__(self):
-		self.blocks = {0: Block('entry')}
+		self.blocks = {0: Block(0, 'entry')}
 		self.edges = None
 		self.redges = None
 		self.exits = None
@@ -54,8 +55,8 @@ class FlowGraph(object):
 	
 	def block(self, anno=None):
 		id = len(self.blocks)
-		self.blocks[id] = Block(anno)
-		return id, self.blocks[id]
+		self.blocks[id] = Block(id, anno)
+		return self.blocks[id]
 	
 	def walk(self, path):
 		next = self.edges.get(path[-1], [])
@@ -95,21 +96,21 @@ class FlowFinder(object):
 			if i and cond is not None:
 				assert isinstance(prevcond.steps[-1], CondBranch)
 				condblock = self.flow.block('if-cond')
-				prevcond.steps[-1].tg2 = condblock[0]
-				condblock[1].push(CondBranch(cond, None, None))
-				prevcond = condblock[1]
+				prevcond.steps[-1].tg2 = condblock.id
+				condblock.push(CondBranch(cond, None, None))
+				prevcond = condblock
 			
-			id, block = self.flow.block('if-suite')
+			block = self.flow.block('if-suite')
 			if i and cond is not None:
 				assert isinstance(prevcond.steps[-1], CondBranch)
-				prevcond.steps[-1].tg1 = id
+				prevcond.steps[-1].tg1 = block.id
 			
 			if not i:
-				self.cur.push(CondBranch(cond, id, None))
+				self.cur.push(CondBranch(cond, block.id, None))
 				prevcond = self.cur
 			elif cond is None:
 				assert isinstance(prevcond.steps[-1], CondBranch)
-				prevcond.steps[-1].tg2 = id
+				prevcond.steps[-1].tg2 = block.id
 				prevcond = None
 			
 			self.cur = block
@@ -120,11 +121,11 @@ class FlowFinder(object):
 		exit = self.flow.block('if-exit')
 		if prevcond:
 			assert isinstance(prevcond.steps[-1], CondBranch)
-			prevcond.steps[-1].tg2 = exit[0]
+			prevcond.steps[-1].tg2 = exit.id
 		
-		self.cur = exit[1]
+		self.cur = exit
 		for block in exits:
-			block.push(Branch(exit[0]))
+			block.push(Branch(exit.id))
 	
 	def While(self, node):
 		
