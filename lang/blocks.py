@@ -168,7 +168,7 @@ class Module(object):
 		self.refs = {}
 		self.constants = {}
 		self.types = {}
-		self.code = {}
+		self.code = []
 		self.build(node)
 	
 	def build(self, node):
@@ -183,11 +183,11 @@ class Module(object):
 			elif isinstance(n, ast.Class):
 				self.types[n.name.name] = types.add(n)
 				for m in n.methods:
-					self.code[(n.name.name, m.name.name)] = m
+					self.code.append(((n.name.name, m.name.name), m))
 		
-		for k, v in sorted(self.code.iteritems()):
+		for k, v in self.code:
 			
-			cfg = self.code[k].flow = FlowFinder().build(v.suite)
+			cfg = v.flow = FlowFinder().build(v.suite)
 			cfg.edges = {}
 			
 			for i, bl in cfg.blocks.iteritems():

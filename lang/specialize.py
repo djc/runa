@@ -77,5 +77,5 @@ class Specializer(object):
 				self.visit(step)
 
 def specialize(mod):
-	for name, code in sorted(mod.code.iteritems()):
+	for name, code in mod.code:
 		Specializer(mod, code.flow).propagate()

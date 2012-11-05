@@ -335,7 +335,7 @@ def typer(mod):
 	for k, v in mod.types.iteritems():
 		base[k] = v
 	
-	for k, fun in mod.code.iteritems():
+	for k, fun in mod.code:
 		if fun.args[0].type is None:
 			assert len(k) > 1
 			assert fun.args[0].name.name == 'self'
