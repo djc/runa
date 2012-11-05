@@ -20,11 +20,11 @@ def bl(fn, opts):
 	return mod
 
 def ti(fn, opts):
-	mod = bl(fn, {})
+	mod = bl(fn, opts)
 	lang.type(mod)
 
 def specialize(fn, opts):
-	mod = bl(fn, {})
+	mod = bl(fn, opts)
 	lang.type(mod)
 	lang.spec(mod)
 
