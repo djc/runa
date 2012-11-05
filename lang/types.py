@@ -16,6 +16,10 @@ class base(object):
 	def name(self):
 		return self.__class__.__name__
 	
+	@property
+	def ir(self):
+		return '%' + self.name
+	
 	def __repr__(self):
 		return '<type: %s>' % self.__class__.__name__
 	
