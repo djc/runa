@@ -6,6 +6,7 @@ class Type(object):
 
 class base(object):
 	
+	byval = False
 	iface = False
 	forward = False
 	attribs = {}
@@ -92,9 +93,11 @@ class int(base):
 
 class void(base):
 	ir = 'void'
+	byval = True
 
 class bool(base):
 	ir = 'i1'
+	byval = True
 	methods = {
 		'__str__': ('bool.__str__', 'str', []),
 		'__eq__': ('bool.__eq__', 'bool', [('v', 'bool')]),
@@ -102,31 +105,39 @@ class bool(base):
 
 class byte(base):
 	ir = 'i8'
+	bits = 8
+	signed = False
+	byval = True
 
 class i32(base):
 	ir = 'i32'
 	bits = 32
 	signed = True
+	byval = True
 
 class u32(base):
 	ir = 'i32'
 	bits = 32
 	signed = False
+	byval = True
 
 class i64(base):
 	ir = 'i64'
 	bits = 64
 	signed = True
+	byval = True
 
 class word(base):
 	ir = 'i64'
 	bits = 64
 	signed = True
+	byval = True
 
 class uword(base):
 	ir = 'i64'
 	bits = 64
 	signed = False
+	byval = True
 
 class str(base):
 	forward = True
@@ -178,7 +189,9 @@ for k, cls in ALL.iteritems():
 		atypes = [(n, get(t)) for (n, t) in mdata[2]]
 		cls.methods[m] = (m[0], rtype, atypes)
 
-INTS = {i32(), u32(), i64(), int(), word(), uword()}
+SINTS = {i32(), i64(), word(), int()}
+UINTS = {byte(), u32(), uword()}
+INTS = SINTS | UINTS
 FLOATS = {float()}
 
 def add(node):
