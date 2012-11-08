@@ -54,6 +54,10 @@ class __ptr__(base):
 		}
 	
 	@property
+	def name(self):
+		return '__ptr__[%s]' % self.over.name
+	
+	@property
 	def ir(self):
 		return self.over.ir + '*'
 	
