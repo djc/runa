@@ -218,6 +218,7 @@ class Call(BinaryOp):
 	def led(self, p, left):
 		
 		self.name = left
+		self.fun = None # for type inferencing
 		self.args = []
 		if isinstance(p.token, RightPar):
 			p.advance(RightPar)

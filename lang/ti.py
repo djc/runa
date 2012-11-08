@@ -11,6 +11,12 @@ class Object(object):
 		show = ('%s=%r' % (k, v) for (k, v) in contents)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
+class Init(object):
+	def __init__(self, type):
+		self.type = type
+	def __repr__(self):
+		return '<%s(%s)>' % (self.__class__.__name__, self.type)
+
 class Module(object):
 	
 	def __init__(self, name, init):
@@ -250,21 +256,26 @@ class TypeChecker(object):
 				mod = scope[node.name.obj.name]
 				fun = mod.type.functions[node.name.attrib.name]
 				qual = mod.name + '.' + node.name.attrib.name
-				node.name = ast.Name(qual, node.name.pos)
+				node.fun = Function(qual, fun)
 				node.type = fun.over[0]
 			else:
 				meth = node.name.obj.type.methods[node.name.attrib.name]
-				mtype = types.function(meth[1], meth[2])
-				node.name = Function(meth[0], mtype)
+				mtype = types.function(meth[1], [i[1] for i in meth[2]])
+				node.fun = Function(meth[0], mtype)
 				node.type = mtype.over[0]
 			return
 		
 		assert isinstance(node.name, ast.Name), 'call non-{attrib,name,type}'
 		obj = scope[node.name.name]
 		if not isinstance(obj, types.base):
-			node.type = scope[node.name.name].type.over[0]
+			node.fun = scope[node.name.name]
+			node.type = node.fun.type.over[0]
 		else:
 			node.name.name = '%s.__init__' % node.name.name
+			method = obj.methods['__init__']
+			mtype = types.function(method[1], [i[1] for i in method[2]])
+			node.fun = Function(method[0], mtype)
+			node.args.insert(0, Init(obj))
 			node.type = obj
 		
 		if isinstance(obj, Function):
