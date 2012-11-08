@@ -25,20 +25,9 @@ def type(mod):
 def spec(mod):
 	specialize.specialize(mod)
 
-def llir(fn, full=True):
-	
-	node = ast.parse(tokenizer.tokenize(open(fn)))
-	src = codegen.source(flow.Module(node))
-	if not full:
-		return src
-	
-	std = []
-	for fn in sorted(os.listdir(RT_DIR)):
-		with open(os.path.join(RT_DIR, fn)) as f:
-			std.append(f.read() + '\n')
-	
+def generate(mod):
 	triple = 'target triple = "%s"\n\n' % TRIPLES[sys.platform]
-	return triple + ''.join(std) + src
+	return triple + codegen.source(mod)
 
 def compile(fn, outfn):
 	

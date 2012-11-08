@@ -1,93 +1,17 @@
-import ast, types
-
-MAIN_SETUP = [
-	'; convert argc/argv to argument array',
-	'%args = alloca %array.str',
-	'call i64 @argv(i32 %argc, i8** %argv, %array.str* %args)',
-	'%a.data = getelementptr %array.str* %args, i32 0, i32 1',
-	'%name = load %str** %a.data, align 8',
-	'%a1.p = getelementptr inbounds %str* %name, i64 1',
-	'%a.len.ptr = getelementptr %array.str* %args, i32 0, i32 0',
-	'%a.len = load i64* %a.len.ptr',
-	'%newlen = sub i64 %a.len, 1',
-	'store i64 %newlen, i64* %a.len.ptr',
-	'store %str* %a1.p, %str** %a.data',
-]
-
-MAIN_TEARDOWN = [
-	'%a.buffer = bitcast %str* %name to i8*',
-	'call void @lang.free(i8* %a.buffer)',
-]
+import ast, types, ti
 
 class Value(object):
-	def __init__(self, type, ptr=None, val=None, var=False, const=False):
+	def __init__(self, type, var):
 		self.type = type
-		self.ptr = ptr
-		self.val = val
 		self.var = var
-		self.const = const
-		self.code = []
 	def __repr__(self):
-		s = ['<value[%s]' % self.type.name]
-		if self.ptr:
-			s.append(' ptr=' + self.ptr)
-		if self.val:
-			s.append(' val=' + self.val)
-		s.append('>')
-		return ''.join(s)
-
-class Constants(object):
-	
-	def __init__(self):
-		self.next = 0
-		self.lines = []
-	
-	def id(self, type):
-		s = '@%s%s' % (type, self.next)
-		self.next += 1
-		return s
-	
-	def bool(self, node, name=None):
-		id = self.id('bool') if name is None else ('@' + name)
-		value = '1' if node.value else '0'
-		self.lines.append('%s = constant i1 %s\n' % (id, value))
-		return Value(types.bool(), ptr=id, const=True)
-	
-	def int(self, node, name=None):
-		id = self.id('int') if name is None else ('@' + name)
-		bits = id, types.int().ir, node.value
-		self.lines.append('%s = constant %s %s\n' % bits)
-		return Value(types.int(), ptr=id, const=True)
-	
-	def float(self, node, name=None):
-		id = self.id('flt') if name is None else ('@' + name)
-		bits = id, types.float().ir, node.value
-		self.lines.append('%s = constant %s %s\n' % bits)
-		return Value(types.float(), ptr=id, const=True)
-	
-	def str(self, node, name=None):
-		
-		id = self.id('str') if name is None else ('@' + name)
-		l = len(node.value)
-		type = '[%i x i8]' % l
-		bits = [id + '_data', '=', 'constant']
-		bits += ['%s c"%s"\n' % (type, node.value)]
-		self.lines.append(' '.join(bits))
-		
-		data = type, id
-		bits = [id, '=', 'constant', types.str().ir]
-		bits.append('{ i1 0, i64 %s,' % l)
-		bits.append('i8* getelementptr(%s* %s_data, i32 0, i32 0)}\n' % data)
-		self.lines.append(' '.join(bits))
-		return Value(types.str(), ptr=id, const=True)
-	
-	def add(self, value, name=None):
-		return getattr(self, value.type.name)(value, name)
+		attrs = ['%s=%r' % p for p in self.__dict__.iteritems()]
+		return '<Value(%s)>' % ', '.join(attrs)
 
 class Frame(object):
 	
 	def __init__(self, parent=None):
-		self.vars = 1
+		self.vars = 0
 		self.parent = parent
 		self.defined = {}
 	
@@ -102,9 +26,12 @@ class Frame(object):
 	def __setitem__(self, key, value):
 		self.defined[key] = value
 	
+	def get(self, key, default=None):
+		return self[key] if key in self else default
+	
 	def varname(self):
 		self.vars += 1
-		return '%%%i' % (self.vars - 1)
+		return '%i' % (self.vars - 1)
 
 class CodeGen(object):
 	
@@ -112,7 +39,7 @@ class CodeGen(object):
 		self.buf = []
 		self.level = 0
 		self.start = True
-		self.const = Constants()
+		self.tlabels = 0
 	
 	def visit(self, node, frame):
 		
@@ -166,336 +93,328 @@ class CodeGen(object):
 			self.writeline('%s: ; %s' % (label, hint))
 		self.indent()
 	
-	# Other helper methods
-	
-	def value(self, val, frame):
-		if not val.val:
+	def coerce(self, val, dst, frame):
+		
+		vt = val.type, 0
+		while isinstance(vt[0], types.__ptr__):
+			vt = vt[0].over, vt[1] + 1
+		
+		dt = dst, 0
+		while isinstance(dt[0], types.__ptr__):
+			dt = dt[0].over, dt[1] + 1
+		
+		while vt[1] > dt[1]:
 			res = frame.varname()
-			bits = (res, val.type.ir + '*', val.ptr)
-			self.writeline('%s = load %s %s' % bits)
-			if not val.var:
-				val.val = res
-		return val.type.ir + ' ' + (val.val if val.val else res)
-	
-	def ptr(self, val, frame):
-		assert val.ptr
-		return val.type.ir + '* ' + val.ptr
-	
-	def cleanups(self, *args):
-		lines = []
-		for val in args:
-			if not val.ptr: continue
-			if val.var or val.const: continue
-			if '__del__' not in val.type.methods: continue
-			method = val.type.methods['__del__']
-			ir = '%s* %s' % (val.type.ir, val.ptr)
-			lines.append('call i64 @%s(%s)' % (method[0], ir))
-		return lines
-	
-	def iwrap(self, atype, val, frame):
+			bits = res, val.type.ir, val.var
+			self.writeline('%%%s = load %s %%%s' % bits)
+			val = Value(val.type.over, res)
+			vt = vt[0], vt[1] - 1
 		
-		self.writeline('; wrap %s in %s' % (val.type.name, atype.name))
-		wobj = frame.varname()
-		bits = wobj, atype.ir
-		self.writeline('%s = alloca %s' % bits)
+		if vt == dt:
+			return val
 		
-		vtptr = frame.varname()
-		bits = vtptr, atype.ir, wobj
-		self.writeline('%s = getelementptr %s* %s, i32 0, i32 0' % bits)
+		if vt[0] in types.UINTS and dt[0] in types.UINTS:
+			assert dt[0].bits > vt[0].bits
+			assert not vt[1] and not dt[1]
+			res = frame.varname()
+			bits = res, vt[0].ir, val.var, dt[0].ir
+			self.writeline('%%%s = zext %s %%%s to %s' % bits)
+			return Value(dt[0], res)
 		
-		bits = atype.vttype, atype.impl, val.type.name, atype.vttype, vtptr
-		self.writeline('store %s* %s.%s, %s** %s' % bits)
-		
-		argptr = frame.varname()
-		bits = argptr, atype.ir, wobj
-		self.writeline('%s = getelementptr %s* %s, i32 0, i32 1' % bits)
-		
-		cast = frame.varname()
-		bits = cast, self.ptr(val, frame)
-		self.writeline('%s = bitcast %s to i8*' % bits)
-		
-		bits = cast, argptr
-		self.writeline('store i8* %s, i8** %s' % bits)
-		
-		return Value(atype, ptr=wobj)
-	
-	def call(self, name, args, frame):
-		
-		if '.' not in name:
-			meta = flow.LIBRARY[name]
-			name, rtype, atypes = meta[0], meta[1], meta[2]
-		else:
-			tname, method = name.split('.', 1)
-			type = types.get(tname)
-			meta = type.methods[method]
-			name, rtype, atypes = meta[0], meta[1], meta[2]
-			atypes = [('self', type.name)] + atypes
-		
-		avals, seq = [], []
-		for i, n in enumerate(args):
-			
-			arg = n
-			if not isinstance(n, Value):
-				arg = self.visit(n, frame)
-			
-			avals.append(arg)
-			atype = types.get(atypes[i][1])
-			if atype.iface:
-				arg = self.iwrap(atype, arg, frame)
-			
-			seq.append(self.ptr(arg, frame))
-		
-		rval = Value(types.get(rtype))
-		if rval.type != types.void():
-			rval.ptr = frame.varname()
-			self.writeline('%s = alloca %s' % (rval.ptr, rval.type.ir))
-			seq.append(self.ptr(rval, frame))
-		
-		if '__next__' in name:
-			call = '%loopvar = call i1 @' + name + '(' + ', '.join(seq) + ')'
-		else:
-			call = 'call i64 @' + name + '(' + ', '.join(seq) + ')'
-		
-		lines = [call] + self.cleanups(*avals)
-		self.writelines(lines)
-		frame.vars += len(lines) - (1 if '__next__' in name else 0)
-		
-		return rval
+		assert False, '%s -> %s' % (val.type, dst)
 	
 	# Node visitation methods
 	
-	def Reference(self, node, frame):
-		return frame[node.name]
+	def Name(self, node, frame):
+		return frame.get(node.name)
 	
-	def Constant(self, node, frame):
-		return self.const.add(node)
+	def Bool(self, node, frame):
+		tmp = frame.varname()
+		self.writeline('%%%s = alloca %s' % (tmp, node.type.ir))
+		val = '1' if node.val else '0'
+		bits = node.type.ir, val, types.__ptr__(node.type).ir, tmp
+		self.writeline('store %s %s, %s %%%s' % bits)
+		return Value(types.__ptr__(node.type), tmp)
 	
-	def Call(self, node, frame):
-		return self.call(node.name, node.args, frame)
+	def Int(self, node, frame):
+		tmp = frame.varname()
+		self.writeline('%%%s = alloca %s' % (tmp, node.type.ir))
+		bits = node.type.ir, node.val, types.__ptr__(node.type).ir, tmp
+		self.writeline('store %s %s, %s %%%s' % bits)
+		return Value(types.__ptr__(node.type), tmp)
 	
 	def Init(self, node, frame):
-		var = frame.varname()
-		self.writeline('%s = alloca %s' % (var, node.type.ir))
-		val = Value(node.type, ptr=var)
-		args = [val] + node.args
-		self.call('%s.__init__' % node.type.name, args, frame)
-		return val
+		res = frame.varname()
+		self.writeline('%%%s = alloca %s' % (res, node.type.ir))
+		return Value(types.__ptr__(node.type), res)
 	
-	def Select(self, node, frame):
+	def LT(self, node, frame):
 		
-		cond = self.visit(node.cond, frame)
-		selector = self.value(cond, frame)
 		left = self.visit(node.left, frame)
 		right = self.visit(node.right, frame)
 		
+		leftval = frame.varname()
+		bits = leftval, left.type.ir, left.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		rightval = frame.varname()
+		bits = rightval, right.type.ir, right.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		tmp = frame.varname()
+		bits = tmp, left.type.over.ir, leftval, rightval
+		self.writeline('%%%s = icmp ult %s %%%s, %%%s' % bits)
+		return Value(types.bool(), tmp)
+	
+	def GT(self, node, frame):
+		
+		left = self.visit(node.left, frame)
+		right = self.visit(node.right, frame)
+		
+		assert left.type == right.type
+		leftval = frame.varname()
+		bits = leftval, left.type.ir, left.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		rightval = frame.varname()
+		bits = rightval, right.type.ir, right.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		tmp = frame.varname()
+		bits = tmp, left.type.over.ir, leftval, rightval
+		self.writeline('%%%s = icmp ugt %s %%%s, %%%s' % bits)
+		return Value(types.bool(), tmp)
+	
+	def NEq(self, node, frame):
+		
+		left = self.visit(node.left, frame)
+		leftval = frame.varname()
+		bits = leftval, left.type.ir, left.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		right = self.visit(node.right, frame)
+		rightval = frame.varname()
+		bits = rightval, right.type.ir, right.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
 		res = frame.varname()
-		bits = res, selector, self.ptr(left, frame), self.ptr(right, frame)
-		self.writeline('%s = select %s, %s, %s' % bits)
-		return Value(node.type, ptr=res)
+		bits = res, left.type.over.ir, leftval, rightval
+		self.writeline('%%%s = icmp ne %s %%%s, %%%s' % bits)
+		return Value(types.bool(), res)
 	
-	def Math(self, node, frame):
-		name = '%s.__%s__' % (node.type.name, node.op)
-		return self.call(name, node.operands, frame)
-	
-	def Compare(self, node, frame):
+	def Eq(self, node, frame):
 		
-		op = node.op if node.op != 'ne' else 'eq'
-		name = '%s.__%s__' % (node.operands[0].type.name, op)
+		left = self.visit(node.left, frame)
+		leftval = frame.varname()
+		bits = leftval, left.type.ir, left.var
+		self.writeline('%%%s = load %s %%%s' % bits)
 		
-		val = self.call(name, node.operands, frame)
-		if node.op != 'ne':
-			return val
+		right = self.visit(node.right, frame)
+		rightval = frame.varname()
+		bits = rightval, right.type.ir, right.var
+		self.writeline('%%%s = load %s %%%s' % bits)
 		
-		value = frame.varname()
-		self.writeline('%s = load %s' % (value, self.ptr(val, frame)))
-		inv = frame.varname()
-		self.writeline('%s = select i1 %s, i1 false, i1 true' % (inv, value))
 		res = frame.varname()
-		self.writeline('%s = alloca i1' % res)
-		self.writeline('store i1 %s, i1* %s' % (inv, res))
-		return Value(types.bool(), ptr=res)
+		bits = res, left.type.over.ir, leftval, rightval
+		self.writeline('%%%s = icmp eq %s %%%s, %%%s' % bits)
+		return Value(types.bool(), res)
 	
-	def Assign(self, node, frame, const=False):
+	def Add(self, node, frame):
 		
-		val = self.visit(node.value, frame)
-		type = val.type
+		left = self.visit(node.left, frame)
+		assert isinstance(left.type, types.__ptr__)
+		leftval = frame.varname()
+		bits = leftval, left.type.ir, left.var
+		self.writeline('%%%s = load %s %%%s' % bits)
 		
-		if isinstance(node.name, basestring):
-			name = node.name
+		right = self.visit(node.right, frame)
+		assert left.type == right.type
+		rightval = frame.varname()
+		bits = rightval, right.type.ir, right.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		res = frame.varname()
+		bits = res, left.type.over.ir, leftval, rightval
+		self.writeline('%%%s = add %s %%%s, %%%s' % bits)
+		return Value(left.type.over, res)
+	
+	def CondBranch(self, node, frame):
+		cond = self.visit(node.cond, frame)
+		bits = cond.var, node.tg1, node.tg2
+		self.writeline('br i1 %%%s, label %%L%s, label %%L%s' % bits)
+	
+	def Assign(self, node, frame):
+		
+		val = self.visit(node.right, frame)
+		if isinstance(node.left, ast.Name):
+			
+			if node.left.name not in frame:
+				var = frame.varname()
+				bits = var, node.left.type.ir, node.left.name
+				self.writeline('%%%s = alloca %s ; %s' % bits)
+				wrapped = types.__ptr__(node.left.type)
+				frame[node.left.name] = Value(wrapped, var)
+			target = frame[node.left.name]
+			
+		elif isinstance(node.left, ast.Attrib):
+			target = self.visit(node.left, frame)
 		else:
-			name = node.name.name
+			assert False
 		
-		name = '%' + name
-		if name[1:] not in frame:
-			self.writeline('%s = alloca %s' % (name, type.ir))
-		
-		val = self.value(val, frame)
-		self.writeline('store %s, %s* %s' % (val, type.ir, name))
-		frame[name[1:]] = Value(type, ptr=name, var=True)
+		if types.__ptr__(val.type) == target.type:
+			bits = val.type.ir, val.var, target.type.ir, target.var
+			self.writeline('store %s %%%s, %s %%%s' % bits)
+		elif val.type == target.type:
+			tmp = frame.varname()
+			bits = tmp, val.type.ir, val.var
+			self.writeline('%%%s = load %s %%%s' % bits)
+			bits = val.type.over.ir, tmp, target.type.ir, target.var
+			self.writeline('store %s %%%s, %s %%%s' % bits)
+		else:
+			assert False
 	
-	def SetAttr(self, node, frame):
-		
-		obj = self.visit(node.obj, frame)
-		attrib = obj.type.attribs[node.key]
-		
-		var = frame.varname()
-		bits = var, self.ptr(obj, frame), attrib[0]
-		self.writeline('%s = getelementptr %s, i32 0, i32 %i' % bits)
-		
-		val = self.visit(node.value, frame)
-		tmp = frame.varname()
-		self.writeline('%s = load %s' % (tmp, self.ptr(val, frame)))
-		
-		bits = val.type.ir, tmp, val.type.ir, var
-		self.writeline('store %s %s, %s* %s' % bits)
+	def Attrib(self, node, frame):
+		obj = frame[node.obj.name]
+		name = frame.varname()
+		idx, type = obj.type.attribs[node.attrib.name]
+		bits = name, obj.type.ir, obj.var, idx
+		self.writeline('%%%s = getelementptr %s %%%s, i32 0, i32 %s' % bits)
+		return Value(types.__ptr__(type), name)
 	
-	def GetAttr(self, node, frame):
-		obj = self.visit(node.obj, frame)
-		idx, atype = obj.type.attribs[node.key]
-		var = frame.varname()
-		rval = Value(atype, ptr=var, var=True)
-		bits = var, self.ptr(obj, frame), idx
-		self.writeline('%s = getelementptr %s, i32 0, i32 %s' % bits)
-		return rval
-	
-	def GetItem(self, node, frame):
-		
-		obj = self.visit(node.obj, frame)
-		key = self.visit(node.key, frame)
-		
-		bits = frame.varname(), obj.type.ir, obj.ptr
-		self.writeline('%s = getelementptr %s* %s, i32 0, i32 1' % bits)
-		bits = frame.varname(), bits[0]
-		self.writeline('%s = load %%str** %s' % bits)
-		
-		keyval = self.value(key, frame)
-		bits = frame.varname(), '%%str* %s' % bits[0], keyval
-		self.writeline('%s = getelementptr %s, %s' % bits)
-		return Value(obj.type.over, ptr=bits[0])
-	
-	def Return(self, node, frame):
-		value = self.visit(node.value, frame)
-		tmp = frame.varname()
-		self.writeline('%s = load %s' % (tmp, self.ptr(value, frame)))
-		bits = value.type.ir, tmp, value.type.ir
-		self.writeline('store %s %s, %s* %%lang.res' % bits)
-		self.writeline('ret i64 0')
-	
-	def Suite(self, node, frame):
-		for stmt in node.stmts:
-			self.visit(stmt, frame)
-	
-	def Branch(self, node, frame):
-		
-		if isinstance(node.cond, ast.Name):
-			bits = 'i1 %loopvar', node.left, node.right
-			self.writeline('br %s, label %%L%s, label %%L%s' % bits)
-			return
-		
-		if node.cond is None:
-			self.writeline('br label %%L%s' % node.left)
-			return
+	def Ternary(self, node, frame):
 		
 		cond = self.visit(node.cond, frame)
-		cond = self.value(cond, frame)
-		bits = cond, node.left, node.right
-		self.writeline('br %s, label %%L%s, label %%L%s' % bits)
+		llabel = 'T%s' % self.tlabels
+		rlabel = 'T%s' % (self.tlabels + 1)
+		jlabel = 'T%s' % (self.tlabels + 2)
+		self.tlabels += 3
+		
+		bits = cond.var, llabel, rlabel
+		self.writeline('br i1 %%%s, label %%%s, label %%%s' % bits)
+		
+		self.label(llabel, 'ternary-left')
+		leftval = self.visit(node.values[0], frame)
+		self.writeline('br label %%%s' % jlabel)
+		self.label(rlabel, 'ternary-right')
+		rightval = self.visit(node.values[1], frame)
+		self.writeline('br label %%%s' % jlabel)
+		
+		self.label(jlabel, 'ternary-join')
+		res = frame.varname()
+		bits = res, leftval.type.ir, leftval.var, llabel, rightval.var, rlabel
+		self.writeline('%%%s = phi %s [ %%%s, %%%s ], [ %%%s, %%%s ]' % bits)
+		return Value(leftval.type, res)
+		
+	def Return(self, node, frame):
+		value = self.visit(node.value, frame)
+		if isinstance(value.type, types.__ptr__):
+			if value.type.over.byval:
+				tmp = frame.varname()
+				bits = tmp, value.type.ir, value.var
+				self.writeline('%%%s = load %s %%%s' % bits)
+				value = Value(value.type.over, tmp)
+		self.writeline('ret %s %%%s' % (value.type.ir, value.var))
+	
+	def Call(self, node, frame):
+		
+		args = []
+		rtype, atypes = node.fun.type.over
+		for i, arg in enumerate(node.args):
+			
+			at = atypes[i]
+			if not isinstance(at, types.__ptr__) and not at.byval:
+				at = types.__ptr__(at)
+			
+			val = self.visit(arg, frame)
+			val = self.coerce(val, at, frame)
+			args.append(val)
+		
+		argstr = ', '.join('%s %%%s' % (a.type.ir, a.var) for a in args)
+		if rtype == types.void():
+			self.writeline('call void @%s(%s)' % (node.fun.decl, argstr))
+			return args[0] if isinstance(node.args[0], ti.Init) else None
+		
+		res = frame.varname()
+		bits = res, rtype.ir, node.fun.decl, argstr
+		self.writeline('%%%s = call %s @%s(%s)' % bits)
+		return Value(rtype, res)
 	
 	def Function(self, node, frame):
 		
+		self.tlabels = 0
 		frame = Frame(frame)
-		name = '@' + node.name
-		self.write('define i64 %s(' % name)
+		rtype = node.rtype
+		if not rtype.byval:
+			rtype = types.__ptr__(rtype)
 		
+		self.write('define %s @%s(' % (rtype.ir, node.irname))
 		first = True
-		names = {v: k for (k, v) in node.anames.iteritems()}
-		for i, atype in enumerate(node.args):
+		for arg in node.args:
 			
 			if not first:
 				self.write(', ')
 			
-			self.write(atype.ir + '* %' + names[i])
-			frame[names[i]] = Value(atype, ptr='%' + names[i])
+			ptype = arg.type
+			if not ptype.byval and not isinstance(ptype, types.__ptr__):
+				ptype = types.__ptr__(ptype)
+			
+			self.write(ptype.ir + ' %' + arg.name.name)
+			frame[arg.name.name] = Value(ptype, arg.name.name)
 			first = False
-		
-		if node.rtype != types.void():
-			self.write(', ')
-			self.write(node.rtype.ir + '*')
-			self.write(' %lang.res')
 		
 		self.write(') {')
 		self.newline()
 		self.indent()
 		
-		for block in node.graph:
+		for i, block in sorted(node.flow.blocks.iteritems()):
 			self.visit(block, frame)
 		
 		if node.rtype == types.void():
-			self.writeline('ret i64 0')
+			self.writeline('ret void')
 		
 		self.dedent()
 		self.writeline('}')
 		self.newline()
-		
-		args = [(names[i], t) for (i, t) in enumerate(node.args)]
-		flow.LIBRARY[node.name] = node.name, node.rtype.name, args
 	
 	def Block(self, node, frame):
-		if node.id:
-			self.label('L%s' % node.id)
+		self.label('L%s' % node.id, node.anno)
 		for step in node.steps:
 			self.visit(step, frame)
 	
-	def main(self, node, frame):
+	def declare(self, ref):
 		
-		decl = 'define i32 @main(i32 %argc, i8** %argv) nounwind ssp {'
-		self.writeline(decl)
-		self.indent()
+		if isinstance(ref, ti.Function) and ref.decl.startswith('lang.'):
+			return
 		
-		frame = Frame(frame)
-		self.newline()
-		for ln in MAIN_SETUP:
-			self.writeline(ln)
-		self.newline()
+		if isinstance(ref, types.Type) and ref.name == '__ptr__':
+			return
 		
-		frame.vars += 1
-		frame['name'] = Value(types.str(), ptr='%name', var=True)
-		frame['args'] = Value(types.array(types.str()), ptr='%args', var=True)
-		for block in node.graph:
-			self.visit(block, frame)
+		if isinstance(ref, ti.Function):
+			rtype = ref.type.over[0].ir
+			args = ', '.join(t.ir for t in ref.type.over[1])
+			self.writeline('declare %s @%s(%s)' % (rtype, ref.decl, args))
+			return
 		
-		self.newline()
-		for ln in MAIN_TEARDOWN:
-			self.writeline(ln)
-		self.newline()
-		
-		self.writeline('ret i32 0')
-		self.newline()
-		self.dedent()
-		self.writeline('}')
-	
-	def declare(self, type):
+	def type(self, type):
 		fields = sorted(type.attribs.itervalues())
 		s = ', '.join([i[1].ir for i in fields])
 		self.writeline('%%%s = type { %s }\n' % (type.name, s))
 	
 	def Module(self, mod):
 		
-		frame = Frame()
-		for type, name in mod.order:
-			if type == 'fun':
-				fun = mod.functions[name]
-				process = self.main if name == 'main' else self.visit
-				process(fun, frame)
-			elif type == 'const':
-				frame[name] = self.const.add(mod.const[name], name)
-			elif type == 'class':
-				self.declare(mod.types[name])
-			else:
-				assert False
+		assert not mod.constants
+		for k, v in mod.refs.iteritems():
+			self.declare(ti.resolve(mod, v))
 		
-		lines = self.const.lines + ['\n'] + self.buf
-		return ''.join(lines)
+		self.newline()
+		for k, v in mod.types.iteritems():
+			self.type(v)
+		
+		frame = Frame()
+		for k, v in mod.code:
+			self.visit(v, frame)
+		
+		return ''.join(self.buf)
 
 def source(mod):
 	return CodeGen().Module(mod)

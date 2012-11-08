@@ -29,7 +29,10 @@ def specialize(fn, opts):
 	lang.spec(mod)
 
 def generate(fn, opts):
-	print lang.llir(fn, opts.full)
+	mod = bl(fn, opts)
+	lang.type(mod)
+	lang.spec(mod)
+	print lang.generate(mod)
 
 def compile(fn, opts):
 	lang.compile(fn, os.path.basename(fn).rsplit('.lng')[0])
