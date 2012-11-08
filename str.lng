@@ -1,5 +1,5 @@
 from __internal__ import __ptr__, __malloc__, __free__, __memcpy__
-from libc import string
+from libc.string import strncmp
 
 class str:
 	
@@ -20,12 +20,12 @@ class str:
 		if self.len != other.len:
 			return False
 		len = self.len if self.len < other.len else other.len
-		cmp = string.strncmp(self.data, other.data, len)
+		cmp = strncmp(self.data, other.data, len)
 		return cmp == 0
 	
 	def __lt__(self, other: str) -> bool:
 		len = self.len if self.len < other.len else other.len
-		cmp = string.strncmp(self.data, other.data, len)
+		cmp = strncmp(self.data, other.data, len)
 		if cmp < 0:
 			return True
 		elif cmp > 0:

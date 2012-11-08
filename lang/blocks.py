@@ -179,7 +179,19 @@ class Module(object):
 			
 			if isinstance(n, ast.RelImport):
 				for name in n.names:
-					self.refs[name.name] = n.base.name + '.' + name.name
+					
+					if isinstance(n.base, ast.Name):
+						base = n.base.name
+					else:
+						start = n.base
+						res = []
+						while isinstance(start, ast.Attrib):
+							res.append(start.attrib.name)
+							start = start.obj
+						res.append(start.name)
+						base = '.'.join(reversed(res))
+						
+					self.refs[name.name] = base + '.' + name.name
 			
 			elif isinstance(n, ast.Class):
 				self.types[n.name.name] = types.add(n)
