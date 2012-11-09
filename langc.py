@@ -11,13 +11,7 @@ def parse(fn, opts):
 	print lang.parse(lang.tokenize(open(fn)))
 
 def bl(fn, opts):
-	mod = lang.module(lang.parse(lang.tokenize(open(fn))))
-	#for k, obj in sorted(mod.code.iteritems()):
-	#	print 'START', k
-	#	print 'FLOW', obj.flow
-	#	print
-	#	print
-	return mod
+	return lang.module(lang.parse(lang.tokenize(open(fn))))
 
 def ti(fn, opts):
 	mod = bl(fn, opts)
