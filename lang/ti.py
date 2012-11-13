@@ -260,6 +260,7 @@ class TypeChecker(object):
 				node.type = fun.over[0]
 			else:
 				meth = node.name.obj.type.methods[node.name.attrib.name]
+				node.args.insert(0, node.name.obj)
 				mtype = types.function(meth[1], [i[1] for i in meth[2]])
 				node.fun = Function(meth[0], mtype)
 				node.type = mtype.over[0]
