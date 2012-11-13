@@ -1,7 +1,6 @@
 from __internal__ import __ptr__, __malloc__, __free__, __memcpy__
 from libc.string import strncmp
 
-@internal
 class str:
 	
 	len: u32
