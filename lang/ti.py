@@ -70,13 +70,11 @@ ROOT = Module('', {
 		'__free__': Function('lang.free', types.function(types.void(), (
 			types.__ptr__(types.byte()),
 		))),
-		'__memcpy__': Function('llvm.memcpy.p0i8.p0i8.i32',
+		'__memcpy__': Function('lang.memcpy',
 			types.function(types.void(), (
 				types.__ptr__(types.byte()),
 				types.__ptr__(types.byte()),
 				types.u32(),
-				types.u32(),
-				types.bool(),
 			)
 		)),
 	}),

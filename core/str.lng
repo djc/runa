@@ -36,9 +36,9 @@ class str:
 	def __add__(self, other: str) -> str:
 		sum = self.len + other.len
 		data = __malloc__(sum)
-		__memcpy__(data, self.data, self.len, 1, False)
+		__memcpy__(data, self.data, self.len)
 		rest = data.offset(self.len)
-		__memcpy__(rest, other.data, other.len, 1, False)
+		__memcpy__(rest, other.data, other.len)
 		return str(sum, data)
 	
 	def __del__(self):

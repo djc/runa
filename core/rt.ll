@@ -1,6 +1,7 @@
 declare i8* @malloc(i64)
 declare void @free(i8*)
 declare i32 @printf(i8*, ...)
+declare void @llvm.memcpy.p0i8.p0i8.i32(i8*, i8*, i32, i32, i1)
 
 @fmt_MALLOC = constant [15 x i8] c"malloc(%ld) %p\0a"
 @fmt_FREE = constant [9 x i8] c"free(%p)\0a"
@@ -24,4 +25,9 @@ define i8* @__ptr__.offset(i8* %base, i64 %offset) alwaysinline {
 	%new = add i64 %i, %offset
 	%res = inttoptr i64 %new to i8*
 	ret i8* %res
+}
+
+define void @lang.memcpy(i8* %dst, i8* %src, i32 %len) alwaysinline {
+	call void @llvm.memcpy.p0i8.p0i8.i32(i8* %src, i8* %dst, i32 %len, i32 1, i1 0)
+	ret void
 }
