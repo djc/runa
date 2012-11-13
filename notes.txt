@@ -92,6 +92,10 @@ Yossi Kreinin
 Error codes vs exceptions: critical code vs typical code
 http://www.yosefk.com/blog/error-codes-vs-exceptions-critical-code-vs-typical-code.html
 
+Walter Bright
+C's Biggest Mistake
+http://www.drdobbs.com/architecture-and-design/cs-biggest-mistake/228701625
+
 
 Implementation notes
 ====================
