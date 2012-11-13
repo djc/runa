@@ -325,7 +325,6 @@ def process(base, fun):
 	
 	checker = TypeChecker(fun)
 	checker.check(start)
-	
 
 def typer(mod):
 	
@@ -345,6 +344,13 @@ def typer(mod):
 	
 	for k, v in mod.types.iteritems():
 		base[k] = v
+	
+	for k, fun in mod.code:
+		if not isinstance(k, basestring): continue
+		rtype = types.void() if fun.rtype is None else base[fun.rtype]
+		atypes = [base.resolve(a.type) for a in fun.args]
+		type = types.function(rtype, atypes)
+		base[fun.name.name] = Function(fun.name.name, type)
 	
 	for k, fun in mod.code:
 		if fun.args[0].type is None:
