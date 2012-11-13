@@ -87,6 +87,13 @@ ROOT = Module('', {
 				types.uword(),
 			))),
 		}),
+		'unistd': Module('libc.unistd', {
+			'write': Function('write', types.function(types.word(), (
+				types.i32(),
+				types.__ptr__(types.byte()),
+				types.uword(),
+			))),
+		}),
 	}),
 })
 
