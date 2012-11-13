@@ -27,7 +27,9 @@ def spec(mod):
 
 def generate(mod):
 	triple = 'target triple = "%s"\n\n' % TRIPLES[sys.platform]
-	return triple + codegen.source(mod)
+	with open('core/rt.ll') as f:
+		rt = f.read()
+	return triple + rt + '\n' + codegen.source(mod)
 
 def compile(fn, outfn):
 	
