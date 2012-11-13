@@ -50,7 +50,7 @@ class __ptr__(base):
 			'offset': (
 				'__ptr__.offset',
 				self,
-				[('n', get('u32'))]
+				[('self', self), ('n', uword())]
 			),
 		}
 	
