@@ -57,6 +57,7 @@ class Function(object):
 ROOT = Module('', {
 	'__builtin__': Module('__builtin__', {
 		'u32': types.u32(),
+		'array': types.array,
 		'byte': types.byte(),
 		'bool': types.bool(),
 		'False': Object(types.bool(), 0),
