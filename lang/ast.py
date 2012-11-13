@@ -288,10 +288,11 @@ class Function(Node):
 	
 	kw = 'def'
 	lbp = 0
-	fields = 'name', 'args', 'rtype', 'suite'
+	fields = 'decor', 'name', 'args', 'rtype', 'suite'
 	
 	def nud(self, p):
 		
+		self.decor = []
 		self.name = p.advance(Name)
 		p.advance(Call)
 		
@@ -432,13 +433,29 @@ class While(Statement):
 		self.suite = Suite(p, self.pos)
 		return self
 
+class Decorator(Node):
+	
+	lbp = 0
+	
+	def __init__(self, val, pos):
+		Node.__init__(self, pos)
+		self.decor = [val[1:]]
+	
+	def nud(self, p):
+		p.eat(NL)
+		obj = p.expr()
+		assert hasattr(obj, 'decor')
+		obj.decor += self.decor
+		return obj
+
 class Class(Statement):
 	
 	kw = 'class'
-	fields = 'name', 'params', 'attribs', 'methods'
+	fields = 'decor', 'name', 'params', 'attribs', 'methods'
 	
 	def nud(self, p):
 		
+		self.decor = []
 		self.p = p
 		self.name = p.advance(Name)
 		self.params = []
@@ -507,6 +524,8 @@ class Pratt(object):
 				yield NL((s, e, l))
 			elif t == 'com':
 				continue
+			elif t == 'deco':
+				yield Decorator(v, (s, e, l))
 		yield End((s, e))
 	
 	def eat(self, type):
