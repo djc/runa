@@ -292,7 +292,7 @@ class Function(Node):
 	
 	def nud(self, p):
 		
-		self.decor = []
+		self.decor = set()
 		self.name = p.advance(Name)
 		p.advance(Call)
 		
@@ -439,13 +439,13 @@ class Decorator(Node):
 	
 	def __init__(self, val, pos):
 		Node.__init__(self, pos)
-		self.decor = [val[1:]]
+		self.decor = {val[1:]}
 	
 	def nud(self, p):
 		p.eat(NL)
 		obj = p.expr()
 		assert hasattr(obj, 'decor')
-		obj.decor += self.decor
+		obj.decor |= self.decor
 		return obj
 
 class Class(Statement):
@@ -455,7 +455,7 @@ class Class(Statement):
 	
 	def nud(self, p):
 		
-		self.decor = []
+		self.decor = set()
 		self.p = p
 		self.name = p.advance(Name)
 		self.params = []
