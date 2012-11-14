@@ -99,7 +99,9 @@ ROOT = Module('', {
 
 def resolve(mod, n):
 	parts = n.split('.')
-	if parts[0] in ROOT:
+	if parts[0] in mod.scope:
+		return mod.scope[parts[0]]
+	elif parts[0] in ROOT:
 		obj = ROOT
 		for p in parts:
 			obj = obj[p]
@@ -362,6 +364,7 @@ def typer(mod):
 		type = types.function(rtype, atypes)
 		base[fun.name.name] = Function(fun.name.name, type)
 	
+	mod.scope = base
 	for k, fun in mod.code:
 		if fun.args[0].type is None:
 			assert len(k) > 1
