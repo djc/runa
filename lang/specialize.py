@@ -40,6 +40,8 @@ class Specializer(object):
 					assert node.val >= 0
 			else:
 				assert False
+		else:
+			assert False
 	
 	def compare(self, node):
 		if node.left.type in GENERIC:
