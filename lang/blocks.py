@@ -197,6 +197,12 @@ class Module(object):
 				self.types[n.name.name] = types.add(n)
 				for m in n.methods:
 					self.code.append(((n.name.name, m.name.name), m))
+			
+			elif isinstance(n, ast.Function):
+				self.code.append((n.name.name, n))
+			
+			else:
+				assert False, n
 		
 		for k, v in self.code:
 			
