@@ -1,6 +1,6 @@
 from . import tokenizer, ast, blocks, ti, specialize, codegen
 from util import Error
-import sys, os, subprocess
+import sys, os, subprocess, tempfile
 
 BASE = os.path.dirname(__path__[0])
 RT_DIR = os.path.join(BASE, 'rt')
@@ -31,15 +31,12 @@ def generate(mod):
 		rt = f.read()
 	return triple + rt + '\n' + codegen.source(mod)
 
-def compile(fn, outfn):
+def compile(ir, outfn):
 	
-	llfn = fn + '.ll'
-	try:
-		with open(llfn, 'w') as f:
-			f.write(llir(fn))
-	except Exception:
-		os.unlink(llfn)
-		raise
+	fd, name = tempfile.mkstemp('.ll', dir='.')
+	f = os.fdopen(fd, 'wb')
+	f.write(ir)
+	f.close()
 	
-	subprocess.check_call(('clang', '-o', outfn, llfn))
-	os.unlink(llfn)
+	subprocess.check_call(('clang', '-o', outfn, name))
+	os.unlink(f.name)

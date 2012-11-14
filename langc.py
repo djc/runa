@@ -29,7 +29,11 @@ def generate(fn, opts):
 	print lang.generate(mod)
 
 def compile(fn, opts):
-	lang.compile(fn, os.path.basename(fn).rsplit('.lng')[0])
+	mod = bl(fn, opts)
+	lang.type(mod)
+	lang.spec(mod)
+	ir = lang.generate(mod)
+	lang.compile(ir, os.path.basename(fn).rsplit('.lng')[0])
 
 def run(fn, opts):
 	kwargs = {i: subprocess.PIPE for i in ('stdin', 'stdout', 'stderr')}
