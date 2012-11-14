@@ -190,6 +190,9 @@ class TypeChecker(object):
 	def Int(self, node, scope):
 		node.type = types.int()
 	
+	def String(self, node, scope):
+		node.type = types.str()
+	
 	def Attrib(self, node, scope):
 		self.visit(node.obj, scope)
 		node.type = node.obj.type.attribs[node.attrib.name][1]
