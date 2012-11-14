@@ -15,7 +15,7 @@ class Node(object):
 		self.pos = pos
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%s' % (k, v) for (k, v) in contents if k not in IGNORE)
+		show = ('%s=%r' % (k, v) for (k, v) in contents if k not in IGNORE)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	def __hash__(self):
 		values = tuple(sorted((k, v) for (k, v) in self.__dict__.iteritems()))
