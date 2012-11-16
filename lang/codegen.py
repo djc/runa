@@ -384,7 +384,11 @@ class CodeGen(object):
 		if not rtype.byval:
 			rtype = types.__ptr__(rtype)
 		
-		self.write('define %s @%s(' % (rtype.ir, node.irname))
+		irname = node.name.name
+		if hasattr(node, 'irname'):
+			irname = node.irname
+		
+		self.write('define %s @%s(' % (rtype.ir, irname))
 		first = True
 		for arg in node.args:
 			
