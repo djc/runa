@@ -157,6 +157,10 @@ class IBool(base):
 class array(base):
 	def __init__(self, over):
 		self.over = over
+		self.attribs = {
+			'len': (0, u32()),
+			'data': (1, __ptr__(over)),
+		}
 	@property
 	def ir(self):
 		return '%array.' + self.over.ir[1:]
