@@ -410,6 +410,9 @@ class CodeGen(object):
 		for k, v in mod.types.iteritems():
 			self.type(v)
 		
+		for var in mod.variants:
+			self.type(var)
+		
 		frame = Frame()
 		for k, v in mod.code:
 			self.visit(v, frame)
