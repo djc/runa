@@ -202,6 +202,8 @@ def add(node):
 	
 	if node.name.name in ALL and ALL[node.name.name].forward:
 		cls = ALL[node.name.name]
+		cls.methods = {}
+		cls.attribs = {}
 	else:
 		cls = ALL[node.name.name] = type(node.name.name, (base,), {
 			'ir': '%' + node.name.name,
