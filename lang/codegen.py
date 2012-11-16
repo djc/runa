@@ -435,7 +435,7 @@ class CodeGen(object):
 	def type(self, type):
 		fields = sorted(type.attribs.itervalues())
 		s = ', '.join([i[1].ir for i in fields])
-		self.writeline('%%%s = type { %s }\n' % (type.name, s))
+		self.writeline('%s = type { %s }\n' % (type.ir, s))
 	
 	def Module(self, mod):
 		
