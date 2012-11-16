@@ -48,5 +48,9 @@ def compile(ir, outfn):
 	f.write(ir)
 	f.close()
 	
-	subprocess.check_call(('clang', '-o', outfn, name))
-	os.unlink(f.name)
+	try:
+		subprocess.check_call(('clang', '-o', outfn, name))
+	except Exception:
+		pass
+	finally:
+		os.unlink(name)
