@@ -174,6 +174,27 @@ class Module(object):
 		self.scope = None # populated by type inferencing pass
 		self.build(node)
 	
+	def __repr__(self):
+		contents = sorted(self.__dict__.iteritems())
+		show = ('%s=%s' % (k, v) for (k, v) in contents)
+		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
+	
+	def merge(self, mod):
+		
+		for k, v in mod.refs.iteritems():
+			assert k not in self.refs
+			self.refs[k] = v
+		
+		for k, v in mod.constants.iteritems():
+			assert k not in self.constants
+			self.constants[k] = v
+		
+		for k, v in mod.types.iteritems():
+			assert k not in self.types
+			self.types[k] = v
+		
+		self.code += mod.code
+	
 	def build(self, node):
 		
 		bodies = {}

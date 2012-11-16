@@ -3,7 +3,7 @@ from util import Error
 import sys, os, subprocess, tempfile
 
 BASE = os.path.dirname(__path__[0])
-RT_DIR = os.path.join(BASE, 'rt')
+CORE_DIR = os.path.join(BASE, 'core')
 
 TRIPLES = {
 	'darwin': 'x86_64-apple-darwin11.0.0',
@@ -17,7 +17,17 @@ def parse(tokens):
 	return ast.parse(tokens)
 
 def module(ast):
-	return blocks.Module(ast)
+	
+	mod = blocks.Module(ast)
+	for fn in os.listdir(CORE_DIR):
+		
+		if not fn.endswith('.lng'):
+			continue
+		
+		with open(os.path.join(CORE_DIR, fn)) as f:
+			mod.merge(blocks.Module(parse(tokenize(f))))
+	
+	return mod
 
 def type(mod):
 	ti.typer(mod)
