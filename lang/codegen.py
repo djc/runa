@@ -311,9 +311,14 @@ class CodeGen(object):
 			assert False
 	
 	def Attrib(self, node, frame):
-		obj = frame[node.obj.name]
+		
+		obj = self.visit(node.obj, frame)
+		t = obj.type
+		if isinstance(t, types.__ptr__):
+			t = obj.type.over
+		
 		name = frame.varname()
-		idx, type = obj.type.attribs[node.attrib.name]
+		idx, type = t.attribs[node.attrib.name]
 		bits = name, obj.type.ir, obj.var, idx
 		self.writeline('%%%s = getelementptr %s %%%s, i32 0, i32 %s' % bits)
 		return Value(types.__ptr__(type), name)
