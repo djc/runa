@@ -1,5 +1,7 @@
 import ast, types, ti
 
+ESCAPES = {'\n'}
+
 class Value(object):
 	def __init__(self, type, var):
 		self.type = type
@@ -142,6 +144,41 @@ class CodeGen(object):
 		bits = node.type.ir, node.val, types.__ptr__(node.type).ir, tmp
 		self.writeline('store %s %s, %s %%%s' % bits)
 		return Value(types.__ptr__(node.type), tmp)
+	
+	def String(self, node, frame):
+		
+		data = frame.varname()
+		dtype = '[%i x i8]' % len(node.val.decode('string_escape'))
+		self.writeline('%%%s = alloca %s' % (data, dtype))
+		
+		literal = node.val
+		for c in ESCAPES:
+			escaped = repr(c)[1:-1]
+			sub = '\\0' + hex(ord(c))[2:]
+			literal = literal.replace(escaped, sub)
+		
+		bits = dtype, literal, dtype, data
+		self.writeline('store %s c"%s", %s* %%%s' % bits)
+		
+		full = frame.varname()
+		self.writeline('%%%s = alloca %%str' % full)
+		lenvar = frame.varname()
+		bits = lenvar, full
+		self.writeline('%%%s = getelementptr %%str* %%%s, i32 0, i32 0' % bits)
+		
+		lentype = node.type.attribs['len'][1].ir
+		bits = lentype, len(node.val), lentype, lenvar
+		self.writeline('store %s %i, %s* %%%s' % bits)
+		
+		cast = frame.varname()
+		bits = cast, dtype, data
+		self.writeline('%%%s = bitcast %s* %%%s to i8*' % bits)
+		
+		dataptr = frame.varname()
+		bits = dataptr, full
+		self.writeline('%%%s = getelementptr %%str* %%%s, i32 0, i32 1' % bits)
+		self.writeline('store i8* %%%s, i8** %%%s' % (cast, dataptr))
+		return Value(types.__ptr__(types.str()), full)
 	
 	def Init(self, node, frame):
 		res = frame.varname()
