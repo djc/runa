@@ -170,6 +170,8 @@ class Module(object):
 		self.constants = {}
 		self.types = {}
 		self.code = []
+		self.variants = set() # populated by type inferencing pass
+		self.scope = None # populated by type inferencing pass
 		self.build(node)
 	
 	def build(self, node):
