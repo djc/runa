@@ -322,18 +322,24 @@ class TypeChecker(object):
 		else:
 			assert False, 'ternary sides different types'
 
-def process(base, fun):
+def variant(mod, t):
+	if hasattr(t, 'over') and not isinstance(t, types.__ptr__):
+		mod.variants.add(t)
+
+def process(mod, base, fun):
 	
 	start = Scope(base)
 	if fun.rtype is None:
 		fun.rtype = types.void()
 	if not isinstance(fun.rtype, types.base):
 		fun.rtype = start.resolve(fun.rtype)
+		variant(mod, fun.rtype)
 	
 	for arg in fun.args:
 		if not isinstance(arg.type, types.base):
 			arg.type = start.resolve(arg.type)
 		start[arg.name.name] = Object(arg.type)
+		variant(mod, arg.type)
 	
 	checker = TypeChecker(fun)
 	checker.check(start)
@@ -370,4 +376,4 @@ def typer(mod):
 			assert len(k) > 1
 			assert fun.args[0].name.name == 'self'
 			fun.args[0].type = base[k[0]]
-		process(base, fun)
+		process(mod, base, fun)
