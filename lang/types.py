@@ -36,6 +36,20 @@ class base(object):
 	def __hash__(self):
 		return hash(self.__class__)
 
+class void(base):
+	ir = 'void'
+	byval = True
+
+class float(base):
+	@property
+	def ir(self):
+		raise TypeError('not a concrete type')
+
+class int(base):
+	@property
+	def ir(self):
+		raise TypeError('not a concrete type')
+
 class module(base):
 	def __init__(self, path=None):
 		self.path = path
@@ -95,20 +109,6 @@ class function(base):
 	@property
 	def ir(self):
 		raise NotImplementedError
-
-class float(base):
-	@property
-	def ir(self):
-		raise TypeError('not a concrete type')
-
-class int(base):
-	@property
-	def ir(self):
-		raise TypeError('not a concrete type')
-
-class void(base):
-	ir = 'void'
-	byval = True
 
 class bool(base):
 	ir = 'i1'
