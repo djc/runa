@@ -42,21 +42,37 @@ class module(base):
 		self.path = path
 		self.functions = {}
 
-class __ptr__(base):
+class owner(base):
 	
 	def __init__(self, over):
 		self.over = over
 		self.methods = {
 			'offset': (
-				'__ptr__.offset',
-				self,
-				[('self', self), ('n', uword())]
+				'owner.offset',
+				ref(self.over),
+				[('self', ref(self.over)), ('n', uword())]
 			),
 		}
 	
 	@property
 	def name(self):
-		return '__ptr__[%s]' % self.over.name
+		return 'owner[%s]' % self.over.name
+	
+	@property
+	def ir(self):
+		return self.over.ir + '*'
+	
+	def __repr__(self):
+		return '<type: %s[%s]>' % (self.__class__.__name__, self.over.name)
+
+class ref(base):
+	
+	def __init__(self, over):
+		self.over = over
+	
+	@property
+	def name(self):
+		return 'ref[%s]' % self.over.name
 	
 	@property
 	def ir(self):
@@ -159,7 +175,7 @@ class array(base):
 		self.over = over
 		self.attribs = {
 			'len': (0, u32()),
-			'data': (1, __ptr__(over)),
+			'data': (1, owner(over)),
 		}
 	@property
 	def ir(self):
@@ -178,6 +194,10 @@ def get(t):
 		return ALL[t.name]()
 	elif isinstance(t, ast.Elem):
 		return ALL[t.obj.name](get(t.key))
+	elif isinstance(t, ast.Owner):
+		return owner(get(t.value))
+	elif isinstance(t, ast.Ref):
+		return ref(get(t.value))
 	else:
 		assert False, 'no type %s' % t
 
@@ -197,6 +217,7 @@ SINTS = {i32(), i64(), word(), int()}
 UINTS = {byte(), u32(), uword()}
 INTS = SINTS | UINTS
 FLOATS = {float()}
+WRAPPERS = owner, ref
 
 def add(node):
 	
@@ -218,12 +239,13 @@ def add(node):
 		
 		name = method.name.name
 		irname = '%s.%s' % (node.name.name, name)
-		rtype = get('void' if not method.rtype else method.rtype.name)
+		rtype = void() if method.rtype is None else get(method.rtype)
 		
 		args = []
 		for i, arg in enumerate(method.args):
 			if not i and arg.name.name == 'self':
-				args.append(('self', get(node.name)))
+				wrapper = owner if name == '__del__' else ref
+				args.append(('self', wrapper(get(node.name))))
 			else:
 				args.append((arg.name.name, get(arg.type)))
 		

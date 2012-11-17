@@ -98,11 +98,11 @@ class CodeGen(object):
 	def coerce(self, val, dst, frame):
 		
 		vt = val.type, 0
-		while isinstance(vt[0], types.__ptr__):
+		while isinstance(vt[0], types.WRAPPERS):
 			vt = vt[0].over, vt[1] + 1
 		
 		dt = dst, 0
-		while isinstance(dt[0], types.__ptr__):
+		while isinstance(dt[0], types.WRAPPERS):
 			dt = dt[0].over, dt[1] + 1
 		
 		while vt[1] > dt[1]:
@@ -134,16 +134,16 @@ class CodeGen(object):
 		tmp = frame.varname()
 		self.writeline('%%%s = alloca %s' % (tmp, node.type.ir))
 		val = '1' if node.val else '0'
-		bits = node.type.ir, val, types.__ptr__(node.type).ir, tmp
+		bits = node.type.ir, val, types.owner(node.type).ir, tmp
 		self.writeline('store %s %s, %s %%%s' % bits)
-		return Value(types.__ptr__(node.type), tmp)
+		return Value(types.owner(node.type), tmp)
 	
 	def Int(self, node, frame):
 		tmp = frame.varname()
 		self.writeline('%%%s = alloca %s' % (tmp, node.type.ir))
-		bits = node.type.ir, node.val, types.__ptr__(node.type).ir, tmp
+		bits = node.type.ir, node.val, types.owner(node.type).ir, tmp
 		self.writeline('store %s %s, %s %%%s' % bits)
-		return Value(types.__ptr__(node.type), tmp)
+		return Value(types.owner(node.type), tmp)
 	
 	def String(self, node, frame):
 		
@@ -178,12 +178,12 @@ class CodeGen(object):
 		bits = dataptr, full
 		self.writeline('%%%s = getelementptr %%str* %%%s, i32 0, i32 1' % bits)
 		self.writeline('store i8* %%%s, i8** %%%s' % (cast, dataptr))
-		return Value(types.__ptr__(types.str()), full)
+		return Value(types.owner(types.str()), full)
 	
 	def Init(self, node, frame):
 		res = frame.varname()
 		self.writeline('%%%s = alloca %s' % (res, node.type.ir))
-		return Value(types.__ptr__(node.type), res)
+		return Value(types.owner(node.type), res)
 	
 	def LT(self, node, frame):
 		
@@ -208,7 +208,10 @@ class CodeGen(object):
 		left = self.visit(node.left, frame)
 		right = self.visit(node.right, frame)
 		
-		assert left.type == right.type
+		assert isinstance(left.type, types.WRAPPERS)
+		assert isinstance(right.type, types.WRAPPERS)
+		assert left.type.over == right.type.over
+		
 		leftval = frame.varname()
 		bits = leftval, left.type.ir, left.var
 		self.writeline('%%%s = load %s %%%s' % bits)
@@ -259,7 +262,7 @@ class CodeGen(object):
 	def Add(self, node, frame):
 		
 		left = self.visit(node.left, frame)
-		assert isinstance(left.type, types.__ptr__)
+		assert isinstance(left.type, types.WRAPPERS)
 		leftval = frame.varname()
 		bits = leftval, left.type.ir, left.var
 		self.writeline('%%%s = load %s %%%s' % bits)
@@ -289,7 +292,7 @@ class CodeGen(object):
 				var = frame.varname()
 				bits = var, node.left.type.ir, node.left.name
 				self.writeline('%%%s = alloca %s ; %s' % bits)
-				wrapped = types.__ptr__(node.left.type)
+				wrapped = types.owner(node.left.type)
 				frame[node.left.name] = Value(wrapped, var)
 			target = frame[node.left.name]
 			
@@ -298,30 +301,39 @@ class CodeGen(object):
 		else:
 			assert False
 		
-		if types.__ptr__(val.type) == target.type:
+		if types.ref(val.type) == target.type:
 			bits = val.type.ir, val.var, target.type.ir, target.var
 			self.writeline('store %s %%%s, %s %%%s' % bits)
-		elif val.type == target.type:
+			return
+		
+		if types.owner(val.type) == target.type:
+			bits = val.type.ir, val.var, target.type.ir, target.var
+			self.writeline('store %s %%%s, %s %%%s' % bits)
+			return
+		
+		w = lambda t: isinstance(t.type, types.WRAPPERS)
+		if w(val) and w(target) and val.type.over == target.type.over:
 			tmp = frame.varname()
 			bits = tmp, val.type.ir, val.var
 			self.writeline('%%%s = load %s %%%s' % bits)
 			bits = val.type.over.ir, tmp, target.type.ir, target.var
 			self.writeline('store %s %%%s, %s %%%s' % bits)
-		else:
-			assert False
+			return
+		
+		assert False
 	
 	def Attrib(self, node, frame):
 		
 		obj = self.visit(node.obj, frame)
 		t = obj.type
-		if isinstance(t, types.__ptr__):
+		if isinstance(t, types.WRAPPERS):
 			t = obj.type.over
 		
 		name = frame.varname()
 		idx, type = t.attribs[node.attrib.name]
 		bits = name, obj.type.ir, obj.var, idx
 		self.writeline('%%%s = getelementptr %s %%%s, i32 0, i32 %s' % bits)
-		return Value(types.__ptr__(type), name)
+		return Value(types.ref(type), name)
 	
 	def Ternary(self, node, frame):
 		
@@ -349,7 +361,7 @@ class CodeGen(object):
 		
 	def Return(self, node, frame):
 		value = self.visit(node.value, frame)
-		if isinstance(value.type, types.__ptr__):
+		if isinstance(value.type, types.WRAPPERS):
 			if value.type.over.byval:
 				tmp = frame.varname()
 				bits = tmp, value.type.ir, value.var
@@ -362,13 +374,8 @@ class CodeGen(object):
 		args = []
 		rtype, atypes = node.fun.type.over
 		for i, arg in enumerate(node.args):
-			
-			at = atypes[i]
-			if not isinstance(at, types.__ptr__) and not at.byval:
-				at = types.__ptr__(at)
-			
 			val = self.visit(arg, frame)
-			val = self.coerce(val, at, frame)
+			val = self.coerce(val, atypes[i], frame)
 			args.append(val)
 		
 		argstr = ', '.join('%s %%%s' % (a.type.ir, a.var) for a in args)
@@ -385,27 +392,19 @@ class CodeGen(object):
 		
 		self.tlabels = 0
 		frame = Frame(frame)
-		rtype = node.rtype
-		if not rtype.byval:
-			rtype = types.__ptr__(rtype)
-		
 		irname = node.name.name
 		if hasattr(node, 'irname'):
 			irname = node.irname
 		
-		self.write('define %s @%s(' % (rtype.ir, irname))
+		self.write('define %s @%s(' % (node.rtype.ir, irname))
 		first = True
 		for arg in node.args:
 			
 			if not first:
 				self.write(', ')
 			
-			ptype = arg.type
-			if not ptype.byval and not isinstance(ptype, types.__ptr__):
-				ptype = types.__ptr__(ptype)
-			
-			self.write(ptype.ir + ' %' + arg.name.name)
-			frame[arg.name.name] = Value(ptype, arg.name.name)
+			self.write(arg.type.ir + ' %' + arg.name.name)
+			frame[arg.name.name] = Value(arg.type, arg.name.name)
 			first = False
 		
 		self.write(') {')
@@ -432,7 +431,7 @@ class CodeGen(object):
 		if isinstance(ref, ti.Function) and ref.decl.startswith('lang.'):
 			return
 		
-		if isinstance(ref, types.Type) and ref.name == '__ptr__':
+		if isinstance(ref, types.Type) and isinstance(ref, types.WRAPPERS):
 			return
 		
 		if isinstance(ref, ti.Function):
@@ -442,6 +441,10 @@ class CodeGen(object):
 			return
 		
 	def type(self, type):
+		
+		if isinstance(type, (types.ref, types.owner)):
+			return
+		
 		fields = sorted(type.attribs.itervalues())
 		s = ', '.join([i[1].ir for i in fields])
 		self.writeline('%s = type { %s }\n' % (type.ir, s))

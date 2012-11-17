@@ -64,17 +64,16 @@ ROOT = Module('', {
 		'True': Object(types.bool(), 1),
 	}),
 	'__internal__': Module('__internal__', {
-		'__ptr__': types.__ptr__,
 		'__malloc__': Function('lang.malloc',
-			types.function(types.__ptr__(types.byte()), (types.uword(),))
+			types.function(types.owner(types.byte()), (types.uword(),))
 		),
 		'__free__': Function('lang.free', types.function(types.void(), (
-			types.__ptr__(types.byte()),
+			types.owner(types.byte()),
 		))),
 		'__memcpy__': Function('lang.memcpy',
 			types.function(types.void(), (
-				types.__ptr__(types.byte()),
-				types.__ptr__(types.byte()),
+				types.ref(types.byte()),
+				types.ref(types.byte()),
 				types.u32(),
 			)
 		)),
@@ -82,15 +81,15 @@ ROOT = Module('', {
 	'libc': Module('libc', {
 		'string': Module('libc.string', {
 			'strncmp': Function('strncmp', types.function(types.i32(), (
-				types.__ptr__(types.byte()),
-				types.__ptr__(types.byte()),
+				types.ref(types.byte()),
+				types.ref(types.byte()),
 				types.uword(),
 			))),
 		}),
 		'unistd': Module('libc.unistd', {
 			'write': Function('write', types.function(types.word(), (
 				types.i32(),
-				types.__ptr__(types.byte()),
+				types.ref(types.byte()),
 				types.uword(),
 			))),
 		}),
@@ -146,6 +145,10 @@ class Scope(object):
 			inner = self.resolve(node.key)
 			outer = self.resolve(node.obj)
 			return outer(inner)
+		elif isinstance(node, ast.Ref):
+			return types.ref(self.resolve(node.value))
+		elif isinstance(node, ast.Owner):
+			return types.owner(self.resolve(node.value))
 		else:
 			assert False
 
@@ -196,8 +199,13 @@ class TypeChecker(object):
 		node.type = types.str()
 	
 	def Attrib(self, node, scope):
+		
 		self.visit(node.obj, scope)
-		node.type = node.obj.type.attribs[node.attrib.name][1]
+		t = node.obj.type
+		if isinstance(t, types.WRAPPERS):
+			t = t.over
+		
+		node.type = t.attribs[node.attrib.name][1]
 		assert node.type is not None, 'FAIL'
 	
 	def Add(self, node, scope):
@@ -323,7 +331,9 @@ class TypeChecker(object):
 			assert False, 'ternary sides different types'
 
 def variant(mod, t):
-	if hasattr(t, 'over') and not isinstance(t, types.__ptr__):
+	if isinstance(t, types.WRAPPERS):
+		variant(mod, t.over)
+	elif hasattr(t, 'over'):
 		mod.variants.add(t)
 
 def process(mod, base, fun):
@@ -372,8 +382,13 @@ def typer(mod):
 	
 	mod.scope = base
 	for k, fun in mod.code:
+		
 		if fun.args[0].type is None:
 			assert len(k) > 1
 			assert fun.args[0].name.name == 'self'
-			fun.args[0].type = base[k[0]]
+			if fun.name.name == '__del__':
+				fun.args[0].type = types.owner(base[k[0]])
+			else:
+				fun.args[0].type = types.ref(base[k[0]])
+		
 		process(mod, base, fun)

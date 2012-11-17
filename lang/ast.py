@@ -167,6 +167,22 @@ class Not(Expr):
 		self.value = p.expr()
 		return self
 
+class Owner(Node):
+	op = '$'
+	lbp = 0
+	fields = 'value'
+	def nud(self, p):
+		self.value = p.expr()
+		return self
+
+class Ref(Node):
+	op = '&'
+	lbp = 0
+	fields = 'value'
+	def nud(self, p):
+		self.value = p.expr()
+		return self
+
 class In(Expr):
 	op = 'in'
 	lbp = 70

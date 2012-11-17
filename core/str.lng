@@ -1,30 +1,30 @@
-from __internal__ import __ptr__, __malloc__, __free__, __memcpy__
+from __internal__ import __malloc__, __free__, __memcpy__
 from libc.string import strncmp
 from libc.unistd import write
 
 class str:
 	
 	len: u32
-	data: __ptr__[byte]
+	data: $byte
 	
-	def __init__(self, len: u32, data: __ptr__[byte]):
+	def __init__(self, len: u32, data: $byte):
 		self.len = len
 		self.data = data
 	
 	def __bool__(self) -> bool:
 		return self.len > 0
 	
-	def __str__(self) -> str:
+	def __str__(self) -> &str:
 		return self
 	
-	def __eq__(self, other: str) -> bool:
+	def __eq__(self, other: &str) -> bool:
 		if self.len != other.len:
 			return False
 		len = self.len if self.len < other.len else other.len
 		cmp = strncmp(self.data, other.data, len)
 		return cmp == 0
 	
-	def __lt__(self, other: str) -> bool:
+	def __lt__(self, other: &str) -> bool:
 		len = self.len if self.len < other.len else other.len
 		cmp = strncmp(self.data, other.data, len)
 		if cmp < 0:
@@ -34,7 +34,7 @@ class str:
 		else:
 			return self.len < other.len
 	
-	def __add__(self, other: str) -> str:
+	def __add__(self, other: &str) -> $str:
 		sum = self.len + other.len
 		data = __malloc__(sum)
 		__memcpy__(data, self.data, self.len)
@@ -45,6 +45,6 @@ class str:
 	def __del__(self):
 		__free__(self.data)
 
-def print(s: str):
+def print(s: &str):
 	write(1, s.data, s.len)
 	write(1, "\n".data, 1)
