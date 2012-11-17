@@ -8,7 +8,6 @@ class base(object):
 	
 	byval = False
 	iface = False
-	forward = False
 	attribs = {}
 	methods = {}
 	type = Type()
@@ -151,9 +150,6 @@ class uword(base):
 	signed = False
 	byval = True
 
-class str(base):
-	forward = True
-
 class IStr(base):
 	ir = '%IStr.wrap'
 	iface = True
@@ -217,16 +213,11 @@ WRAPPERS = owner, ref
 
 def add(node):
 	
-	if node.name.name in ALL and ALL[node.name.name].forward:
-		cls = ALL[node.name.name]
-		cls.methods = {}
-		cls.attribs = {}
-	else:
-		cls = ALL[node.name.name] = type(node.name.name, (base,), {
-			'ir': '%' + node.name.name,
-			'methods': {},
-			'attribs': {},
-		})
+	cls = ALL[node.name.name] = type(node.name.name, (base,), {
+		'ir': '%' + node.name.name,
+		'methods': {},
+		'attribs': {},
+	})
 	
 	for i, (atype, name) in enumerate(node.attribs):
 		cls.attribs[name.name] = i, get(atype)

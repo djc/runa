@@ -178,7 +178,7 @@ class CodeGen(object):
 		bits = dataptr, full
 		self.writeline('%%%s = getelementptr %%str* %%%s, i32 0, i32 1' % bits)
 		self.writeline('store i8* %%%s, i8** %%%s' % (cast, dataptr))
-		return Value(types.owner(types.str()), full)
+		return Value(types.owner(node.type), full)
 	
 	def Init(self, node, frame):
 		res = frame.varname()

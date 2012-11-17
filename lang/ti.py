@@ -196,7 +196,7 @@ class TypeChecker(object):
 		node.type = types.int()
 	
 	def String(self, node, scope):
-		node.type = types.str()
+		node.type = scope['str']
 	
 	def Attrib(self, node, scope):
 		
