@@ -21,7 +21,7 @@ def module(ast):
 	mod = blocks.Module(ast)
 	for fn in os.listdir(CORE_DIR):
 		
-		if not fn.endswith('.lng'):
+		if not fn.endswith('.rns'):
 			continue
 		
 		with open(os.path.join(CORE_DIR, fn)) as f:

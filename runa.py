@@ -1,44 +1,44 @@
 #!/usr/bin/env python
 
-import lang
+import runac
 import optparse, sys, os, subprocess
 
 def tokens(fn, opts):
-	for x in lang.tokenize(open(fn)):
+	for x in runac.tokenize(open(fn)):
 		print x
 
 def parse(fn, opts):
-	print lang.parse(lang.tokenize(open(fn)))
+	print runac.parse(runac.tokenize(open(fn)))
 
 def bl(fn, opts):
-	return lang.module(lang.parse(lang.tokenize(open(fn))))
+	return runac.module(runac.parse(runac.tokenize(open(fn))))
 
 def ti(fn, opts):
 	mod = bl(fn, opts)
-	lang.type(mod)
+	runac.type(mod)
 
 def specialize(fn, opts):
 	mod = bl(fn, opts)
-	lang.type(mod)
-	lang.spec(mod)
+	runac.type(mod)
+	runac.spec(mod)
 
 def generate(fn, opts):
 	mod = bl(fn, opts)
-	lang.type(mod)
-	lang.spec(mod)
-	print lang.generate(mod)
+	runac.type(mod)
+	runac.spec(mod)
+	print runac.generate(mod)
 
 def compile(fn, opts):
 	mod = bl(fn, opts)
-	lang.type(mod)
-	lang.spec(mod)
-	ir = lang.generate(mod)
-	lang.compile(ir, os.path.basename(fn).rsplit('.lng')[0])
+	runac.type(mod)
+	runac.spec(mod)
+	ir = runac.generate(mod)
+	runac.compile(ir, os.path.basename(fn).rsplit('.rns')[0])
 
 def run(fn, opts):
 	kwargs = {i: subprocess.PIPE for i in ('stdin', 'stdout', 'stderr')}
 	proc = subprocess.Popen(('lli',), **kwargs)
-	out, err = proc.communicate(lang.llir(fn, True))
+	out, err = proc.communicate(runac.llir(fn, True))
 	sys.stdout.write(out)
 	sys.stderr.write(err)
 
@@ -71,5 +71,5 @@ if __name__ == '__main__':
 	opts, args = parser.parse_args()
 	try:
 		find(args[0])(args[1], opts)
-	except lang.Error as e:
+	except runac.Error as e:
 		sys.stderr.write(e.show(args[1]))

@@ -1,14 +1,14 @@
-import lang
+import runac
 import sys, os, unittest, subprocess, json
 
 DIR = os.path.dirname(__file__)
 TEST_DIR = os.path.join(DIR, 'tests')
-TESTS = [i[:-4] for i in os.listdir(TEST_DIR) if i.endswith('.lng')]
+TESTS = [i[:-4] for i in os.listdir(TEST_DIR) if i.endswith('.rns')]
 
 def run(self, key):
 	
-	fullname = os.path.join(TEST_DIR, key + '.lng')
-	base = fullname.rsplit('.lng', 1)[0]
+	fullname = os.path.join(TEST_DIR, key + '.rns')
+	base = fullname.rsplit('.rns', 1)[0]
 	bin = base + '.test'
 	
 	spec = {}
@@ -19,8 +19,8 @@ def run(self, key):
 	
 	out = None
 	try:
-		lang.compile(fullname, bin)
-	except lang.Error as e:
+		runac.compile(fullname, bin)
+	except runac.Error as e:
 		out = e.show(fullname)
 	
 	if not out:

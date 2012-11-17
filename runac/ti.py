@@ -1,4 +1,4 @@
-from lang import types, ast
+import types, ast
 
 class Object(object):
 	
@@ -61,13 +61,13 @@ ROOT = Module('', {
 		'byte': types.byte(),
 	}),
 	'__internal__': Module('__internal__', {
-		'__malloc__': Function('lang.malloc',
+		'__malloc__': Function('runa.malloc',
 			types.function(types.owner(types.byte()), (types.uword(),))
 		),
-		'__free__': Function('lang.free', types.function(types.void(), (
+		'__free__': Function('runa.free', types.function(types.void(), (
 			types.owner(types.byte()),
 		))),
-		'__memcpy__': Function('lang.memcpy',
+		'__memcpy__': Function('runa.memcpy',
 			types.function(types.void(), (
 				types.ref(types.byte()),
 				types.ref(types.byte()),

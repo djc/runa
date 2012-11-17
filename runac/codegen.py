@@ -428,7 +428,7 @@ class CodeGen(object):
 	
 	def declare(self, ref):
 		
-		if isinstance(ref, ti.Function) and ref.decl.startswith('lang.'):
+		if isinstance(ref, ti.Function) and ref.decl.startswith('runa.'):
 			return
 		
 		if isinstance(ref, types.Type) and isinstance(ref, types.WRAPPERS):
