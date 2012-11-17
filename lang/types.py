@@ -132,12 +132,6 @@ class u32(base):
 	signed = False
 	byval = True
 
-class i64(base):
-	ir = 'i64'
-	bits = 64
-	signed = True
-	byval = True
-
 class word(base):
 	ir = 'i64'
 	bits = 64
@@ -149,18 +143,6 @@ class uword(base):
 	bits = 64
 	signed = False
 	byval = True
-
-class IStr(base):
-	ir = '%IStr.wrap'
-	iface = True
-	vttype = '%IStr'
-	impl = '@IStr'
-
-class IBool(base):
-	ir = '%IBool.wrap'
-	iface = True
-	vttype = '%IBool'
-	impl = '@IBool'
 
 class array(base):
 	def __init__(self, over):
@@ -205,7 +187,7 @@ for k, cls in ALL.iteritems():
 		atypes = [(n, get(t)) for (n, t) in mdata[2]]
 		cls.methods[m] = (m[0], rtype, atypes)
 
-SINTS = {i32(), i64(), word(), int()}
+SINTS = {i32(), int(), word()}
 UINTS = {byte(), u32(), uword()}
 INTS = SINTS | UINTS
 FLOATS = {float()}
