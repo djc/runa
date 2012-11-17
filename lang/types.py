@@ -50,6 +50,40 @@ class int(base):
 	def ir(self):
 		raise TypeError('not a concrete type')
 
+class bool(base):
+	ir = 'i1'
+	byval = True
+
+class byte(base):
+	ir = 'i8'
+	bits = 8
+	signed = False
+	byval = True
+
+class i32(base):
+	ir = 'i32'
+	bits = 32
+	signed = True
+	byval = True
+
+class u32(base):
+	ir = 'i32'
+	bits = 32
+	signed = False
+	byval = True
+
+class word(base):
+	ir = 'i64'
+	bits = 64
+	signed = True
+	byval = True
+
+class uword(base):
+	ir = 'i64'
+	bits = 64
+	signed = False
+	byval = True
+
 class module(base):
 	def __init__(self, path=None):
 		self.path = path
@@ -109,40 +143,6 @@ class function(base):
 	@property
 	def ir(self):
 		raise NotImplementedError
-
-class bool(base):
-	ir = 'i1'
-	byval = True
-
-class byte(base):
-	ir = 'i8'
-	bits = 8
-	signed = False
-	byval = True
-
-class i32(base):
-	ir = 'i32'
-	bits = 32
-	signed = True
-	byval = True
-
-class u32(base):
-	ir = 'i32'
-	bits = 32
-	signed = False
-	byval = True
-
-class word(base):
-	ir = 'i64'
-	bits = 64
-	signed = True
-	byval = True
-
-class uword(base):
-	ir = 'i64'
-	bits = 64
-	signed = False
-	byval = True
 
 class array(base):
 	def __init__(self, over):
