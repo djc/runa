@@ -50,9 +50,9 @@ class int(base):
 	def ir(self):
 		raise TypeError('not a concrete type')
 
-class bool(base):
-	ir = 'i1'
-	byval = True
+BASIC = {
+	'bool': 'i1',
+}
 
 class byte(base):
 	ir = 'i8'
@@ -200,6 +200,10 @@ def add(node):
 		'methods': {},
 		'attribs': {},
 	})
+	
+	if node.name.name in BASIC:
+		cls.ir = BASIC[node.name.name]
+		cls.byval = True
 	
 	for i, (atype, name) in enumerate(node.attribs):
 		cls.attribs[name.name] = i, get(atype)

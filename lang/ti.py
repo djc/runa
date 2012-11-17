@@ -59,9 +59,6 @@ ROOT = Module('', {
 		'u32': types.u32(),
 		'array': types.array,
 		'byte': types.byte(),
-		'bool': types.bool(),
-		'False': Object(types.bool(), 0),
-		'True': Object(types.bool(), 1),
 	}),
 	'__internal__': Module('__internal__', {
 		'__malloc__': Function('lang.malloc',
@@ -190,7 +187,7 @@ class TypeChecker(object):
 		self.cur.uses.add(node.name)
 	
 	def Bool(self, node, scope):
-		node.type = types.bool()
+		node.type = scope['bool']
 	
 	def Int(self, node, scope):
 		node.type = types.int()
@@ -220,11 +217,11 @@ class TypeChecker(object):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
-			node.type = types.bool()
+			node.type = scope['bool']
 		elif node.left.type == types.int():
-			node.type = types.bool()
+			node.type = scope['bool']
 		elif node.right.type == types.int():
-			node.type = types.bool()
+			node.type = scope['bool']
 		else:
 			assert False, 'lt sides different types'
 	
@@ -232,11 +229,11 @@ class TypeChecker(object):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
-			node.type = types.bool()
+			node.type = scope['bool']
 		elif node.left.type == types.int():
-			node.type = types.bool()
+			node.type = scope['bool']
 		elif node.right.type == types.int():
-			node.type = types.bool()
+			node.type = scope['bool']
 		else:
 			assert False, 'gt sides different types'
 	
@@ -244,11 +241,11 @@ class TypeChecker(object):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
-			node.type = types.bool()
+			node.type = scope['bool']
 		elif node.left.type == types.int():
-			node.type = types.bool()
+			node.type = scope['bool']
 		elif node.right.type == types.int():
-			node.type = types.bool()
+			node.type = scope['bool']
 		else:
 			assert False, 'eq sides different types'
 	
@@ -256,11 +253,11 @@ class TypeChecker(object):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
-			node.type = types.bool()
+			node.type = scope['bool']
 		elif node.left.type == types.int():
-			node.type = types.bool()
+			node.type = scope['bool']
 		elif node.right.type == types.int():
-			node.type = types.bool()
+			node.type = scope['bool']
 		else:
 			assert False, 'neq sides different types'
 	

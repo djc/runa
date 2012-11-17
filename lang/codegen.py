@@ -201,7 +201,7 @@ class CodeGen(object):
 		tmp = frame.varname()
 		bits = tmp, left.type.over.ir, leftval, rightval
 		self.writeline('%%%s = icmp ult %s %%%s, %%%s' % bits)
-		return Value(types.bool(), tmp)
+		return Value(types.ALL['bool'](), tmp)
 	
 	def GT(self, node, frame):
 		
@@ -223,7 +223,7 @@ class CodeGen(object):
 		tmp = frame.varname()
 		bits = tmp, left.type.over.ir, leftval, rightval
 		self.writeline('%%%s = icmp ugt %s %%%s, %%%s' % bits)
-		return Value(types.bool(), tmp)
+		return Value(types.ALL['bool'](), tmp)
 	
 	def NEq(self, node, frame):
 		
@@ -240,7 +240,7 @@ class CodeGen(object):
 		res = frame.varname()
 		bits = res, left.type.over.ir, leftval, rightval
 		self.writeline('%%%s = icmp ne %s %%%s, %%%s' % bits)
-		return Value(types.bool(), res)
+		return Value(types.ALL['bool'](), res)
 	
 	def Eq(self, node, frame):
 		
@@ -257,7 +257,7 @@ class CodeGen(object):
 		res = frame.varname()
 		bits = res, left.type.over.ir, leftval, rightval
 		self.writeline('%%%s = icmp eq %s %%%s, %%%s' % bits)
-		return Value(types.bool(), res)
+		return Value(types.ALL['bool'](), res)
 	
 	def Add(self, node, frame):
 		
@@ -457,6 +457,7 @@ class CodeGen(object):
 		
 		self.newline()
 		for k, v in mod.types.iteritems():
+			if k in types.BASIC: continue
 			self.type(v)
 		
 		for var in mod.variants:
