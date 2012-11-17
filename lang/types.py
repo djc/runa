@@ -114,10 +114,6 @@ class void(base):
 class bool(base):
 	ir = 'i1'
 	byval = True
-	methods = {
-		'__str__': ('bool.__str__', 'str', []),
-		'__eq__': ('bool.__eq__', 'bool', [('v', 'bool')]),
-	}
 
 class byte(base):
 	ir = 'i8'
