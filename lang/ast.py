@@ -338,6 +338,15 @@ class Function(Node):
 		self.suite = Suite(p, self.pos)
 		return self
 
+class Pass(Statement):
+	
+	kw = 'pass'
+	lbp = 0
+	field = ()
+	
+	def nud(self, p):
+		return self
+
 class Return(Statement):
 	
 	kw = 'return'
@@ -490,6 +499,13 @@ class Class(Statement):
 		p.eat(NL)
 		
 		self.attribs = []
+		self.methods = []
+		if isinstance(p.token, Pass):
+			p.advance(Pass)
+			p.eat(NL)
+			p.advance(Dedent)
+			return self
+		
 		while isinstance(p.token, Name):
 			field = p.expr()
 			p.advance(Colon)
@@ -497,7 +513,6 @@ class Class(Statement):
 			self.attribs.append((type, field))
 			p.eat(NL)
 		
-		self.methods = []
 		while isinstance(p.token, Function):
 			self.methods.append(p.expr())
 			p.eat(NL)
