@@ -103,14 +103,14 @@ class owner(base):
 	
 	@property
 	def name(self):
-		return 'owner[%s]' % self.over.name
+		return '$%s' % self.over.name
 	
 	@property
 	def ir(self):
 		return self.over.ir + '*'
 	
 	def __repr__(self):
-		return '<type: %s[%s]>' % (self.__class__.__name__, self.over.name)
+		return '<type: $%s>' % (self.__class__.__name__, self.over.name)
 
 class ref(base):
 	
@@ -119,14 +119,14 @@ class ref(base):
 	
 	@property
 	def name(self):
-		return 'ref[%s]' % self.over.name
+		return '&%s' % self.over.name
 	
 	@property
 	def ir(self):
 		return self.over.ir + '*'
 	
 	def __repr__(self):
-		return '<type: %s[%s]>' % (self.__class__.__name__, self.over.name)
+		return '<type: &%s>' % (self.__class__.__name__, self.over.name)
 
 class function(base):
 	
