@@ -110,7 +110,7 @@ class owner(base):
 		return self.over.ir + '*'
 	
 	def __repr__(self):
-		return '<type: $%s>' % (self.__class__.__name__, self.over.name)
+		return '<type: $%s>' % (self.over.name)
 
 class ref(base):
 	
@@ -126,7 +126,7 @@ class ref(base):
 		return self.over.ir + '*'
 	
 	def __repr__(self):
-		return '<type: &%s>' % (self.__class__.__name__, self.over.name)
+		return '<type: &%s>' % (self.over.name)
 
 class function(base):
 	
