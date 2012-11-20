@@ -7,7 +7,6 @@ class Type(object):
 class base(object):
 	
 	byval = False
-	iface = False
 	attribs = {}
 	methods = {}
 	type = Type()
@@ -23,6 +22,9 @@ class base(object):
 	def __repr__(self):
 		return '<type: %s>' % self.__class__.__name__
 	
+	def __hash__(self):
+		return hash((self.__class__, getattr(self, 'over', None)))
+	
 	def __eq__(self, other):
 		if self.__class__ != other.__class__:
 			return False
@@ -32,9 +34,41 @@ class base(object):
 	
 	def __ne__(self, other):
 		return not self.__eq__(other)
+
+class concrete(base):
+	pass
+
+class template(base):
 	
-	def __hash__(self):
-		return hash(self.__class__)
+	@property
+	def ir(self):
+		raise TypeError('not a concrete type')
+	
+	def __repr__(self):
+		return '<template: %s>' % self.__class__.__name__
+	
+	def __getitem__(self, params):
+		
+		params = params if isinstance(params, tuple) else (params,)
+		name = '%s[%s]' % (self.name, ', '.join(p.name for p in params))
+		internal = name.replace('$', '_').replace('.', '_')
+		cls = ALL[(self.name, params)] = type(internal, (concrete,), {
+			'ir': '%' + self.name + '$' + '.'.join(t.name for t in params),
+			'name': name,
+			'methods': {},
+			'attribs': {},
+		})
+		
+		trans = {k: v for (k, v) in zip(self.params, params)}
+		for k, v in self.attribs.iteritems():
+			if isinstance(v[1], Stub):
+				cls.attribs[k] = v[0], trans[v[1].name]
+			elif isinstance(v[1], WRAPPERS) and isinstance(v[1].over, Stub):
+				cls.attribs[k] = v[0], v[1].__class__(trans[v[1].over.name])
+			else:
+				cls.attribs[k] = v[0], v[1]
+		
+		return cls()
 
 class void(base):
 	ir = 'void'
@@ -144,34 +178,27 @@ class function(base):
 	def ir(self):
 		raise NotImplementedError
 
-class array(base):
-	def __init__(self, over):
-		self.over = over
-		self.attribs = {
-			'len': (0, u32()),
-			'data': (1, owner(over)),
-		}
-	@property
-	def ir(self):
-		return '%array.' + self.over.ir[1:]
+class Stub(object):
+	def __init__(self, name):
+		self.name = name
 	def __repr__(self):
-		return '<type: %s[%s]>' % (self.__class__.__name__, self.over.name)
+		return '<%s(%r)>' % (self.__class__.__name__, self.name)
 
-def get(t):
+def get(t, stubs={}):
 	if t is None:
 		return void()
 	elif isinstance(t, base):
 		return t
 	elif isinstance(t, basestring):
-		return ALL[t]()
+		return stubs[t] if t in stubs else ALL[t]()
 	elif isinstance(t, ast.Name):
-		return ALL[t.name]()
+		return stubs[t.name] if t.name in stubs else ALL[t.name]()
 	elif isinstance(t, ast.Elem):
-		return ALL[t.obj.name](get(t.key))
+		return ALL[t.obj.name](get(t.key, stubs))
 	elif isinstance(t, ast.Owner):
-		return owner(get(t.value))
+		return owner(get(t.value, stubs))
 	elif isinstance(t, ast.Ref):
-		return ref(get(t.value))
+		return ref(get(t.value, stubs))
 	else:
 		assert False, 'no type %s' % t
 
@@ -195,7 +222,8 @@ WRAPPERS = owner, ref
 
 def add(node):
 	
-	cls = ALL[node.name.name] = type(node.name.name, (base,), {
+	parent = base if not node.params else template
+	cls = ALL[node.name.name] = type(node.name.name, (parent,), {
 		'ir': '%' + node.name.name,
 		'methods': {},
 		'attribs': {},
@@ -205,22 +233,24 @@ def add(node):
 		cls.ir = BASIC[node.name.name]
 		cls.byval = True
 	
+	cls.params = tuple(n.name for n in node.params)
+	stubs = {n.name: Stub(n.name) for n in node.params}
 	for i, (atype, name) in enumerate(node.attribs):
-		cls.attribs[name.name] = i, get(atype)
+		cls.attribs[name.name] = i, get(atype, stubs)
 	
 	for method in node.methods:
 		
 		name = method.name.name
 		irname = '%s.%s' % (node.name.name, name)
-		rtype = void() if method.rtype is None else get(method.rtype)
+		rtype = void() if method.rtype is None else get(method.rtype, stubs)
 		
 		args = []
 		for i, arg in enumerate(method.args):
 			if not i and arg.name.name == 'self':
 				wrapper = owner if name == '__del__' else ref
-				args.append(('self', wrapper(get(node.name))))
+				args.append(('self', wrapper(get(node.name, stubs))))
 			else:
-				args.append((arg.name.name, get(arg.type)))
+				args.append((arg.name.name, get(arg.type, stubs)))
 		
 		cls.methods[name] = irname, rtype, args
 		method.irname = irname

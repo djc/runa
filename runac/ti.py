@@ -57,7 +57,6 @@ class Function(object):
 ROOT = Module('', {
 	'__builtin__': Module('__builtin__', {
 		'u32': types.u32(),
-		'array': types.array,
 		'byte': types.byte(),
 	}),
 	'__internal__': Module('__internal__', {
@@ -140,8 +139,7 @@ class Scope(object):
 			return self[node.name]
 		elif isinstance(node, ast.Elem):
 			inner = self.resolve(node.key)
-			outer = self.resolve(node.obj)
-			return outer(inner)
+			return self[node.obj.name][inner]
 		elif isinstance(node, ast.Ref):
 			return types.ref(self.resolve(node.value))
 		elif isinstance(node, ast.Owner):
@@ -285,7 +283,7 @@ class TypeChecker(object):
 		assert isinstance(node.name, ast.Name), 'call non-{attrib,name,type}'
 		obj = scope[node.name.name]
 		if not isinstance(obj, types.base):
-			node.fun = scope[node.name.name]
+			node.fun = obj
 			node.type = node.fun.type.over[0]
 		else:
 			node.name.name = '%s.__init__' % node.name.name
@@ -330,7 +328,7 @@ class TypeChecker(object):
 def variant(mod, t):
 	if isinstance(t, types.WRAPPERS):
 		variant(mod, t.over)
-	elif hasattr(t, 'over'):
+	elif hasattr(t, 'over') or isinstance(t, types.concrete):
 		mod.variants.add(t)
 
 def process(mod, base, fun):

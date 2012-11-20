@@ -1,0 +1,3 @@
+class array[T]:
+	len: u32
+	data: $T

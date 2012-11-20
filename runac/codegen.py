@@ -442,7 +442,8 @@ class CodeGen(object):
 		
 	def type(self, type):
 		
-		if isinstance(type, (types.ref, types.owner)):
+		ignore = types.WRAPPERS + (types.template,)
+		if isinstance(type, ignore):
 			return
 		
 		fields = sorted(type.attribs.itervalues())
