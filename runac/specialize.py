@@ -61,16 +61,9 @@ class Specializer(object):
 		self.compare(node)
 	
 	def Call(self, node):
-		
-		assert node.type not in GENERIC
-		if hasattr(node.name, 'type'):
-			ftype = node.name.type
-		else:
-			ftype = ti.resolve(self.mod, node.name.name).type
-		
 		for i, arg in enumerate(node.args):
 			if arg.type not in GENERIC: continue
-			self.specialize(arg, ftype.over[1][i])
+			self.specialize(arg, node.fun.type.over[1][i])
 			assert arg.type not in GENERIC
 	
 	def propagate(self):
