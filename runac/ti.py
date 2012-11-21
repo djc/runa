@@ -54,40 +54,39 @@ class Function(object):
 		show = ('%s=%r' % (k, v) for (k, v) in contents)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
+class Decl(object):
+	
+	def __init__(self, name, rtype, atypes):
+		self.decl = name
+		self.rtype = rtype
+		self.atypes = atypes
+	
+	def __repr__(self):
+		name = self.__class__.__name__
+		atypes = ', '.join(self.atypes)
+		return '<%s(%r, %s, (%s))>' % (name, self.decl, self.rtype, atypes)
+	
+	def realize(self):
+		rtype = types.get(self.rtype)
+		atypes = [types.get(t) for t in self.atypes]
+		return Function(self.decl, types.function(rtype, atypes))
+
 ROOT = Module('', {
 	'__builtin__': Module('__builtin__', {
 		'u32': types.u32(),
 		'byte': types.byte(),
 	}),
 	'__internal__': Module('__internal__', {
-		'__malloc__': Function('runa.malloc',
-			types.function(types.owner(types.byte()), (types.uword(),))
-		),
-		'__free__': Function('runa.free', types.function(types.void(), (
-			types.owner(types.byte()),
-		))),
-		'__memcpy__': Function('runa.memcpy',
-			types.function(types.void(), (
-				types.ref(types.byte()),
-				types.ref(types.byte()),
-				types.u32(),
-			)
-		)),
+		'__malloc__': Decl('runa.malloc', '$byte', ('uword',)),
+		'__free__': Decl('runa.free', 'void', ('$byte',)),
+		'__memcpy__': Decl('runa.memcpy', 'void', ('&byte', '&byte', 'u32')),
 	}),
 	'libc': Module('libc', {
 		'string': Module('libc.string', {
-			'strncmp': Function('strncmp', types.function(types.i32(), (
-				types.ref(types.byte()),
-				types.ref(types.byte()),
-				types.uword(),
-			))),
+			'strncmp': Decl('strncmp', 'i32', ('&byte', '&byte', 'uword')),
 		}),
 		'unistd': Module('libc.unistd', {
-			'write': Function('write', types.function(types.word(), (
-				types.i32(),
-				types.ref(types.byte()),
-				types.uword(),
-			))),
+			'write': Decl('write', 'word', ('i32', '&byte', 'uword')),
 		}),
 	}),
 })
@@ -358,11 +357,14 @@ def typer(mod):
 		base[name] = val
 	
 	for name, ref in mod.refs.iteritems():
+		
 		ns = ROOT
 		path = ref.split('.')
 		while len(path) > 1:
 			ns = ns.attribs[path.pop(0)]
-		base[name] = ns.attribs[path[0]]
+		
+		obj = ns.attribs[path[0]]
+		base[name] = obj.realize() if isinstance(obj, Decl) else obj
 	
 	for k, v in mod.constants.iteritems():
 		assert False, 'unimplemented'

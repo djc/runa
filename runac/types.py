@@ -189,6 +189,10 @@ def get(t, stubs={}):
 		return void()
 	elif isinstance(t, base):
 		return t
+	elif isinstance(t, basestring) and t[0] == '$':
+		return owner(get(t[1:], stubs))
+	elif isinstance(t, basestring) and t[0] == '&':
+		return ref(get(t[1:], stubs))
 	elif isinstance(t, basestring):
 		return stubs[t] if t in stubs else ALL[t]()
 	elif isinstance(t, ast.Name):

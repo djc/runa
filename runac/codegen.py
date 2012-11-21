@@ -428,13 +428,14 @@ class CodeGen(object):
 	
 	def declare(self, ref):
 		
-		if isinstance(ref, ti.Function) and ref.decl.startswith('runa.'):
+		if isinstance(ref, ti.Decl) and ref.decl.startswith('runa.'):
 			return
 		
 		if isinstance(ref, types.Type) and isinstance(ref, types.WRAPPERS):
 			return
 		
-		if isinstance(ref, ti.Function):
+		if isinstance(ref, ti.Decl):
+			ref = ref.realize()
 			rtype = ref.type.over[0].ir
 			args = ', '.join(t.ir for t in ref.type.over[1])
 			self.writeline('declare %s @%s(%s)' % (rtype, ref.decl, args))
