@@ -107,6 +107,8 @@ def resolve(mod, n):
 	elif parts[0] in types.ALL:
 		method = types.get(parts[0]).methods[parts[1]]
 		return Function(method[0], types.function(method[1], method[2]))
+	else:
+		assert False, 'cannot resolve %s' % (tuple(parts),)
 
 class Scope(object):
 	
