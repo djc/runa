@@ -1,4 +1,4 @@
-def main(name: str, args: array[str]) -> i32:
+def main(name: &str, args: &array[str]) -> i32:
 	print('a' and 'b')
 	print('' and 'a')
 	print('a' and '')
