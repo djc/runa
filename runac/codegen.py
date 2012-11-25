@@ -185,6 +185,50 @@ class CodeGen(object):
 		self.writeline('%%%s = alloca %s' % (res, node.type.ir))
 		return Value(types.owner(node.type), res)
 	
+	def And(self, node, frame):
+		
+		left = self.visit(node.left, frame)
+		right = self.visit(node.right, frame)
+		assert left.type == right.type
+		
+		t = left.type
+		if isinstance(t, types.WRAPPERS):
+			t = left.type.over
+		
+		bool = frame.varname()
+		method = t.methods['__bool__']
+		arg = self.coerce(left, method[2][0][1], frame)
+		argstr = '%s %%%s' % (arg.type.ir, arg.var)
+		bits = bool, method[1].ir, method[0], argstr
+		self.writeline('%%%s = call %s @%s(%s)' % bits)
+		
+		res = frame.varname()
+		bits = res, bool, right.type.ir, right.var, left.type.ir, left.var
+		self.writeline('%%%s = select i1 %%%s, %s %%%s, %s %%%s' % bits)
+		return Value(left.type, res)
+	
+	def Or(self, node, frame):
+		
+		left = self.visit(node.left, frame)
+		right = self.visit(node.right, frame)
+		assert left.type == right.type
+		
+		t = left.type
+		if isinstance(t, types.WRAPPERS):
+			t = left.type.over
+		
+		bool = frame.varname()
+		method = t.methods['__bool__']
+		arg = self.coerce(left, method[2][0][1], frame)
+		argstr = '%s %%%s' % (arg.type.ir, arg.var)
+		bits = bool, method[1].ir, method[0], argstr
+		self.writeline('%%%s = call %s @%s(%s)' % bits)
+		
+		res = frame.varname()
+		bits = res, bool, left.type.ir, left.var, right.type.ir, right.var
+		self.writeline('%%%s = select i1 %%%s, %s %%%s, %s %%%s' % bits)
+		return Value(left.type, res)
+	
 	def LT(self, node, frame):
 		
 		left = self.visit(node.left, frame)

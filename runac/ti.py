@@ -200,6 +200,22 @@ class TypeChecker(object):
 		node.type = t.attribs[node.attrib.name][1]
 		assert node.type is not None, 'FAIL'
 	
+	def And(self, node, scope):
+		self.visit(node.left, scope)
+		self.visit(node.right, scope)
+		if node.left.type == node.right.type:
+			node.type = node.left.type
+		else:
+			node.type = scope['bool']
+	
+	def Or(self, node, scope):
+		self.visit(node.left, scope)
+		self.visit(node.right, scope)
+		if node.left.type == node.right.type:
+			node.type = node.left.type
+		else:
+			node.type = scope['bool']
+	
 	def Add(self, node, scope):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
