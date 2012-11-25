@@ -147,6 +147,7 @@ class Scope(object):
 class TypeChecker(object):
 	
 	def __init__(self, fun):
+		self.fun = fun
 		self.flow = fun.flow
 		self.scopes = {}
 		self.cur = None
@@ -337,6 +338,17 @@ class TypeChecker(object):
 			node.type = node.values[0].type
 		else:
 			assert False, 'ternary sides different types'
+	
+	def Return(self, node, scope):
+		self.visit(node.value, scope)
+		if node.value.type == self.fun.rtype:
+			return
+		elif isinstance(node.value.type, types.int):
+			assert self.fun.rtype in types.INTS
+		elif isinstance(self.fun.rtype, types.WRAPPERS):
+			assert self.fun.rtype.over == node.value.type
+		else:
+			assert False
 
 def variant(mod, t):
 	if isinstance(t, types.WRAPPERS):
