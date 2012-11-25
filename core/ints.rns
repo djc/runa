@@ -1,0 +1,14 @@
+class byte:
+	pass
+
+class i32:
+	pass
+
+class u32:
+	pass
+
+class word:
+	pass
+
+class uword:
+	pass

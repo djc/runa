@@ -72,10 +72,6 @@ class Decl(object):
 		return Function(self.decl, types.function(rtype, atypes))
 
 ROOT = Module('', {
-	'__builtin__': Module('__builtin__', {
-		'u32': types.u32(),
-		'byte': types.byte(),
-	}),
 	'__internal__': Module('__internal__', {
 		'__malloc__': Decl('runa.malloc', '$byte', ('uword',)),
 		'__free__': Decl('runa.free', 'void', ('$byte',)),
@@ -356,9 +352,6 @@ def typer(mod):
 		types.add(v)
 	
 	base = Scope()
-	for name, val in ROOT['__builtin__'].iteritems():
-		base[name] = val
-	
 	for name, ref in mod.refs.iteritems():
 		
 		ns = ROOT

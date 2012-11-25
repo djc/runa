@@ -86,37 +86,20 @@ class int(base):
 
 BASIC = {
 	'bool': 'i1',
+	'byte': 'i8',
+	'i32': 'i32',
+	'u32': 'i32',
+	'word': 'i64',
+	'uword': 'i64',
 }
 
-class byte(base):
-	ir = 'i8'
-	bits = 8
-	signed = False
-	byval = True
-
-class i32(base):
-	ir = 'i32'
-	bits = 32
-	signed = True
-	byval = True
-
-class u32(base):
-	ir = 'i32'
-	bits = 32
-	signed = False
-	byval = True
-
-class word(base):
-	ir = 'i64'
-	bits = 64
-	signed = True
-	byval = True
-
-class uword(base):
-	ir = 'i64'
-	bits = 64
-	signed = False
-	byval = True
+INTEGERS = {
+	'byte': (False, 8),
+	'i32': (True, 32),
+	'u32': (False, 32),
+	'word': (True, 64),
+	'uword': (False, 64),
+}
 
 class module(base):
 	def __init__(self, path=None):
@@ -131,7 +114,7 @@ class owner(base):
 			'offset': (
 				'owner.offset',
 				ref(self.over),
-				[('self', ref(self.over)), ('n', uword())]
+				[('self', ref(self.over)), ('n', get('uword'))]
 			),
 		}
 	
@@ -218,9 +201,9 @@ for k, cls in ALL.iteritems():
 		atypes = [(n, get(t)) for (n, t) in mdata[2]]
 		cls.methods[m] = (m[0], rtype, atypes)
 
-SINTS = {i32(), int(), word()}
-UINTS = {byte(), u32(), uword()}
-INTS = SINTS | UINTS
+SINTS = {int()}
+UINTS = set()
+INTS = set()
 FLOATS = {float()}
 WRAPPERS = owner, ref
 
@@ -261,4 +244,13 @@ def fill(node):
 		cls.methods[name] = irname, rtype, args
 		method.irname = irname
 	
-	return cls()
+	obj = cls()
+	if node.name.name in INTEGERS:
+		cls.signed, cls.bits = INTEGERS[node.name.name]
+		INTS.add(obj)
+		if cls.signed:
+			SINTS.add(obj)
+		else:
+			UINTS.add(obj)
+	
+	return obj
