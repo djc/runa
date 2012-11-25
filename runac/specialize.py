@@ -44,6 +44,10 @@ class Specializer(object):
 		assert node.type not in GENERIC
 	
 	def Return(self, node):
+		
+		if node.value is None:
+			return
+		
 		self.visit(node.value)
 		self.specialize(node.value, self.fun.rtype)
 	

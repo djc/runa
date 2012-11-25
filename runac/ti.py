@@ -342,6 +342,13 @@ class TypeChecker(object):
 			assert False, 'ternary sides different types'
 	
 	def Return(self, node, scope):
+		
+		if node.value is None and self.fun.rtype != types.void():
+			msg = "function may not return value of type 'void'"
+			raise util.Error(node, msg)
+		elif node.value is None:
+			return
+		
 		self.visit(node.value, scope)
 		if node.value.type == self.fun.rtype:
 			return

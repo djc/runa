@@ -245,6 +245,11 @@ class Module(object):
 				elif isinstance(bl.steps[-1], CondBranch):
 					cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
 					cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
+				elif not isinstance(bl.steps[-1], ast.Return):
+					auto = ast.Return(None)
+					auto.value = None
+					auto.pos = v.pos
+					bl.steps.append(auto)
 			
 			cfg.exits = set()
 			reachable = set()

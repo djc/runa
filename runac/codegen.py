@@ -404,6 +404,11 @@ class CodeGen(object):
 		return Value(leftval.type, res)
 		
 	def Return(self, node, frame):
+		
+		if node.value is None:
+			self.writeline('ret void')
+			return
+		
 		value = self.visit(node.value, frame)
 		if isinstance(value.type, types.WRAPPERS):
 			if value.type.over.byval:
@@ -457,9 +462,6 @@ class CodeGen(object):
 		
 		for i, block in sorted(node.flow.blocks.iteritems()):
 			self.visit(block, frame)
-		
-		if node.rtype == types.void():
-			self.writeline('ret void')
 		
 		self.dedent()
 		self.writeline('}')
