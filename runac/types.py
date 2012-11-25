@@ -23,14 +23,10 @@ class base(object):
 		return '<type: %s>' % self.__class__.__name__
 	
 	def __hash__(self):
-		return hash((self.__class__, getattr(self, 'over', None)))
+		return hash(repr(self))
 	
 	def __eq__(self, other):
-		if self.__class__ != other.__class__:
-			return False
-		if getattr(self, 'over', None) != getattr(other, 'over', None):
-			return False
-		return True
+		return repr(self) == repr(other)
 	
 	def __ne__(self, other):
 		return not self.__eq__(other)
