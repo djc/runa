@@ -4,9 +4,10 @@ GENERIC = {types.int(), types.float()}
 
 class Specializer(object):
 	
-	def __init__(self, mod, cfg):
+	def __init__(self, mod, fun):
 		self.mod = mod
-		self.cfg = cfg
+		self.fun = fun
+		self.cfg = fun.flow
 	
 	def visit(self, node):
 		
@@ -22,6 +23,19 @@ class Specializer(object):
 			else:
 				self.visit(attr)
 	
+	def specialize(self, node, dst):
+		if node.type != types.int() and node.type != types.float():
+			return
+		elif node.type == types.int() and dst in types.INTS:
+			if isinstance(node, ast.Int):
+				node.type = dst
+				if not dst.signed:
+					assert node.val >= 0
+			else:
+				assert False
+		else:
+			assert False
+	
 	def Name(self, node):
 		assert node.type not in GENERIC
 	
@@ -31,17 +45,7 @@ class Specializer(object):
 	
 	def Return(self, node):
 		self.visit(node.value)
-	
-	def specialize(self, node, dst):
-		if node.type == types.int() and dst in types.INTS:
-			if isinstance(node, ast.Int):
-				node.type = dst
-				if not dst.signed:
-					assert node.val >= 0
-			else:
-				assert False
-		else:
-			assert False
+		self.specialize(node.value, self.fun.rtype)
 	
 	def compare(self, node):
 		if node.left.type in GENERIC:
@@ -73,4 +77,4 @@ class Specializer(object):
 
 def specialize(mod):
 	for name, code in mod.code:
-		Specializer(mod, code.flow).propagate()
+		Specializer(mod, code).propagate()
