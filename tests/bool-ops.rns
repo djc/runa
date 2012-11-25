@@ -1,7 +1,8 @@
-def main(name: str, args: array[str]):
+def main(name: str, args: array[str]) -> i32:
 	print('a' and 'b')
 	print('' and 'a')
 	print('a' and '')
 	print('a' or 'b')
 	print('' or 'a')
 	print('a' or '')
+	return 0
