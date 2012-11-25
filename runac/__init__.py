@@ -54,3 +54,10 @@ def compile(ir, outfn):
 		pass
 	finally:
 		os.unlink(name)
+
+def full(fn, outfn):
+	with open(fn) as f:
+		mod = module(parse(tokenize(f)))
+		type(mod)
+		spec(mod)
+		compile(generate(mod), outfn)

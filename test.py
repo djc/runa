@@ -19,7 +19,7 @@ def run(self, key):
 	
 	out = None
 	try:
-		runac.compile(fullname, bin)
+		runac.full(fullname, bin)
 	except runac.Error as e:
 		out = e.show(fullname)
 	
