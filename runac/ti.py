@@ -386,7 +386,7 @@ def typer(mod):
 	
 	for k, fun in mod.code:
 		if not isinstance(k, basestring): continue
-		rtype = types.void() if fun.rtype is None else base[fun.rtype]
+		rtype = types.void() if fun.rtype is None else base.resolve(fun.rtype)
 		atypes = [base.resolve(a.type) for a in fun.args]
 		type = types.function(rtype, atypes)
 		base[fun.name.name] = Function(fun.name.name, type)
