@@ -1,4 +1,4 @@
-import types, ast
+import types, ast, util
 
 class Object(object):
 	
@@ -179,6 +179,8 @@ class TypeChecker(object):
 				self.visit(attr, scope)
 	
 	def Name(self, node, scope):
+		if node.name not in scope:
+			raise util.Error(node, "undefined name '%s'" % node.name)
 		node.type = scope[node.name].type
 		self.cur.uses.add(node.name)
 	
