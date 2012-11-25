@@ -352,6 +352,9 @@ def process(mod, base, fun):
 
 def typer(mod):
 	
+	for k, v in mod.types.iteritems():
+		types.add(v)
+	
 	base = Scope()
 	for name, val in ROOT['__builtin__'].iteritems():
 		base[name] = val
@@ -370,7 +373,7 @@ def typer(mod):
 		assert False, 'unimplemented'
 	
 	for k, v in mod.types.iteritems():
-		base[k] = v
+		base[k] = mod.types[k] = types.fill(v)
 	
 	for k, fun in mod.code:
 		if not isinstance(k, basestring): continue

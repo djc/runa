@@ -225,14 +225,16 @@ FLOATS = {float()}
 WRAPPERS = owner, ref
 
 def add(node):
-	
 	parent = base if not node.params else template
-	cls = ALL[node.name.name] = type(node.name.name, (parent,), {
+	ALL[node.name.name] = type(node.name.name, (parent,), {
 		'ir': '%' + node.name.name,
 		'methods': {},
 		'attribs': {},
 	})
+
+def fill(node):
 	
+	cls = ALL[node.name.name]
 	if node.name.name in BASIC:
 		cls.ir = BASIC[node.name.name]
 		cls.byval = True
