@@ -387,6 +387,13 @@ class CodeGen(object):
 		jlabel = 'T%s' % (self.tlabels + 2)
 		self.tlabels += 3
 		
+		if isinstance(cond.type, types.WRAPPERS):
+			val = frame.varname()
+			bits = val, cond.type.ir, cond.var
+			self.writeline('%%%s = load %s %%%s' % bits)
+			cond = Value(types.ALL['bool'](), val)
+		
+		assert cond.type == types.ALL['bool']()
 		bits = cond.var, llabel, rlabel
 		self.writeline('br i1 %%%s, label %%%s, label %%%s' % bits)
 		
