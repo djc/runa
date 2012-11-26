@@ -136,14 +136,14 @@ class CodeGen(object):
 		val = '1' if node.val else '0'
 		bits = node.type.ir, val, types.owner(node.type).ir, tmp
 		self.writeline('store %s %s, %s %%%s' % bits)
-		return Value(types.owner(node.type), tmp)
+		return Value(types.ref(node.type), tmp)
 	
 	def Int(self, node, frame):
 		tmp = frame.varname()
 		self.writeline('%%%s = alloca %s' % (tmp, node.type.ir))
 		bits = node.type.ir, node.val, types.owner(node.type).ir, tmp
 		self.writeline('store %s %s, %s %%%s' % bits)
-		return Value(types.owner(node.type), tmp)
+		return Value(types.ref(node.type), tmp)
 	
 	def String(self, node, frame):
 		
@@ -178,12 +178,12 @@ class CodeGen(object):
 		bits = dataptr, full
 		self.writeline('%%%s = getelementptr %%str* %%%s, i32 0, i32 1' % bits)
 		self.writeline('store i8* %%%s, i8** %%%s' % (cast, dataptr))
-		return Value(types.owner(node.type), full)
+		return Value(types.ref(node.type), full)
 	
 	def Init(self, node, frame):
 		res = frame.varname()
 		self.writeline('%%%s = alloca %s' % (res, node.type.ir))
-		return Value(types.owner(node.type), res)
+		return Value(types.ref(node.type), res)
 	
 	def And(self, node, frame):
 		
@@ -336,7 +336,7 @@ class CodeGen(object):
 				var = frame.varname()
 				bits = var, node.left.type.ir, node.left.name
 				self.writeline('%%%s = alloca %s ; %s' % bits)
-				wrapped = types.owner(node.left.type)
+				wrapped = types.ref(node.left.type)
 				frame[node.left.name] = Value(wrapped, var)
 			target = frame[node.left.name]
 			
