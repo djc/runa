@@ -43,10 +43,9 @@ def generate(mod):
 
 def compile(ir, outfn):
 	
-	fd, name = tempfile.mkstemp('.ll', dir='.')
-	f = os.fdopen(fd, 'wb')
-	f.write(ir)
-	f.close()
+	name = outfn + '.ll'
+	with open(name, 'wb') as f:
+		f.write(ir)
 	
 	try:
 		subprocess.check_call(('clang', '-o', outfn, name))
