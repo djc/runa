@@ -230,22 +230,30 @@ class CodeGen(object):
 		assert isinstance(right.type, types.WRAPPERS)
 		assert left.type.over == right.type.over
 		
-		leftval = frame.varname()
-		bits = leftval, left.type.ir, left.var
-		self.writeline('%%%s = load %s %%%s' % bits)
+		if left.type.over in types.INTS:
+			
+			leftval = frame.varname()
+			bits = leftval, left.type.ir, left.var
+			self.writeline('%%%s = load %s %%%s' % bits)
+			
+			rightval = frame.varname()
+			bits = rightval, right.type.ir, right.var
+			self.writeline('%%%s = load %s %%%s' % bits)
+			
+			if op not in {'eq', 'ne'}:
+				op = {False: 'u', True: 's'}[left.type.over.signed] + op
+			
+			tmp = frame.varname()
+			bits = tmp, op, left.type.over.ir, leftval, rightval
+			self.writeline('%%%s = icmp %s %s %%%s, %%%s' % bits)
+			return Value(types.ALL['bool'](), tmp)
 		
-		rightval = frame.varname()
-		bits = rightval, right.type.ir, right.var
-		self.writeline('%%%s = load %s %%%s' % bits)
+		m = left.type.over.methods['__' + op + '__']
+		args = ['%s %%%s' % (a.type.ir, a.var) for a in (left, right)]
+		bits = frame.varname(), m[1].ir, m[0], ', '.join(args)
+		self.writeline('%%%s = call %s @%s(%s)' % bits)
+		return Value(types.ALL['bool'](), bits[0])
 		
-		if op not in {'eq', 'ne'}:
-			op = {False: 'u', True: 's'}[left.type.over.signed] + op
-		
-		tmp = frame.varname()
-		bits = tmp, op, left.type.over.ir, leftval, rightval
-		self.writeline('%%%s = icmp %s %s %%%s, %%%s' % bits)
-		return Value(types.ALL['bool'](), tmp)
-	
 	def EQ(self, node, frame):
 		return self.compare('eq', node, frame)
 	
