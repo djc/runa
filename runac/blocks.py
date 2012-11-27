@@ -165,14 +165,13 @@ class FlowFinder(object):
 
 class Module(object):
 	
-	def __init__(self, node):
+	def __init__(self):
 		self.refs = {}
 		self.constants = {}
 		self.types = {}
 		self.code = []
 		self.variants = set() # populated by type inferencing pass
 		self.scope = None # populated by type inferencing pass
-		self.build(node)
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
@@ -195,72 +194,75 @@ class Module(object):
 		
 		self.code += mod.code
 	
-	def build(self, node):
+def module(node):
+	
+	mod = Module()
+	for n in node.suite:
 		
-		bodies = {}
-		for n in node.suite:
-			
-			if isinstance(n, ast.RelImport):
-				for name in n.names:
+		if isinstance(n, ast.RelImport):
+			for name in n.names:
+				
+				if isinstance(n.base, ast.Name):
+					base = n.base.name
+				else:
+					start = n.base
+					res = []
+					while isinstance(start, ast.Attrib):
+						res.append(start.attrib.name)
+						start = start.obj
+					res.append(start.name)
+					base = '.'.join(reversed(res))
 					
-					if isinstance(n.base, ast.Name):
-						base = n.base.name
-					else:
-						start = n.base
-						res = []
-						while isinstance(start, ast.Attrib):
-							res.append(start.attrib.name)
-							start = start.obj
-						res.append(start.name)
-						base = '.'.join(reversed(res))
-						
-					self.refs[name.name] = base + '.' + name.name
-			
-			elif isinstance(n, ast.Class):
-				self.types[n.name.name] = n
-				for m in n.methods:
-					self.code.append(((n.name.name, m.name.name), m))
-			
-			elif isinstance(n, ast.Function):
-				self.code.append((n.name.name, n))
-			
-			else:
-				assert False, n
+				mod.refs[name.name] = base + '.' + name.name
 		
-		for k, v in self.code:
+		elif isinstance(n, ast.Class):
+			mod.types[n.name.name] = n
+			for m in n.methods:
+				mod.code.append(((n.name.name, m.name.name), m))
+		
+		elif isinstance(n, ast.Function):
+			mod.code.append((n.name.name, n))
+		
+		else:
+			assert False, n
+	
+	for k, v in mod.code:
+		
+		cfg = v.flow = FlowFinder().build(v.suite)
+		cfg.edges = {}
+		
+		for i, bl in cfg.blocks.iteritems():
 			
-			cfg = v.flow = FlowFinder().build(v.suite)
-			cfg.edges = {}
+			if not bl.steps:
+				auto = ast.Return(None)
+				auto.value = None
+				bl.steps.append(auto)
+				continue
 			
-			for i, bl in cfg.blocks.iteritems():
-				
-				if not bl.steps:
-					auto = ast.Return(None)
-					auto.value = None
-					bl.steps.append(auto)
-					continue
-				
-				if isinstance(bl.steps[-1], Branch):
-					cfg.edges.setdefault(i, []).append(bl.steps[-1].label)
-				elif isinstance(bl.steps[-1], CondBranch):
-					cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
-					cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
-				elif not isinstance(bl.steps[-1], ast.Return):
-					auto = ast.Return(None)
-					auto.value = None
-					auto.pos = v.pos
-					bl.steps.append(auto)
-			
-			cfg.exits = set()
-			reachable = set()
-			for p in cfg.walk((0,)):
-				reachable |= set(p[:-1])
-				cfg.exits.add(p[-2])
-			
-			for i in set(cfg.blocks) - reachable:
-				del cfg.blocks[i]
-			
-			cfg.redges = {}
-			for src, dsts in cfg.edges.iteritems():
-				for dst in dsts:
-					cfg.redges.setdefault(dst, []).append(src)
+			if isinstance(bl.steps[-1], Branch):
+				cfg.edges.setdefault(i, []).append(bl.steps[-1].label)
+			elif isinstance(bl.steps[-1], CondBranch):
+				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
+				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
+			elif not isinstance(bl.steps[-1], ast.Return):
+				auto = ast.Return(None)
+				auto.value = None
+				auto.pos = v.pos
+				bl.steps.append(auto)
+		
+		cfg.exits = set()
+		reachable = set()
+		for p in cfg.walk((0,)):
+			reachable |= set(p[:-1])
+			cfg.exits.add(p[-2])
+		
+		for i in set(cfg.blocks) - reachable:
+			del cfg.blocks[i]
+		
+		cfg.redges = {}
+		for src, dsts in cfg.edges.iteritems():
+			for dst in dsts:
+				cfg.redges.setdefault(dst, []).append(src)
+	
+	return mod
+

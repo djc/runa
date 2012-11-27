@@ -18,14 +18,14 @@ def parse(tokens):
 
 def module(ast):
 	
-	mod = blocks.Module(ast)
+	mod = blocks.module(ast)
 	for fn in os.listdir(CORE_DIR):
 		
 		if not fn.endswith('.rns'):
 			continue
 		
 		with open(os.path.join(CORE_DIR, fn)) as f:
-			mod.merge(blocks.Module(parse(tokenize(f))))
+			mod.merge(blocks.module(parse(tokenize(f))))
 	
 	return mod
 
