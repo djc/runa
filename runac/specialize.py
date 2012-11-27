@@ -59,7 +59,7 @@ class Specializer(object):
 			assert node.left.type not in GENERIC
 			self.specialize(node.right, node.left.type)
 	
-	def Eq(self, node):
+	def EQ(self, node):
 		self.compare(node)
 	
 	def GT(self, node):

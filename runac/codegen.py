@@ -269,7 +269,7 @@ class CodeGen(object):
 		self.writeline('%%%s = icmp ugt %s %%%s, %%%s' % bits)
 		return Value(types.ALL['bool'](), tmp)
 	
-	def NEq(self, node, frame):
+	def NE(self, node, frame):
 		
 		left = self.visit(node.left, frame)
 		leftval = frame.varname()
@@ -286,7 +286,7 @@ class CodeGen(object):
 		self.writeline('%%%s = icmp ne %s %%%s, %%%s' % bits)
 		return Value(types.ALL['bool'](), res)
 	
-	def Eq(self, node, frame):
+	def EQ(self, node, frame):
 		
 		left = self.visit(node.left, frame)
 		leftval = frame.varname()

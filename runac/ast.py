@@ -205,12 +205,12 @@ class As(BinaryOp):
 	lbp = 10
 	fields = 'left', 'right'
 
-class Eq(BinaryOp):
+class EQ(BinaryOp):
 	op = '=='
 	lbp = 20
 	fields = 'left', 'right'
 
-class NEq(BinaryOp):
+class NE(BinaryOp):
 	op = '!='
 	lbp = 20
 	fields = 'left', 'right'

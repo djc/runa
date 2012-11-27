@@ -251,7 +251,7 @@ class TypeChecker(object):
 		else:
 			assert False, 'gt sides different types'
 	
-	def Eq(self, node, scope):
+	def EQ(self, node, scope):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
@@ -263,7 +263,7 @@ class TypeChecker(object):
 		else:
 			assert False, 'eq sides different types'
 	
-	def NEq(self, node, scope):
+	def NE(self, node, scope):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
