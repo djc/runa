@@ -53,6 +53,8 @@ def compile(ir, outfn):
 	except OSError as e:
 		if e.errno == 2:
 			print 'error: clang not found'
+	except subprocess.CalledProcessError:
+		pass
 	finally:
 		os.unlink(name)
 
