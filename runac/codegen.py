@@ -238,6 +238,9 @@ class CodeGen(object):
 		bits = rightval, right.type.ir, right.var
 		self.writeline('%%%s = load %s %%%s' % bits)
 		
+		if op not in {'eq', 'ne'}:
+			op = {False: 'u', True: 's'}[left.type.over.signed] + op
+		
 		tmp = frame.varname()
 		bits = tmp, op, left.type.over.ir, leftval, rightval
 		self.writeline('%%%s = icmp %s %s %%%s, %%%s' % bits)
@@ -250,10 +253,10 @@ class CodeGen(object):
 		return self.compare('ne', node, frame)
 	
 	def LT(self, node, frame):
-		return self.compare('ult', node, frame)
+		return self.compare('lt', node, frame)
 	
 	def GT(self, node, frame):
-		return self.compare('ugt', node, frame)
+		return self.compare('gt', node, frame)
 	
 	# Arithmetic operators
 	
