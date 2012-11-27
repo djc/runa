@@ -1,4 +1,4 @@
-import ast, types, ti
+import ast, types
 
 GENERIC = {types.int(), types.float()}
 

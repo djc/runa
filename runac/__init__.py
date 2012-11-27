@@ -1,5 +1,5 @@
 from util import Error
-import os, subprocess, tempfile
+import os, subprocess
 
 from .tokenizer import tokenize
 from .ast import parse

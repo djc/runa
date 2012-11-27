@@ -1,4 +1,3 @@
-from util import Error
 import ast, types
 
 class Branch(object):
