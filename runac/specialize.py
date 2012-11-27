@@ -36,20 +36,12 @@ class Specializer(object):
 		else:
 			assert False
 	
+	# Constants
+	
 	def Name(self, node):
 		assert node.type not in GENERIC
 	
-	def Attrib(self, node):
-		self.visit(node.obj)
-		assert node.type not in GENERIC
-	
-	def Return(self, node):
-		
-		if node.value is None:
-			return
-		
-		self.visit(node.value)
-		self.specialize(node.value, self.fun.rtype)
+	# Comparison operators
 	
 	def compare(self, node):
 		if node.left.type in GENERIC:
@@ -67,6 +59,18 @@ class Specializer(object):
 	
 	def LT(self, node):
 		self.compare(node)
+	
+	def Attrib(self, node):
+		self.visit(node.obj)
+		assert node.type not in GENERIC
+	
+	def Return(self, node):
+		
+		if node.value is None:
+			return
+		
+		self.visit(node.value)
+		self.specialize(node.value, self.fun.rtype)
 	
 	def Call(self, node):
 		for i, arg in enumerate(node.args):

@@ -178,6 +178,8 @@ class TypeChecker(object):
 			else:
 				self.visit(attr, scope)
 	
+	# Constants
+	
 	def Name(self, node, scope):
 		if node.name not in scope:
 			raise util.Error(node, "undefined name '%s'" % node.name)
@@ -193,15 +195,7 @@ class TypeChecker(object):
 	def String(self, node, scope):
 		node.type = scope['str']
 	
-	def Attrib(self, node, scope):
-		
-		self.visit(node.obj, scope)
-		t = node.obj.type
-		if isinstance(t, types.WRAPPERS):
-			t = t.over
-		
-		node.type = t.attribs[node.attrib.name][1]
-		assert node.type is not None, 'FAIL'
+	# Boolean operators
 	
 	def And(self, node, scope):
 		self.visit(node.left, scope)
@@ -219,13 +213,7 @@ class TypeChecker(object):
 		else:
 			node.type = scope['bool']
 	
-	def Add(self, node, scope):
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
-		if node.left.type == node.right.type:
-			node.type = node.left.type
-		else:
-			assert False, 'add sides different types'
+	# Comparison operators
 	
 	def LT(self, node, scope):
 		self.visit(node.left, scope)
@@ -274,6 +262,26 @@ class TypeChecker(object):
 			node.type = scope['bool']
 		else:
 			assert False, 'neq sides different types'
+	
+	# Arithmetic operators
+	
+	def Add(self, node, scope):
+		self.visit(node.left, scope)
+		self.visit(node.right, scope)
+		if node.left.type == node.right.type:
+			node.type = node.left.type
+		else:
+			assert False, 'add sides different types'
+
+	def Attrib(self, node, scope):
+		
+		self.visit(node.obj, scope)
+		t = node.obj.type
+		if isinstance(t, types.WRAPPERS):
+			t = t.over
+		
+		node.type = t.attribs[node.attrib.name][1]
+		assert node.type is not None, 'FAIL'
 	
 	def Call(self, node, scope):
 		

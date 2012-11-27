@@ -185,6 +185,8 @@ class CodeGen(object):
 		self.writeline('%%%s = alloca %s' % (res, node.type.ir))
 		return Value(types.ref(node.type), res)
 	
+	# Boolean operators
+	
 	def And(self, node, frame):
 		
 		left = self.visit(node.left, frame)
@@ -228,6 +230,8 @@ class CodeGen(object):
 		bits = res, bool, left.type.ir, left.var, right.type.ir, right.var
 		self.writeline('%%%s = select i1 %%%s, %s %%%s, %s %%%s' % bits)
 		return Value(left.type, res)
+	
+	# Comparison operators
 	
 	def LT(self, node, frame):
 		
@@ -302,6 +306,8 @@ class CodeGen(object):
 		bits = res, left.type.over.ir, leftval, rightval
 		self.writeline('%%%s = icmp eq %s %%%s, %%%s' % bits)
 		return Value(types.ALL['bool'](), res)
+	
+	# Arithmetic operators
 	
 	def Add(self, node, frame):
 		
