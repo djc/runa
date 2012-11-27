@@ -50,8 +50,9 @@ def compile(ir, outfn):
 	
 	try:
 		subprocess.check_call(('clang', '-o', outfn, name))
-	except Exception:
-		pass
+	except OSError as e:
+		if e.errno == 2:
+			print 'error: clang not found'
 	finally:
 		os.unlink(name)
 
