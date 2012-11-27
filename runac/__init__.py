@@ -1,45 +1,21 @@
-from . import tokenizer, ast, blocks, ti, specialize, codegen
 from util import Error
-import sys, os, subprocess, tempfile
+import os, subprocess, tempfile
+
+from .tokenizer import tokenize
+from .ast import parse
+from .blocks import module
+from .ti import typer
+from .specialize import specialize
+from .codegen import generate
 
 BASE = os.path.dirname(__path__[0])
 CORE_DIR = os.path.join(BASE, 'core')
 
-TRIPLES = {
-	'darwin': 'x86_64-apple-darwin11.0.0',
-	'linux2': 'x86_64-pc-linux-gnu',
-}
-
-def tokenize(f):
-	return tokenizer.tokenize(f)
-
-def parse(tokens):
-	return ast.parse(tokens)
-
-def module(ast):
-	
-	mod = blocks.module(ast)
+def merge(mod):
 	for fn in os.listdir(CORE_DIR):
-		
-		if not fn.endswith('.rns'):
-			continue
-		
+		if not fn.endswith('.rns'): continue
 		with open(os.path.join(CORE_DIR, fn)) as f:
-			mod.merge(blocks.module(parse(tokenize(f))))
-	
-	return mod
-
-def type(mod):
-	ti.typer(mod)
-
-def spec(mod):
-	specialize.specialize(mod)
-
-def generate(mod):
-	triple = 'target triple = "%s"\n\n' % TRIPLES[sys.platform]
-	with open('core/rt.ll') as f:
-		rt = f.read()
-	return triple + rt + '\n' + codegen.source(mod)
+			mod.merge(module(parse(tokenize(f))))
 
 def compile(ir, outfn):
 	
@@ -60,6 +36,7 @@ def compile(ir, outfn):
 def full(fn, outfn):
 	with open(fn) as f:
 		mod = module(parse(tokenize(f)))
-		type(mod)
-		spec(mod)
+		merge(mod)
+		typer(mod)
+		specialize(mod)
 		compile(generate(mod), outfn)

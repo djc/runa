@@ -1,4 +1,5 @@
 import ast, types, ti
+import sys
 
 ESCAPES = {'\n'}
 
@@ -489,5 +490,14 @@ class CodeGen(object):
 		
 		return ''.join(self.buf)
 
-def source(mod):
-	return CodeGen().Module(mod)
+TRIPLES = {
+	'darwin': 'x86_64-apple-darwin11.0.0',
+	'linux2': 'x86_64-pc-linux-gnu',
+}
+
+def generate(mod):
+	src = CodeGen().Module(mod)
+	triple = 'target triple = "%s"\n\n' % TRIPLES[sys.platform]
+	with open('core/rt.ll') as f:
+		rt = f.read()
+	return triple + rt + '\n' + src
