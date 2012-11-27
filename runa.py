@@ -15,23 +15,27 @@ def bl(fn, opts):
 
 def ti(fn, opts):
 	mod = bl(fn, opts)
-	runac.type(mod)
+	runac.merge(mod)
+	runac.typer(mod)
 
 def specialize(fn, opts):
 	mod = bl(fn, opts)
-	runac.type(mod)
-	runac.spec(mod)
+	runac.merge(mod)
+	runac.typer(mod)
+	runac.specialize(mod)
 
 def generate(fn, opts):
 	mod = bl(fn, opts)
-	runac.type(mod)
-	runac.spec(mod)
+	runac.merge(mod)
+	runac.typer(mod)
+	runac.specialize(mod)
 	print runac.generate(mod)
 
 def compile(fn, opts):
 	mod = bl(fn, opts)
-	runac.type(mod)
-	runac.spec(mod)
+	runac.merge(mod)
+	runac.typer(mod)
+	runac.specialize(mod)
 	ir = runac.generate(mod)
 	runac.compile(ir, os.path.basename(fn).rsplit('.rns')[0])
 
