@@ -197,7 +197,7 @@ class TypeChecker(object):
 	
 	# Boolean operators
 	
-	def And(self, node, scope):
+	def boolean(self, op, node, scope):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
@@ -205,17 +205,15 @@ class TypeChecker(object):
 		else:
 			node.type = scope['bool']
 	
+	def And(self, node, scope):
+		self.boolean('and', node, scope)
+	
 	def Or(self, node, scope):
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
-		if node.left.type == node.right.type:
-			node.type = node.left.type
-		else:
-			node.type = scope['bool']
+		self.boolean('or', node, scope)
 	
 	# Comparison operators
 	
-	def EQ(self, node, scope):
+	def compare(self, op, node, scope):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
@@ -225,43 +223,19 @@ class TypeChecker(object):
 		elif node.right.type == types.int():
 			node.type = scope['bool']
 		else:
-			assert False, 'eq sides different types'
+			assert False, '%s sides different types' % op
+	
+	def EQ(self, node, scope):
+		self.compare('eq', node, scope)
 	
 	def NE(self, node, scope):
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
-		if node.left.type == node.right.type:
-			node.type = scope['bool']
-		elif node.left.type == types.int():
-			node.type = scope['bool']
-		elif node.right.type == types.int():
-			node.type = scope['bool']
-		else:
-			assert False, 'neq sides different types'
+		self.compare('ne', node, scope)
 	
 	def LT(self, node, scope):
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
-		if node.left.type == node.right.type:
-			node.type = scope['bool']
-		elif node.left.type == types.int():
-			node.type = scope['bool']
-		elif node.right.type == types.int():
-			node.type = scope['bool']
-		else:
-			assert False, 'lt sides different types'
+		self.compare('lt', node, scope)
 	
 	def GT(self, node, scope):
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
-		if node.left.type == node.right.type:
-			node.type = scope['bool']
-		elif node.left.type == types.int():
-			node.type = scope['bool']
-		elif node.right.type == types.int():
-			node.type = scope['bool']
-		else:
-			assert False, 'gt sides different types'
+		self.compare('gt', node, scope)
 	
 	# Arithmetic operators
 	

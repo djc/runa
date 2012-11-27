@@ -187,7 +187,7 @@ class CodeGen(object):
 	
 	# Boolean operators
 	
-	def And(self, node, frame):
+	def boolean(self, op, node, frame):
 		
 		left = self.visit(node.left, frame)
 		right = self.visit(node.right, frame)
@@ -205,87 +205,23 @@ class CodeGen(object):
 		self.writeline('%%%s = call %s @%s(%s)' % bits)
 		
 		res = frame.varname()
-		bits = res, bool, right.type.ir, right.var, left.type.ir, left.var
+		if op == 'and':
+			bits = res, bool, right.type.ir, right.var, left.type.ir, left.var
+		elif op == 'or':
+			bits = res, bool, left.type.ir, left.var, right.type.ir, right.var
+		
 		self.writeline('%%%s = select i1 %%%s, %s %%%s, %s %%%s' % bits)
 		return Value(left.type, res)
 	
+	def And(self, node, frame):
+		return self.boolean('and', node, frame)
+	
 	def Or(self, node, frame):
-		
-		left = self.visit(node.left, frame)
-		right = self.visit(node.right, frame)
-		assert left.type == right.type
-		
-		t = left.type
-		if isinstance(t, types.WRAPPERS):
-			t = left.type.over
-		
-		bool = frame.varname()
-		method = t.methods['__bool__']
-		arg = self.coerce(left, method[2][0][1], frame)
-		argstr = '%s %%%s' % (arg.type.ir, arg.var)
-		bits = bool, method[1].ir, method[0], argstr
-		self.writeline('%%%s = call %s @%s(%s)' % bits)
-		
-		res = frame.varname()
-		bits = res, bool, left.type.ir, left.var, right.type.ir, right.var
-		self.writeline('%%%s = select i1 %%%s, %s %%%s, %s %%%s' % bits)
-		return Value(left.type, res)
+		return self.boolean('or', node, frame)
 	
 	# Comparison operators
 	
-	def EQ(self, node, frame):
-		
-		left = self.visit(node.left, frame)
-		leftval = frame.varname()
-		bits = leftval, left.type.ir, left.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		right = self.visit(node.right, frame)
-		rightval = frame.varname()
-		bits = rightval, right.type.ir, right.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		res = frame.varname()
-		bits = res, left.type.over.ir, leftval, rightval
-		self.writeline('%%%s = icmp eq %s %%%s, %%%s' % bits)
-		return Value(types.ALL['bool'](), res)
-	
-	def NE(self, node, frame):
-		
-		left = self.visit(node.left, frame)
-		leftval = frame.varname()
-		bits = leftval, left.type.ir, left.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		right = self.visit(node.right, frame)
-		rightval = frame.varname()
-		bits = rightval, right.type.ir, right.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		res = frame.varname()
-		bits = res, left.type.over.ir, leftval, rightval
-		self.writeline('%%%s = icmp ne %s %%%s, %%%s' % bits)
-		return Value(types.ALL['bool'](), res)
-	
-	def LT(self, node, frame):
-		
-		left = self.visit(node.left, frame)
-		right = self.visit(node.right, frame)
-		
-		leftval = frame.varname()
-		bits = leftval, left.type.ir, left.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		rightval = frame.varname()
-		bits = rightval, right.type.ir, right.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		tmp = frame.varname()
-		bits = tmp, left.type.over.ir, leftval, rightval
-		self.writeline('%%%s = icmp ult %s %%%s, %%%s' % bits)
-		return Value(types.ALL['bool'](), tmp)
-	
-	def GT(self, node, frame):
+	def compare(self, op, node, frame):
 		
 		left = self.visit(node.left, frame)
 		right = self.visit(node.right, frame)
@@ -303,9 +239,21 @@ class CodeGen(object):
 		self.writeline('%%%s = load %s %%%s' % bits)
 		
 		tmp = frame.varname()
-		bits = tmp, left.type.over.ir, leftval, rightval
-		self.writeline('%%%s = icmp ugt %s %%%s, %%%s' % bits)
+		bits = tmp, op, left.type.over.ir, leftval, rightval
+		self.writeline('%%%s = icmp %s %s %%%s, %%%s' % bits)
 		return Value(types.ALL['bool'](), tmp)
+	
+	def EQ(self, node, frame):
+		return self.compare('eq', node, frame)
+	
+	def NE(self, node, frame):
+		return self.compare('ne', node, frame)
+	
+	def LT(self, node, frame):
+		return self.compare('ult', node, frame)
+	
+	def GT(self, node, frame):
+		return self.compare('ugt', node, frame)
 	
 	# Arithmetic operators
 	
