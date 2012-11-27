@@ -54,10 +54,10 @@ class Specializer(object):
 	def EQ(self, node):
 		self.compare(node)
 	
-	def GT(self, node):
+	def LT(self, node):
 		self.compare(node)
 	
-	def LT(self, node):
+	def GT(self, node):
 		self.compare(node)
 	
 	def Attrib(self, node):

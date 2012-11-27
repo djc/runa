@@ -233,6 +233,40 @@ class CodeGen(object):
 	
 	# Comparison operators
 	
+	def EQ(self, node, frame):
+		
+		left = self.visit(node.left, frame)
+		leftval = frame.varname()
+		bits = leftval, left.type.ir, left.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		right = self.visit(node.right, frame)
+		rightval = frame.varname()
+		bits = rightval, right.type.ir, right.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		res = frame.varname()
+		bits = res, left.type.over.ir, leftval, rightval
+		self.writeline('%%%s = icmp eq %s %%%s, %%%s' % bits)
+		return Value(types.ALL['bool'](), res)
+	
+	def NE(self, node, frame):
+		
+		left = self.visit(node.left, frame)
+		leftval = frame.varname()
+		bits = leftval, left.type.ir, left.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		right = self.visit(node.right, frame)
+		rightval = frame.varname()
+		bits = rightval, right.type.ir, right.var
+		self.writeline('%%%s = load %s %%%s' % bits)
+		
+		res = frame.varname()
+		bits = res, left.type.over.ir, leftval, rightval
+		self.writeline('%%%s = icmp ne %s %%%s, %%%s' % bits)
+		return Value(types.ALL['bool'](), res)
+	
 	def LT(self, node, frame):
 		
 		left = self.visit(node.left, frame)
@@ -272,40 +306,6 @@ class CodeGen(object):
 		bits = tmp, left.type.over.ir, leftval, rightval
 		self.writeline('%%%s = icmp ugt %s %%%s, %%%s' % bits)
 		return Value(types.ALL['bool'](), tmp)
-	
-	def NE(self, node, frame):
-		
-		left = self.visit(node.left, frame)
-		leftval = frame.varname()
-		bits = leftval, left.type.ir, left.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		right = self.visit(node.right, frame)
-		rightval = frame.varname()
-		bits = rightval, right.type.ir, right.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		res = frame.varname()
-		bits = res, left.type.over.ir, leftval, rightval
-		self.writeline('%%%s = icmp ne %s %%%s, %%%s' % bits)
-		return Value(types.ALL['bool'](), res)
-	
-	def EQ(self, node, frame):
-		
-		left = self.visit(node.left, frame)
-		leftval = frame.varname()
-		bits = leftval, left.type.ir, left.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		right = self.visit(node.right, frame)
-		rightval = frame.varname()
-		bits = rightval, right.type.ir, right.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
-		res = frame.varname()
-		bits = res, left.type.over.ir, leftval, rightval
-		self.writeline('%%%s = icmp eq %s %%%s, %%%s' % bits)
-		return Value(types.ALL['bool'](), res)
 	
 	# Arithmetic operators
 	

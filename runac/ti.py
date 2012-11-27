@@ -215,30 +215,6 @@ class TypeChecker(object):
 	
 	# Comparison operators
 	
-	def LT(self, node, scope):
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
-		if node.left.type == node.right.type:
-			node.type = scope['bool']
-		elif node.left.type == types.int():
-			node.type = scope['bool']
-		elif node.right.type == types.int():
-			node.type = scope['bool']
-		else:
-			assert False, 'lt sides different types'
-	
-	def GT(self, node, scope):
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
-		if node.left.type == node.right.type:
-			node.type = scope['bool']
-		elif node.left.type == types.int():
-			node.type = scope['bool']
-		elif node.right.type == types.int():
-			node.type = scope['bool']
-		else:
-			assert False, 'gt sides different types'
-	
 	def EQ(self, node, scope):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
@@ -262,6 +238,30 @@ class TypeChecker(object):
 			node.type = scope['bool']
 		else:
 			assert False, 'neq sides different types'
+	
+	def LT(self, node, scope):
+		self.visit(node.left, scope)
+		self.visit(node.right, scope)
+		if node.left.type == node.right.type:
+			node.type = scope['bool']
+		elif node.left.type == types.int():
+			node.type = scope['bool']
+		elif node.right.type == types.int():
+			node.type = scope['bool']
+		else:
+			assert False, 'lt sides different types'
+	
+	def GT(self, node, scope):
+		self.visit(node.left, scope)
+		self.visit(node.right, scope)
+		if node.left.type == node.right.type:
+			node.type = scope['bool']
+		elif node.left.type == types.int():
+			node.type = scope['bool']
+		elif node.right.type == types.int():
+			node.type = scope['bool']
+		else:
+			assert False, 'gt sides different types'
 	
 	# Arithmetic operators
 	
