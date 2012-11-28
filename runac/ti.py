@@ -312,10 +312,11 @@ class TypeChecker(object):
 				assert False, 'assign incorrect type to not-a-name'
 			return
 		
-		if node.left.name in scope:
+		name = node.left.name
+		self.visit(node.right, scope)
+		if name in scope and scope[name].type != node.right.type:
 			assert False, 'reassignment'
 		
-		self.visit(node.right, scope)
 		assert node.right.type is not None
 		scope[node.left.name] = Object(node.right.type)
 		node.left.type = node.right.type
