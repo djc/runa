@@ -1,4 +1,4 @@
-import ast, types
+import ast
 
 class Branch(object):
 	fields = ()
