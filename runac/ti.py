@@ -239,14 +239,20 @@ class TypeChecker(object):
 	
 	# Arithmetic operators
 	
-	def Add(self, node, scope):
+	def arith(self, op, node, scope):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
 			node.type = node.left.type
 		else:
-			assert False, 'add sides different types'
-
+			assert False, op + ' sides different types'
+	
+	def Add(self, node, scope):
+		self.arith('add', node, scope)
+	
+	def Sub(self, node, scope):
+		self.arith('sub', node, scope)
+	
 	def Attrib(self, node, scope):
 		
 		self.visit(node.obj, scope)
