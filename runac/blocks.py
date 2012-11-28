@@ -59,10 +59,17 @@ class FlowGraph(object):
 		return self.blocks[id]
 	
 	def walk(self, path):
-		next = self.edges.get(path[-1], [])
+		
+		last = path[-1]
+		next = self.edges.get(last, [])
+		if last in path[:-1]:
+			x = [path[i + 1] for (i, b) in enumerate(path[:-1]) if b == last]
+			next = sorted(set(next) - set(x))
+		
 		if not next:
 			yield path + (None,)
 			return
+		
 		for n in next:
 			for res in self.walk(path + (n,)):
 				yield res
