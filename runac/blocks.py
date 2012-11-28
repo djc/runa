@@ -129,39 +129,19 @@ class FlowFinder(object):
 	
 	def While(self, node):
 		
-		assert False, 'obsolete'
-		start = self.cur
-		cond = self.boolean(self.visit(node.cond))
-		header = self.block([self.idx])
-		body = self.block([header.id])
-		self.visit(node.suite)
-		exit = self.block([header.id, body.id])
+		head = self.flow.block('while-head')
+		body = self.flow.block('while-body')
+		exit = self.flow.block('while-exit')
+		self.cur.push(Branch(head.id))
+		head.push(CondBranch(node.cond, body.id, exit.id))
 		
-		start.push(Branch(None, header.id))
-		header.push(Branch(cond, body.id, exit.id))
-		body.push(Branch(None, header.id))
+		self.cur = body
+		self.visit(node.suite)
+		self.cur.push(Branch(head.id))
+		self.cur = exit
 	
 	def For(self, node):
-		
-		assert False, 'obsolete'
-		start = self.cur
-		source = self.visit(node.source)
-		self.cur.push(Assign('loop.source', source))
-		header = self.block([self.idx])
-		start.push(Branch(None, header.id))
-		
-		meta = source.type.methods['__next__']
-		iter = Reference(source.type, 'loop.source')
-		atypes = [iter] + [types.get(a) for a in meta[2]]
-		val = Call(meta[0], types.get(meta[1]), atypes)
-		header.named[node.lvar.name] = val
-		header.push(Assign(self.visit(node.lvar), val))
-		
-		body = self.block([header.id])
-		self.visit(node.suite)
-		exit = self.block([header.id, body.id])
-		body.push(Branch(None, header.id))
-		header.push(Branch(node.lvar, body.id, exit.id))
+		assert False
 
 class Module(object):
 	
@@ -265,4 +245,3 @@ def module(node):
 				cfg.redges.setdefault(dst, []).append(src)
 	
 	return mod
-
