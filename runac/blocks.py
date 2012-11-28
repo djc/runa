@@ -1,6 +1,7 @@
 import ast, types
 
 class Branch(object):
+	fields = ()
 	def __init__(self, target):
 		self.label = target
 	def __repr__(self):
