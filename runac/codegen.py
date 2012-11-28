@@ -1,4 +1,4 @@
-import ast, types, ti
+import ast, types, typer
 import sys
 
 ESCAPES = {'\n'}
@@ -403,7 +403,7 @@ class CodeGen(object):
 		argstr = ', '.join('%s %%%s' % (a.type.ir, a.var) for a in args)
 		if rtype == types.void():
 			self.writeline('call void @%s(%s)' % (node.fun.decl, argstr))
-			return args[0] if isinstance(node.args[0], ti.Init) else None
+			return args[0] if isinstance(node.args[0], typer.Init) else None
 		
 		res = frame.varname()
 		bits = res, rtype.ir, node.fun.decl, argstr
@@ -447,13 +447,13 @@ class CodeGen(object):
 	
 	def declare(self, ref):
 		
-		if isinstance(ref, ti.Decl) and ref.decl.startswith('runa.'):
+		if isinstance(ref, typer.Decl) and ref.decl.startswith('runa.'):
 			return
 		
 		if isinstance(ref, types.Type) and isinstance(ref, types.WRAPPERS):
 			return
 		
-		if isinstance(ref, ti.Decl):
+		if isinstance(ref, typer.Decl):
 			ref = ref.realize()
 			rtype = ref.type.over[0].ir
 			args = ', '.join(t.ir for t in ref.type.over[1])
@@ -474,7 +474,7 @@ class CodeGen(object):
 		
 		assert not mod.constants
 		for k, v in mod.refs.iteritems():
-			self.declare(ti.resolve(mod, v))
+			self.declare(typer.resolve(mod, v))
 		
 		self.newline()
 		for k, v in mod.types.iteritems():

@@ -4,7 +4,7 @@ import os, subprocess
 from .tokenizer import tokenize
 from .ast import parse
 from .blocks import module
-from .ti import typer
+from .typer import typer
 from .specialize import specialize
 from .codegen import generate
 
