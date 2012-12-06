@@ -343,8 +343,6 @@ class TypeChecker(object):
 			return
 		elif isinstance(node.value.type, types.int):
 			assert self.fun.rtype in types.INTS
-		elif isinstance(self.fun.rtype, types.WRAPPERS):
-			assert self.fun.rtype.over == node.value.type
 		else:
 			assert False
 
