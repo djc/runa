@@ -25,18 +25,10 @@ def specialize(fn, opts):
 	runac.specialize(mod)
 
 def generate(fn, opts):
-	mod = bl(fn, opts)
-	runac.merge(mod)
-	runac.typer(mod)
-	runac.specialize(mod)
-	print runac.generate(mod)
+	print runac.ir(fn)
 
 def compile(fn, opts):
-	mod = bl(fn, opts)
-	runac.merge(mod)
-	runac.typer(mod)
-	runac.specialize(mod)
-	ir = runac.generate(mod)
+	ir = runac.ir(fn)
 	runac.compile(ir, os.path.basename(fn).rsplit('.rns')[0])
 
 def run(fn, opts):
