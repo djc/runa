@@ -294,8 +294,8 @@ class TypeChecker(object):
 			method = obj.methods['__init__']
 			mtype = types.function(method[1], [i[1] for i in method[2]])
 			node.fun = Function(method[0], mtype)
-			node.args.insert(0, Init(obj))
-			node.type = obj
+			node.args.insert(0, Init(types.owner(obj)))
+			node.type = types.owner(obj)
 		
 		if isinstance(obj, Function):
 			node.name.name = obj.name
