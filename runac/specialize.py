@@ -1,7 +1,5 @@
 import ast, types
 
-GENERIC = {types.int(), types.float()}
-
 class Specializer(object):
 	
 	def __init__(self, mod, fun):
@@ -24,7 +22,7 @@ class Specializer(object):
 				self.visit(attr)
 	
 	def specialize(self, node, dst):
-		if node.type != types.int() and node.type != types.float():
+		if not isinstance(node.type, types.GENERIC):
 			return
 		elif node.type == types.int() and dst in types.INTS:
 			if isinstance(node, ast.Int):
@@ -39,16 +37,16 @@ class Specializer(object):
 	# Constants
 	
 	def Name(self, node):
-		assert node.type not in GENERIC
+		assert not isinstance(node.type, types.GENERIC)
 	
 	# Comparison operators
 	
 	def compare(self, node):
-		if node.left.type in GENERIC:
-			assert node.right.type not in GENERIC
+		if isinstance(node.left.type, types.GENERIC):
+			assert not isinstance(node.right.type, types.GENERIC)
 			self.specialize(node.left, node.right.type)
-		elif node.right.type in GENERIC:
-			assert node.left.type not in GENERIC
+		elif isinstance(node.right.type, types.GENERIC):
+			assert not isinstance(node.left.type, types.GENERIC)
 			self.specialize(node.right, node.left.type)
 	
 	def EQ(self, node):
@@ -62,7 +60,7 @@ class Specializer(object):
 	
 	def Attrib(self, node):
 		self.visit(node.obj)
-		assert node.type not in GENERIC
+		assert not isinstance(node.type, types.GENERIC)
 	
 	def Return(self, node):
 		
@@ -74,9 +72,9 @@ class Specializer(object):
 	
 	def Call(self, node):
 		for i, arg in enumerate(node.args):
-			if arg.type not in GENERIC: continue
+			if not isinstance(arg.type, types.GENERIC): continue
 			self.specialize(arg, node.fun.type.over[1][i])
-			assert arg.type not in GENERIC
+			assert not isinstance(arg.type, types.GENERIC)
 	
 	def propagate(self):
 		for i, bl in self.cfg.blocks.iteritems():

@@ -202,6 +202,7 @@ UINTS = set()
 INTS = set()
 FLOATS = {float()}
 WRAPPERS = owner, ref
+GENERIC = int, float
 
 def add(node):
 	parent = base if not node.params else template
