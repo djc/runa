@@ -17,19 +17,11 @@ def compile(fn, opts):
 	ir = runac.ir(fn)
 	runac.compile(ir, os.path.basename(fn).rsplit('.rns')[0])
 
-def run(fn, opts):
-	kwargs = {i: subprocess.PIPE for i in ('stdin', 'stdout', 'stderr')}
-	proc = subprocess.Popen(('lli',), **kwargs)
-	out, err = proc.communicate(runac.llir(fn, True))
-	sys.stdout.write(out)
-	sys.stderr.write(err)
-
 COMMANDS = {
 	'tokens': tokens,
 	'parse': parse,
 	'generate': generate,
 	'compile': compile,
-	'run': run,
 }
 
 def find(cmd):
