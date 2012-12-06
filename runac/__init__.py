@@ -17,6 +17,14 @@ def merge(mod):
 		with open(os.path.join(CORE_DIR, fn)) as f:
 			mod.merge(module(parse(tokenize(f))))
 
+def ir(fn):
+	with open(fn) as f:
+		mod = module(parse(tokenize(f)))
+		merge(mod)
+		typer(mod)
+		specialize(mod)
+		return generate(mod)
+
 def compile(ir, outfn):
 	
 	name = outfn + '.ll'
@@ -32,11 +40,3 @@ def compile(ir, outfn):
 		pass
 	finally:
 		os.unlink(name)
-
-def full(fn, outfn):
-	with open(fn) as f:
-		mod = module(parse(tokenize(f)))
-		merge(mod)
-		typer(mod)
-		specialize(mod)
-		compile(generate(mod), outfn)
