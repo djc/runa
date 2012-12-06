@@ -10,20 +10,6 @@ def tokens(fn, opts):
 def parse(fn, opts):
 	print runac.parse(runac.tokenize(open(fn)))
 
-def bl(fn, opts):
-	return runac.module(runac.parse(runac.tokenize(open(fn))))
-
-def ti(fn, opts):
-	mod = bl(fn, opts)
-	runac.merge(mod)
-	runac.typer(mod)
-
-def specialize(fn, opts):
-	mod = bl(fn, opts)
-	runac.merge(mod)
-	runac.typer(mod)
-	runac.specialize(mod)
-
 def generate(fn, opts):
 	print runac.ir(fn)
 
@@ -41,9 +27,6 @@ def run(fn, opts):
 COMMANDS = {
 	'tokens': tokens,
 	'parse': parse,
-	'blocks': bl,
-	'ti': ti,
-	'specialize': specialize,
 	'generate': generate,
 	'compile': compile,
 	'run': run,
