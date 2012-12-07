@@ -68,22 +68,22 @@ class Bool(Expr, Terminal):
 
 class Int(Expr, Terminal):
 	def __init__(self, num, pos):
-		Node.__init__(self, pos)
+		Expr.__init__(self, pos)
 		self.val = num
 
 class Float(Expr, Terminal):
 	def __init__(self, num, pos):
-		Node.__init__(self, pos)
+		Expr.__init__(self, pos)
 		self.val = num
 
 class String(Expr, Terminal):
 	def __init__(self, value, pos):
-		Node.__init__(self, pos)
+		Expr.__init__(self, pos)
 		self.val = value
 
 class Name(Expr, Terminal):
 	def __init__(self, name, pos):
-		Node.__init__(self, pos)
+		Expr.__init__(self, pos)
 		self.name = name
 
 # Expression-level
@@ -363,7 +363,7 @@ class Ternary(Expr):
 	fields = 'cond', 'values'
 	
 	def __init__(self, p, left, pos):
-		Node.__init__(self, pos)
+		Expr.__init__(self, pos)
 		self.cond = None
 		self.values = []
 		self.values.append(left)
