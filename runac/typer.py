@@ -11,11 +11,10 @@ class Object(object):
 		show = ('%s=%r' % (k, v) for (k, v) in contents)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
-class Init(object):
+class Init(ast.Expr):
 	def __init__(self, type):
+		ast.Expr.__init__(self, None)
 		self.type = type
-	def __repr__(self):
-		return '<%s(%s)>' % (self.__class__.__name__, self.type)
 
 class Module(object):
 	
