@@ -468,7 +468,13 @@ class CodeGen(object):
 		
 		fields = sorted(type.attribs.itervalues())
 		s = ', '.join([i[1].ir for i in fields])
-		self.writeline('%s = type { %s }\n' % (type.ir, s))
+		self.writeline('%s = type { %s }' % (type.ir, s))
+		
+		t = type.ir
+		gep = '%s* getelementptr (%s* null, i32 1)' % (t, t)
+		cast = 'constant i64 ptrtoint (%s to i64)' % gep
+		self.writeline('@%s.size = %s' % (t[1:], cast))
+		self.newline()
 	
 	def Module(self, mod):
 		
