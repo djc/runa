@@ -182,9 +182,23 @@ class CodeGen(object):
 		return Value(types.ref(node.type), full)
 	
 	def Init(self, node, frame):
+		
+		if not node.escapes:
+			res = frame.varname()
+			self.writeline('%%%s = alloca %s' % (res, node.type.ir))
+			return Value(types.ref(node.type), res)
+		
+		assert isinstance(node.type, types.owner), 'escaping %s' % node.type
+		bits = frame.varname(), node.type.over.ir[1:]
+		self.writeline('%%%s = load i64* @%s.size' % bits)
+		
+		bits = frame.varname(), bits[0]
+		self.writeline('%%%s = call i8* @runa.malloc(i64 %%%s)' % bits)
+		
 		res = frame.varname()
-		self.writeline('%%%s = alloca %s' % (res, node.type.ir))
-		return Value(types.ref(node.type), res)
+		bits = res, bits[0], node.type.ir
+		self.writeline('%%%s = bitcast i8* %%%s to %s' % bits)
+		return Value(node.type, res)
 	
 	# Boolean operators
 	
