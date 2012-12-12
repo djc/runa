@@ -28,6 +28,6 @@ define i8* @owner.offset(i8* %base, i64 %offset) alwaysinline {
 }
 
 define void @runa.memcpy(i8* %dst, i8* %src, i32 %len) alwaysinline {
-	call void @llvm.memcpy.p0i8.p0i8.i32(i8* %src, i8* %dst, i32 %len, i32 1, i1 0)
+	call void @llvm.memcpy.p0i8.p0i8.i32(i8* %dst, i8* %src, i32 %len, i32 1, i1 0)
 	ret void
 }
