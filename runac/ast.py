@@ -26,6 +26,7 @@ class Expr(Node):
 	def __init__(self, pos):
 		Node.__init__(self, pos)
 		self.type = None
+		self.escapes = False
 
 # Terminals
 

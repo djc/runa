@@ -6,6 +6,7 @@ from .ast import parse
 from .blocks import module
 from .typer import typer
 from .specialize import specialize
+from .escapes import escapes
 from .codegen import generate
 
 BASE = os.path.dirname(__path__[0])
@@ -23,6 +24,7 @@ def ir(fn):
 		merge(mod)
 		typer(mod)
 		specialize(mod)
+		escapes(mod)
 		return generate(mod)
 
 def compile(ir, outfn):
