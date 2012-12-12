@@ -4,4 +4,5 @@ def main(name: &str, args: &array[str]) -> i32:
 	print('X' if 'aaa' == 'aaa' else '')
 	print('X' if 'a' < 'b' else '')
 	print('' if 'b' < 'a' else 'X')
+	print('a' + 'b')
 	return 0

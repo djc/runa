@@ -286,22 +286,33 @@ class CodeGen(object):
 	def Add(self, node, frame):
 		
 		left = self.visit(node.left, frame)
-		assert isinstance(left.type, types.WRAPPERS)
-		leftval = frame.varname()
-		bits = leftval, left.type.ir, left.var
-		self.writeline('%%%s = load %s %%%s' % bits)
-		
 		right = self.visit(node.right, frame)
-		assert left.type == right.type
-		rightval = frame.varname()
-		bits = rightval, right.type.ir, right.var
-		self.writeline('%%%s = load %s %%%s' % bits)
 		
-		res = frame.varname()
-		bits = res, left.type.over.ir, leftval, rightval
-		self.writeline('%%%s = add %s %%%s, %%%s' % bits)
-		return Value(left.type.over, res)
-	
+		assert left.type == right.type
+		assert isinstance(left.type, types.WRAPPERS)
+		assert isinstance(right.type, types.WRAPPERS)
+		
+		if left.type.over in types.INTS:
+			
+			leftval = frame.varname()
+			bits = leftval, left.type.ir, left.var
+			self.writeline('%%%s = load %s %%%s' % bits)
+			
+			rightval = frame.varname()
+			bits = rightval, right.type.ir, right.var
+			self.writeline('%%%s = load %s %%%s' % bits)
+			
+			res = frame.varname()
+			bits = res, left.type.over.ir, leftval, rightval
+			self.writeline('%%%s = add %s %%%s, %%%s' % bits)
+			return Value(left.type.over, res)
+		
+		m = left.type.over.methods['__add__']
+		args = ['%s %%%s' % (a.type.ir, a.var) for a in (left, right)]
+		bits = frame.varname(), m[1].ir, m[0], ', '.join(args)
+		self.writeline('%%%s = call %s @%s(%s)' % bits)
+		return Value(m[1], bits[0])
+		
 	def CondBranch(self, node, frame):
 		cond = self.visit(node.cond, frame)
 		bits = cond.var, node.tg1, node.tg2
