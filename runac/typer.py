@@ -75,6 +75,7 @@ ROOT = Module('', {
 		'__malloc__': Decl('runa.malloc', '$byte', ('uword',)),
 		'__free__': Decl('runa.free', 'void', ('$byte',)),
 		'__memcpy__': Decl('runa.memcpy', 'void', ('&byte', '&byte', 'u32')),
+		'__offset__': Decl('runa.offset', '&byte', ('&byte', 'uword')),
 	}),
 	'libc': Module('libc', {
 		'string': Module('libc.string', {

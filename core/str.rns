@@ -1,4 +1,4 @@
-from __internal__ import __malloc__, __free__, __memcpy__
+from __internal__ import __malloc__, __free__, __memcpy__, __offset__
 from libc.string import strncmp
 from libc.unistd import write
 
@@ -38,7 +38,7 @@ class str:
 		sum = self.len + other.len
 		data = __malloc__(sum)
 		__memcpy__(data, self.data, self.len)
-		rest = data.offset(self.len)
+		rest = __offset__(data, self.len)
 		__memcpy__(rest, other.data, other.len)
 		return str(sum, data)
 	

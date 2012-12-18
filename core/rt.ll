@@ -20,7 +20,7 @@ define void @runa.free(i8* %ptr) alwaysinline {
 	ret void
 }
 
-define i8* @owner.offset(i8* %base, i64 %offset) alwaysinline {
+define i8* @runa.offset(i8* %base, i64 %offset) alwaysinline {
 	%i = ptrtoint i8* %base to i64
 	%new = add i64 %i, %offset
 	%res = inttoptr i64 %new to i8*

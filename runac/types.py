@@ -106,13 +106,6 @@ class owner(base):
 	
 	def __init__(self, over):
 		self.over = over
-		self.methods = {
-			'offset': (
-				'owner.offset',
-				ref(self.over),
-				[('self', ref(self.over)), ('n', get('uword'))]
-			),
-		}
 	
 	@property
 	def name(self):
