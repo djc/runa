@@ -2,7 +2,7 @@ import re, itertools
 
 KEYWORDS = {
 	'class', 'def', 'elif', 'else', 'for', 'from',
-	'if', 'import', 'return', 'while', 'pass',
+	'if', 'import', 'return', 'while', 'pass', 'trait',
 }
 OPERATORS = {'not', 'and', 'or', 'in', 'as'}
 SPACES = re.compile('\t*')

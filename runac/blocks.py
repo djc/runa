@@ -210,6 +210,9 @@ def module(node):
 		elif isinstance(n, ast.Function):
 			mod.code.append((n.name.name, n))
 		
+		elif isinstance(n, ast.Trait):
+			continue
+		
 		else:
 			assert False, n
 	

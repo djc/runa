@@ -1,3 +1,3 @@
-tests/ast-err.rns [1.11]: expected 'NL', got 'Colon'
-def main()
-          ^
+tests/ast-err.rns [2.1]: no ':' after function header
+    pass
+   ^

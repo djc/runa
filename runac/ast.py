@@ -301,6 +301,9 @@ class Argument(Node):
 		self.name = None
 		self.type = None
 
+class Decl(Node):
+	fields = 'decor', 'name', 'args', 'rtype'
+
 class Function(Node):
 	
 	kw = 'def'
@@ -334,6 +337,19 @@ class Function(Node):
 		if isinstance(p.token, RType):
 			p.advance(RType)
 			self.rtype = p.expr()
+		
+		if not isinstance(p.token, Colon):
+			
+			p.advance(NL)
+			if isinstance(p.token, Indent):
+				raise Error(p.token, "no ':' after function header")
+			
+			decl = Decl(self.pos)
+			decl.decor = self.decor
+			decl.name = self.name
+			decl.args = self.args
+			decl.rtype = self.rtype
+			return decl
 		
 		p.advance(Colon)
 		self.suite = Suite(p, self.pos)
@@ -514,6 +530,39 @@ class Class(Statement):
 			self.attribs.append((type, field))
 			p.eat(NL)
 		
+		while isinstance(p.token, Function):
+			self.methods.append(p.expr())
+			p.eat(NL)
+		
+		p.advance(Dedent)
+		return self
+
+class Trait(Statement):
+	
+	kw = 'trait'
+	fields = 'decor', 'name', 'params', 'methods'
+	
+	def nud(self, p):
+		
+		self.decor = set()
+		self.p = p
+		self.name = p.advance(Name)
+		self.params = []
+		
+		if isinstance(p.token, Elem):
+			p.advance(Elem)
+			self.params.append(p.advance(Name))
+			while not isinstance(p.token, ElemEnd):
+				p.advance(Comma)
+				self.params.append(p.advance(Name))
+			p.advance(ElemEnd)
+		
+		p.advance(Colon)
+		p.eat(NL)
+		p.advance(Indent)
+		p.eat(NL)
+		
+		self.methods = []
 		while isinstance(p.token, Function):
 			self.methods.append(p.expr())
 			p.eat(NL)
