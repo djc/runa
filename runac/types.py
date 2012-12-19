@@ -4,7 +4,18 @@ class Type(object):
 	def __eq__(self, other):
 		return self.__class__ == other.__class__
 
-class base(object):
+class ReprId(object):
+	
+	def __hash__(self):
+		return hash(repr(self))
+	
+	def __eq__(self, other):
+		return repr(self) == repr(other)
+	
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
+class base(ReprId):
 	
 	byval = False
 	attribs = {}
@@ -21,17 +32,8 @@ class base(object):
 	
 	def __repr__(self):
 		return '<type: %s>' % self.__class__.__name__
-	
-	def __hash__(self):
-		return hash(repr(self))
-	
-	def __eq__(self, other):
-		return repr(self) == repr(other)
-	
-	def __ne__(self, other):
-		return not self.__eq__(other)
 
-class trait(object):
+class trait(ReprId):
 	
 	byval = False
 	methods = {}
@@ -47,15 +49,6 @@ class trait(object):
 	
 	def __repr__(self):
 		return '<trait: %s>' % self.name
-	
-	def __hash__(self):
-		return hash(repr(self))
-	
-	def __eq__(self, other):
-		return repr(self) == repr(other)
-	
-	def __ne__(self, other):
-		return not self.__eq__(other)
 
 class concrete(base):
 	pass
