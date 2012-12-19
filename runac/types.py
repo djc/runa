@@ -228,7 +228,7 @@ def add(node):
 	if isinstance(node, ast.Trait):
 		fields = {'methods': {}}
 	else:
-		fields = {'ir': '%' + node.name.name, 'methods': {}, 'attribs': {}}
+		fields = {'methods': {}, 'attribs': {}}
 	
 	ALL[node.name.name] = type(node.name.name, (parent,), fields)
 
