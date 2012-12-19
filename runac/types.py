@@ -31,6 +31,32 @@ class base(object):
 	def __ne__(self, other):
 		return not self.__eq__(other)
 
+class trait(object):
+	
+	byval = False
+	methods = {}
+	type = Type()
+	
+	@property
+	def name(self):
+		return self.__class__.__name__
+	
+	@property
+	def ir(self):
+		return '%%s.wrap' % self.name
+	
+	def __repr__(self):
+		return '<trait: %s>' % self.name
+	
+	def __hash__(self):
+		return hash(repr(self))
+	
+	def __eq__(self, other):
+		return repr(self) == repr(other)
+	
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
 class concrete(base):
 	pass
 
@@ -198,12 +224,20 @@ WRAPPERS = owner, ref
 GENERIC = int, float
 
 def add(node):
-	parent = base if not node.params else template
-	ALL[node.name.name] = type(node.name.name, (parent,), {
-		'ir': '%' + node.name.name,
-		'methods': {},
-		'attribs': {},
-	})
+	
+	if isinstance(node, ast.Trait):
+		parent = trait
+	elif node.params:
+		parent = template
+	else:
+		parent = base
+	
+	if isinstance(node, ast.Trait):
+		fields = {'methods': {}}
+	else:
+		fields = {'ir': '%' + node.name.name, 'methods': {}, 'attribs': {}}
+	
+	ALL[node.name.name] = type(node.name.name, (parent,), fields)
 
 def fill(node):
 	
@@ -212,10 +246,12 @@ def fill(node):
 		cls.ir = BASIC[node.name.name]
 		cls.byval = True
 	
-	cls.params = tuple(n.name for n in node.params)
-	stubs = {n.name: Stub(n.name) for n in node.params}
-	for i, (atype, name) in enumerate(node.attribs):
-		cls.attribs[name.name] = i, get(atype, stubs)
+	stubs = {}
+	if not isinstance(node, ast.Trait):
+		cls.params = tuple(n.name for n in node.params)
+		stubs = {n.name: Stub(n.name) for n in node.params}
+		for i, (atype, name) in enumerate(node.attribs):
+			cls.attribs[name.name] = i, get(atype, stubs)
 	
 	for method in node.methods:
 		

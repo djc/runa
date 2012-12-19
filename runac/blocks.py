@@ -211,7 +211,7 @@ def module(node):
 			mod.code.append((n.name.name, n))
 		
 		elif isinstance(n, ast.Trait):
-			continue
+			mod.types[n.name.name] = n
 		
 		else:
 			assert False, n

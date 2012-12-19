@@ -501,6 +501,24 @@ class CodeGen(object):
 		self.writeline('@%s.size = %s' % (t[1:], cast))
 		self.newline()
 	
+	def trait(self, t):
+		
+		mtypes = []
+		for name, (ir, rt, atypes) in sorted(t.methods.iteritems()):
+			
+			args = []
+			for an, at in atypes:
+				if an == 'self':
+					args.append('i8*')
+				else:
+					args.append(at.ir)
+			
+			mtypes.append('%s (%s)*' % (rt.ir, ', '.join(args)))
+		
+		self.writeline('%%%s.vt = type { %s }' % (t.name, ', '.join(mtypes)))
+		self.writeline('%%%s.wrap = type { %%%s.vt*, i8* }' % (t.name, t.name))
+		self.newline()
+	
 	def Module(self, mod):
 		
 		assert not mod.constants
@@ -510,7 +528,10 @@ class CodeGen(object):
 		self.newline()
 		for k, v in mod.types.iteritems():
 			if k in types.BASIC: continue
-			self.type(v)
+			if isinstance(v, types.trait):
+				self.trait(v)
+			else:
+				self.type(v)
 		
 		for var in mod.variants:
 			self.type(var)
