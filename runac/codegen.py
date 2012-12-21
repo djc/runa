@@ -126,6 +126,22 @@ class CodeGen(object):
 		
 		assert False, '%s -> %s' % (val.type, dst)
 	
+	# Some IR writing helpers
+	
+	def gep(self, frame, val, *args):
+		
+		res = frame.varname()
+		idx = ', '.join('i32 %i' % a for a in args)
+		if isinstance(val, Value):
+			bits = res, val.type.ir, val.var, idx
+		elif isinstance(val, tuple):
+			bits = (res,) + val + (idx,)
+		else:
+			assert False, val
+		
+		self.writeline('%%%s = getelementptr %s %%%s, %s' % bits)
+		return res
+	
 	# Node visitation methods
 	
 	def Name(self, node, frame):
@@ -163,9 +179,7 @@ class CodeGen(object):
 		
 		full = frame.varname()
 		self.writeline('%%%s = alloca %%str' % full)
-		lenvar = frame.varname()
-		bits = lenvar, full
-		self.writeline('%%%s = getelementptr %%str* %%%s, i32 0, i32 0' % bits)
+		lenvar = self.gep(frame, ('%str*', full), 0, 0)
 		
 		lentype = node.type.attribs['len'][1].ir
 		bits = lentype, len(node.val), lentype, lenvar
@@ -175,9 +189,7 @@ class CodeGen(object):
 		bits = cast, dtype, data
 		self.writeline('%%%s = bitcast %s* %%%s to i8*' % bits)
 		
-		dataptr = frame.varname()
-		bits = dataptr, full
-		self.writeline('%%%s = getelementptr %%str* %%%s, i32 0, i32 1' % bits)
+		dataptr = self.gep(frame, ('%str*', full), 0, 1)
 		self.writeline('store i8* %%%s, i8** %%%s' % (cast, dataptr))
 		return Value(types.ref(node.type), full)
 	
@@ -364,10 +376,8 @@ class CodeGen(object):
 		if isinstance(t, types.WRAPPERS):
 			t = obj.type.over
 		
-		name = frame.varname()
 		idx, type = t.attribs[node.attrib.name]
-		bits = name, obj.type.ir, obj.var, idx
-		self.writeline('%%%s = getelementptr %s %%%s, i32 0, i32 %s' % bits)
+		name = self.gep(frame, obj, 0, idx)
 		return Value(types.ref(type), name)
 	
 	def Ternary(self, node, frame):
@@ -429,9 +439,7 @@ class CodeGen(object):
 				continue
 			
 			val = wrapped = self.visit(arg, frame)
-			vtp = frame.varname()
-			x = vtp, val.type.ir, val.var
-			self.writeline('%%%s = getelementptr %s %%%s, i32 0, i32 1' % x)
+			vtp = self.gep(frame, val, 0, 1)
 			argp = frame.varname()
 			self.writeline('%%%s = load i8** %%%s' % (argp, vtp))
 			args.append(Value(types.ref(types.ALL['byte']), argp))
@@ -444,16 +452,12 @@ class CodeGen(object):
 			t = types.unwrap(node.fun.type.over[1][0])
 			idx = sorted(t.methods).index(mname)
 			
-			vtp = frame.varname()
-			x = vtp, wrapped.type.ir, wrapped.var
-			self.writeline('%%%s = getelementptr %s %%%s, i32 0, i32 0' % x)
-			vtt = '%%%s.vt' % t.name
+			vtp = self.gep(frame, wrapped, 0, 0)
+			vtt = '%%%s.vt*' % t.name
 			vt = frame.varname()
 			x = vt, vtt, vtp
-			self.writeline('%%%s = load %s** %%%s' % x)
-			fp = frame.varname()
-			x = fp, vtt, vt
-			self.writeline('%%%s = getelementptr %s* %%%s, i32 0, i32 0' % x)
+			self.writeline('%%%s = load %s* %%%s' % x)
+			fp = self.gep(frame, (vtt, vt), 0, 0)
 			
 			atypes[0] = types.ref(types.ALL['byte'])
 			ft = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
