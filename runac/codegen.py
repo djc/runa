@@ -107,9 +107,7 @@ class CodeGen(object):
 			dt = dt[0].over, dt[1] + 1
 		
 		while vt[1] > dt[1]:
-			res = frame.varname()
-			bits = res, val.type.ir, val.var
-			self.writeline('%%%s = load %s %%%s' % bits)
+			res = self.load(frame, val)
 			val = Value(val.type.over, res)
 			vt = vt[0], vt[1] - 1
 		
@@ -127,6 +125,21 @@ class CodeGen(object):
 		assert False, '%s -> %s' % (val.type, dst)
 	
 	# Some IR writing helpers
+	
+	def load(self, frame, val):
+		
+		res = frame.varname()
+		if isinstance(val, Value):
+			bits = res, val.type.ir, '%' + val.var
+		elif isinstance(val, tuple):
+			bits = res, val[0], val[1]
+			if val[1][0] not in {'@', '%'} and val[1].isdigit():
+				bits = res, val[0], '%' + val[1]
+		else:
+			assert False, val
+		
+		self.writeline('%%%s = load %s %s' % bits)
+		return res
 	
 	def gep(self, frame, val, *args):
 		
@@ -201,10 +214,10 @@ class CodeGen(object):
 			return Value(types.ref(node.type), res)
 		
 		assert isinstance(node.type, types.owner), 'escaping %s' % node.type
-		bits = frame.varname(), node.type.over.ir[1:]
-		self.writeline('%%%s = load i64* @%s.size' % bits)
+		sizevar = '@%s.size' % node.type.over.ir[1:]
+		size = self.load(frame, ('i64*', sizevar))
 		
-		bits = frame.varname(), bits[0]
+		bits = frame.varname(), size
 		self.writeline('%%%s = call i8* @runa.malloc(i64 %%%s)' % bits)
 		
 		res = frame.varname()
@@ -259,14 +272,8 @@ class CodeGen(object):
 		
 		if left.type.over in types.INTS:
 			
-			leftval = frame.varname()
-			bits = leftval, left.type.ir, left.var
-			self.writeline('%%%s = load %s %%%s' % bits)
-			
-			rightval = frame.varname()
-			bits = rightval, right.type.ir, right.var
-			self.writeline('%%%s = load %s %%%s' % bits)
-			
+			leftval = self.load(frame, left)
+			rightval = self.load(frame, right)
 			if op not in {'eq', 'ne'}:
 				op = {False: 'u', True: 's'}[left.type.over.signed] + op
 			
@@ -306,13 +313,8 @@ class CodeGen(object):
 		
 		if left.type.over in types.INTS:
 			
-			leftval = frame.varname()
-			bits = leftval, left.type.ir, left.var
-			self.writeline('%%%s = load %s %%%s' % bits)
-			
-			rightval = frame.varname()
-			bits = rightval, right.type.ir, right.var
-			self.writeline('%%%s = load %s %%%s' % bits)
+			leftval = self.load(frame, left)
+			rightval = self.load(frame, right)
 			
 			res = frame.varname()
 			bits = res, left.type.over.ir, leftval, rightval
@@ -360,9 +362,7 @@ class CodeGen(object):
 		
 		w = lambda t: isinstance(t.type, types.WRAPPERS)
 		if w(val) and w(target) and val.type.over == target.type.over:
-			tmp = frame.varname()
-			bits = tmp, val.type.ir, val.var
-			self.writeline('%%%s = load %s %%%s' % bits)
+			tmp = self.load(frame, val)
 			bits = val.type.over.ir, tmp, target.type.ir, target.var
 			self.writeline('store %s %%%s, %s %%%s' % bits)
 			return
@@ -389,9 +389,7 @@ class CodeGen(object):
 		self.tlabels += 3
 		
 		if isinstance(cond.type, types.WRAPPERS):
-			val = frame.varname()
-			bits = val, cond.type.ir, cond.var
-			self.writeline('%%%s = load %s %%%s' % bits)
+			val = self.load(frame, cond)
 			cond = Value(types.ALL['bool'](), val)
 		
 		assert cond.type == types.ALL['bool']()
@@ -420,9 +418,7 @@ class CodeGen(object):
 		value = self.visit(node.value, frame)
 		if isinstance(value.type, types.WRAPPERS):
 			if value.type.over.byval:
-				tmp = frame.varname()
-				bits = tmp, value.type.ir, value.var
-				self.writeline('%%%s = load %s %%%s' % bits)
+				tmp = self.load(frame, value)
 				value = Value(value.type.over, tmp)
 		self.writeline('ret %s %%%s' % (value.type.ir, value.var))
 	
@@ -440,8 +436,7 @@ class CodeGen(object):
 			
 			val = wrapped = self.visit(arg, frame)
 			vtp = self.gep(frame, val, 0, 1)
-			argp = frame.varname()
-			self.writeline('%%%s = load i8** %%%s' % (argp, vtp))
+			argp = self.load(frame, ('i8**', vtp))
 			args.append(Value(types.ref(types.ALL['byte']), argp))
 		
 		if not node.virtual:
@@ -454,16 +449,12 @@ class CodeGen(object):
 			
 			vtp = self.gep(frame, wrapped, 0, 0)
 			vtt = '%%%s.vt*' % t.name
-			vt = frame.varname()
-			x = vt, vtt, vtp
-			self.writeline('%%%s = load %s* %%%s' % x)
+			vt = self.load(frame, (vtt + '*', vtp))
 			fp = self.gep(frame, (vtt, vt), 0, 0)
 			
 			atypes[0] = types.ref(types.ALL['byte'])
 			ft = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
-			f = frame.varname()
-			x = f, ft, fp
-			self.writeline('%%%s = load %s* %%%s' % x)
+			f = self.load(frame, (ft + '*', fp))
 			name = '%s %%%s' % (ft, f)
 			
 		argstr = ', '.join('%s %%%s' % (a.type.ir, a.var) for a in args)
