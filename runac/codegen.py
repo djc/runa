@@ -420,19 +420,56 @@ class CodeGen(object):
 		
 		args = []
 		rtype, atypes = node.fun.type.over
+		wrapped = None
 		for i, arg in enumerate(node.args):
-			val = self.visit(arg, frame)
-			val = self.coerce(val, atypes[i], frame)
-			args.append(val)
+			
+			if not node.virtual or i:
+				val = self.visit(arg, frame)
+				args.append(self.coerce(val, atypes[i], frame))
+				continue
+			
+			val = wrapped = self.visit(arg, frame)
+			vtp = frame.varname()
+			x = vtp, val.type.ir, val.var
+			self.writeline('%%%s = getelementptr %s %%%s, i32 0, i32 1' % x)
+			argp = frame.varname()
+			self.writeline('%%%s = load i8** %%%s' % (argp, vtp))
+			args.append(Value(types.ref(types.ALL['byte']), argp))
 		
+		if not node.virtual:
+			name = '%s @%s' % (rtype.ir, node.fun.decl)
+		else:
+			
+			mname = node.fun.decl.split('.', 1)[1]
+			t = types.unwrap(node.fun.type.over[1][0])
+			idx = sorted(t.methods).index(mname)
+			
+			vtp = frame.varname()
+			x = vtp, wrapped.type.ir, wrapped.var
+			self.writeline('%%%s = getelementptr %s %%%s, i32 0, i32 0' % x)
+			vtt = '%%%s.vt' % t.name
+			vt = frame.varname()
+			x = vt, vtt, vtp
+			self.writeline('%%%s = load %s** %%%s' % x)
+			fp = frame.varname()
+			x = fp, vtt, vt
+			self.writeline('%%%s = getelementptr %s* %%%s, i32 0, i32 0' % x)
+			
+			atypes[0] = types.ref(types.ALL['byte'])
+			ft = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
+			f = frame.varname()
+			x = f, ft, fp
+			self.writeline('%%%s = load %s* %%%s' % x)
+			name = '%s %%%s' % (ft, f)
+			
 		argstr = ', '.join('%s %%%s' % (a.type.ir, a.var) for a in args)
 		if rtype == types.void():
-			self.writeline('call void @%s(%s)' % (node.fun.decl, argstr))
+			self.writeline('call %s(%s)' % (name, argstr))
 			return args[0] if isinstance(node.args[0], typer.Init) else None
 		
 		res = frame.varname()
-		bits = res, rtype.ir, node.fun.decl, argstr
-		self.writeline('%%%s = call %s @%s(%s)' % bits)
+		bits = res, name, argstr
+		self.writeline('%%%s = call %s(%s)' % bits)
 		return Value(rtype, res)
 	
 	def Function(self, node, frame):
