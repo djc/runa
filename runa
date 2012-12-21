@@ -38,7 +38,6 @@ def find(cmd):
 
 if __name__ == '__main__':
 	parser = optparse.OptionParser(description='the lang utility')
-	parser.add_option('--full', help='include stdlib', action='store_true')
 	opts, args = parser.parse_args()
 	try:
 		find(args[0])(args[1], opts)
