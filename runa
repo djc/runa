@@ -11,7 +11,9 @@ def parse(fn, opts):
 	print runac.parse(runac.tokenize(open(fn)))
 
 def generate(fn, opts):
-	print runac.ir(fn)
+	ir = runac.ir(fn)
+	if not opts.test:
+		print ir
 
 def compile(fn, opts):
 	ir = runac.ir(fn)
@@ -38,6 +40,7 @@ def find(cmd):
 
 if __name__ == '__main__':
 	parser = optparse.OptionParser(description='the lang utility')
+	parser.add_option('--test', help='no output', action='store_true')
 	opts, args = parser.parse_args()
 	try:
 		find(args[0])(args[1], opts)
