@@ -236,6 +236,7 @@ class Call(BinaryOp):
 		
 		self.name = left
 		self.fun = None # for type inferencing
+		self.virtual = None # for type inferencing
 		self.args = []
 		if isinstance(p.token, RightPar):
 			p.advance(RightPar)

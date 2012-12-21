@@ -169,6 +169,11 @@ class function(base):
 	def ir(self):
 		raise NotImplementedError
 
+def unwrap(t):
+	while isinstance(t, WRAPPERS):
+		t = t.over
+	return t
+
 class Stub(object):
 	def __init__(self, name):
 		self.name = name
