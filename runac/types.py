@@ -45,7 +45,7 @@ class trait(ReprId):
 	
 	@property
 	def ir(self):
-		return '%%s.wrap' % self.name
+		return '%%%s.wrap' % self.name
 	
 	def __repr__(self):
 		return '<trait: %s>' % self.name
