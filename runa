@@ -39,7 +39,7 @@ def find(cmd):
 		return lambda x, y: None
 
 if __name__ == '__main__':
-	parser = optparse.OptionParser(description='the lang utility')
+	parser = optparse.OptionParser(description='The Runa compiler.')
 	parser.add_option('--test', help='no output', action='store_true')
 	opts, args = parser.parse_args()
 	try:
