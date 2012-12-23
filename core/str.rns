@@ -1,6 +1,5 @@
 from __internal__ import __malloc__, __free__, __memcpy__, __offset__
 from libc.string import strncmp
-from libc.unistd import write
 
 class str:
 	
@@ -52,11 +51,3 @@ class str:
 	
 	def __del__(self):
 		__free__(self.data)
-
-trait TStr:
-	def __str__(self) -> $str
-
-def print(src: &TStr):
-	s = str(src)
-	write(1, s.data, s.len)
-	write(1, "\n".data, 1)
