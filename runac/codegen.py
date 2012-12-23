@@ -102,12 +102,9 @@ class CodeGen(object):
 		assert isinstance(trait, types.WRAPPERS)
 		
 		ptrt = types.ref(types.ALL['byte'])
-		wrap = frame.varname()
-		self.writeline('%%%s = alloca %s' % (wrap, types.unwrap(trait).ir))
-		
-		vt = frame.varname()
+		wrap = self.alloca(frame, types.unwrap(trait))
 		vtt = '%' + trait.over.name + '.vt'
-		self.writeline('%%%s = alloca %s' % (vt, vtt))
+		vt = self.alloca(frame, vtt)
 		
 		t = types.unwrap(trait)
 		for i, (k, v) in enumerate(sorted(t.methods.iteritems())):
@@ -176,6 +173,12 @@ class CodeGen(object):
 	
 	# Some IR writing helpers
 	
+	def alloca(self, frame, t):
+		res = frame.varname()
+		t = t.ir if isinstance(t, (types.base, types.trait)) else t
+		self.writeline('%%%s = alloca %s' % (res, t))
+		return res
+	
 	def load(self, frame, val):
 		
 		res = frame.varname()
@@ -211,25 +214,22 @@ class CodeGen(object):
 		return frame.get(node.name)
 	
 	def Bool(self, node, frame):
-		tmp = frame.varname()
-		self.writeline('%%%s = alloca %s' % (tmp, node.type.ir))
+		tmp = self.alloca(frame, node.type)
 		val = '1' if node.val else '0'
 		bits = node.type.ir, val, types.owner(node.type).ir, tmp
 		self.writeline('store %s %s, %s %%%s' % bits)
 		return Value(types.ref(node.type), tmp)
 	
 	def Int(self, node, frame):
-		tmp = frame.varname()
-		self.writeline('%%%s = alloca %s' % (tmp, node.type.ir))
+		tmp = self.alloca(frame, node.type)
 		bits = node.type.ir, node.val, types.owner(node.type).ir, tmp
 		self.writeline('store %s %s, %s %%%s' % bits)
 		return Value(types.ref(node.type), tmp)
 	
 	def String(self, node, frame):
 		
-		data = frame.varname()
 		dtype = '[%i x i8]' % len(node.val.decode('string_escape'))
-		self.writeline('%%%s = alloca %s' % (data, dtype))
+		data = self.alloca(frame, dtype)
 		
 		literal = node.val
 		for c in ESCAPES:
@@ -240,11 +240,10 @@ class CodeGen(object):
 		bits = dtype, literal, dtype, data
 		self.writeline('store %s c"%s", %s* %%%s' % bits)
 		
-		full = frame.varname()
-		self.writeline('%%%s = alloca %%str' % full)
+		t = types.unwrap(node.type)
+		full = self.alloca(frame, t)
 		lenvar = self.gep(frame, ('%str*', full), 0, 0)
 		
-		t = types.unwrap(node.type)
 		lentype = t.attribs['len'][1].ir
 		bits = lentype, len(node.val), lentype, lenvar
 		self.writeline('store %s %i, %s* %%%s' % bits)
@@ -260,9 +259,7 @@ class CodeGen(object):
 	def Init(self, node, frame):
 		
 		if not node.escapes:
-			res = frame.varname()
-			self.writeline('%%%s = alloca %s' % (res, node.type.ir))
-			return Value(types.ref(node.type), res)
+			return Value(types.ref(node.type), self.alloca(frame, node.type))
 		
 		assert isinstance(node.type, types.owner), 'escaping %s' % node.type
 		sizevar = '@%s.size' % node.type.over.ir[1:]
