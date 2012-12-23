@@ -6,7 +6,7 @@ class str:
 	len: u32
 	data: $byte
 	
-	def __new__(src: &TStr) -> $str:
+	def __new__(src: &ToStr) -> $str:
 		return src.__str__()
 	
 	def __init__(self, len: u32, data: $byte):

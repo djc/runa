@@ -1,2 +1,2 @@
-trait TStr:
+trait ToStr:
 	def __str__(self) -> $str
