@@ -293,12 +293,34 @@ class TypeChecker(object):
 			node.fun = obj
 			node.type = node.fun.type.over[0]
 		else:
-			node.name.name = '%s.__init__' % node.name.name
-			method = obj.methods['__init__']
+			
+			methods = []
+			if '__init__' in obj.methods:
+				methods.append(obj.methods['__init__'])
+			if '__new__' in obj.methods:
+				methods.append(obj.methods['__new__'])
+			
+			res = []
+			actual = [a.type for a in node.args]
+			for decl, rt, args in methods:
+				
+				tmp = actual
+				if '__init__' in decl:
+					tmp = [types.owner(obj)] + actual
+				
+				formal = [a[1] for a in args]
+				if types.compat(tmp, formal):
+					res.append((decl, rt, args))
+			
+			assert len(res) == 1, res
+			method = res[0]
+			node.name.name = method[0]
+			
 			mtype = types.function(method[1], [i[1] for i in method[2]])
 			node.fun = Function(method[0], mtype)
-			node.args.insert(0, Init(types.owner(obj)))
 			node.type = types.owner(obj)
+			if '__init__' in method[0]:
+				node.args.insert(0, Init(types.owner(obj)))
 		
 		if isinstance(obj, Function):
 			node.name.name = obj.name

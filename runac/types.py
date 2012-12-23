@@ -174,6 +174,34 @@ def unwrap(t):
 		t = t.over
 	return t
 
+def compat(a, f):
+	
+	if isinstance(a, (tuple, list)) and isinstance(f, (tuple, list)):
+		if len(a) != len(f):
+			return False
+		return all(compat(i[0], i[1]) for i in zip(a, f))
+	
+	if a == f:
+		return True
+	elif isinstance(a, ref) and isinstance(f, owner):
+		return False
+	elif isinstance(a, WRAPPERS) and isinstance(f, WRAPPERS):
+		return compat(a.over, f.over)
+	elif isinstance(f, trait):
+		
+		for k, (x, rt, atypes) in f.methods.iteritems():
+			rc = compat(a.methods[k][1], rt)
+			aargs = [i[1] for i in a.methods[k][2][1:]]
+			fargs = [i[1] for i in atypes[1:]]
+			ac = compat(aargs, fargs)
+			if not rc or not ac:
+				return False
+		
+		return True
+		
+	else:
+		assert False, (a, f)
+
 class Stub(object):
 	def __init__(self, name):
 		self.name = name
