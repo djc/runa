@@ -183,10 +183,14 @@ def compat(a, f):
 	
 	if a == f:
 		return True
+	elif isinstance(a, int) and f in INTS:
+		return True
 	elif isinstance(a, ref) and isinstance(f, owner):
 		return False
-	elif isinstance(a, WRAPPERS) and isinstance(f, WRAPPERS):
-		return compat(a.over, f.over)
+	elif isinstance(a, WRAPPERS) or isinstance(f, WRAPPERS):
+		return compat(unwrap(a), unwrap(f))
+	elif a in UINTS and f in UINTS:
+		return a.bits < f.bits
 	elif isinstance(f, trait):
 		
 		for k, (x, rt, atypes) in f.methods.iteritems():

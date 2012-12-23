@@ -267,26 +267,38 @@ class TypeChecker(object):
 	
 	def Call(self, node, scope):
 		
+		actual = []
 		for arg in node.args:
 			self.visit(arg, scope)
+			actual.append(arg.type)
 		
 		if isinstance(node.name, ast.Attrib):
+			
 			self.visit(node.name.obj, scope)
 			if node.name.obj.type == types.module():
+				
 				mod = scope[node.name.obj.name]
 				fun = mod.type.functions[node.name.attrib.name]
 				qual = mod.name + '.' + node.name.attrib.name
 				node.fun = Function(qual, fun)
 				node.type = fun.over[0]
+				
 			else:
+				
 				t = types.unwrap(node.name.obj.type)
 				if isinstance(t, types.trait):
 					node.virtual = True
+				
 				meth = t.methods[node.name.attrib.name]
 				node.args.insert(0, node.name.obj)
+				actual = [a.type for a in node.args]
 				mtype = types.function(meth[1], [i[1] for i in meth[2]])
 				node.fun = Function(meth[0], mtype)
 				node.type = mtype.over[0]
+			
+			if not types.compat(actual, node.fun.type.over[1]):
+				assert False
+			
 			return
 		
 		assert isinstance(node.name, ast.Name), 'call non-{attrib,name,type}'
@@ -296,8 +308,15 @@ class TypeChecker(object):
 		
 		obj = scope[node.name.name]
 		if not isinstance(obj, types.base):
+			
 			node.fun = obj
 			node.type = node.fun.type.over[0]
+			if not types.compat(actual, node.fun.type.over[1]):
+				astr = ', '.join(t.name for t in actual)
+				fstr = ', '.join(t.name for t in node.fun.type.over[1])
+				msg = 'arguments (%s) cannot be passed as (%s)'
+				raise util.Error(node, msg % (astr, fstr))
+		
 		else:
 			
 			methods = []
@@ -307,7 +326,6 @@ class TypeChecker(object):
 				methods.append(obj.methods['__new__'])
 			
 			res = []
-			actual = [a.type for a in node.args]
 			for decl, rt, args in methods:
 				
 				tmp = actual

@@ -1,0 +1,6 @@
+def foo(i: i32) -> i32:
+	return i
+
+def main(name: &str, args: &array[str]) -> i32:
+	foo(3, 4)
+	return 0
