@@ -1,2 +1,3 @@
 class bool:
-	pass
+	def __str__(self) -> $str:
+		return 'True' if self else 'False'

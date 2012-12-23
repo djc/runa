@@ -5,4 +5,5 @@ def main(name: &str, args: &array[str]) -> i32:
 	print('a' or 'b')
 	print('' or 'a')
 	print('a' or '')
+	print(True)
 	return 0
