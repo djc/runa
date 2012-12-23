@@ -22,8 +22,8 @@ class str:
 	def __bool__(self) -> bool:
 		return self.len > 0
 	
-	def __str__(self) -> &str:
-		return self
+	def __str__(self) -> $str:
+		return self.__copy__()
 	
 	def __eq__(self, other: &str) -> bool:
 		if self.len != other.len:
