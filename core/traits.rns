@@ -1,2 +1,5 @@
 trait ToStr:
 	def __str__(self) -> $str
+
+trait ToBool:
+	def __bool__(self) -> bool
