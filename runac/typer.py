@@ -193,7 +193,7 @@ class TypeChecker(object):
 		node.type = types.int()
 	
 	def String(self, node, scope):
-		node.type = scope['str']
+		node.type = types.owner(scope['str'])
 	
 	# Boolean operators
 	

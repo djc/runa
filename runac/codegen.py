@@ -239,7 +239,8 @@ class CodeGen(object):
 		self.writeline('%%%s = alloca %%str' % full)
 		lenvar = self.gep(frame, ('%str*', full), 0, 0)
 		
-		lentype = node.type.attribs['len'][1].ir
+		t = types.unwrap(node.type)
+		lentype = t.attribs['len'][1].ir
 		bits = lentype, len(node.val), lentype, lenvar
 		self.writeline('store %s %i, %s* %%%s' % bits)
 		
@@ -249,7 +250,7 @@ class CodeGen(object):
 		
 		dataptr = self.gep(frame, ('%str*', full), 0, 1)
 		self.writeline('store i8* %%%s, i8** %%%s' % (cast, dataptr))
-		return Value(types.ref(node.type), full)
+		return Value(node.type, full)
 	
 	def Init(self, node, frame):
 		
