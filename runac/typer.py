@@ -131,6 +131,8 @@ class Scope(object):
 		self.vars[key] = val
 	
 	def resolve(self, node):
+		if isinstance(node, ast.Name) and node.name not in self:
+			raise util.Error(node, "type '%s' not found" % node.name)
 		if isinstance(node, ast.Name):
 			assert self[node.name].type == types.Type()
 			return self[node.name]

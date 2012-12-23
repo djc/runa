@@ -1,0 +1,3 @@
+tests/non-type.rns [1.12]: type 'FlooBar' not found
+def do(x: &FlooBar):
+           ^
