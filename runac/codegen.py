@@ -96,6 +96,81 @@ class CodeGen(object):
 			self.writeline('%s: ; %s' % (label, hint))
 		self.indent()
 	
+	def getlabel(self, prefix):
+		new = self.labels.get(prefix, 0)
+		self.labels[prefix] = new + 1
+		return '%s%i' % (prefix, new)
+	
+	# Some IR writing helpers
+	
+	def alloca(self, frame, t):
+		res = frame.varname()
+		t = t.ir if isinstance(t, (types.base, types.trait)) else t
+		self.writeline('%%%s = alloca %s' % (res, t))
+		return res
+	
+	def load(self, frame, val):
+		
+		res = frame.varname()
+		if isinstance(val, Value):
+			bits = res, val.type.ir, '%' + val.var
+		elif isinstance(val, tuple):
+			bits = res, val[0], val[1]
+			if val[1][0] not in {'@', '%'} and val[1].isdigit():
+				bits = res, val[0], '%' + val[1]
+		else:
+			assert False, val
+		
+		self.writeline('%%%s = load %s %s' % bits)
+		return res
+	
+	def gep(self, frame, val, *args):
+		
+		res = frame.varname()
+		idx = ', '.join('i32 %i' % a for a in args)
+		if isinstance(val, Value):
+			bits = res, val.type.ir, val.var, idx
+		elif isinstance(val, tuple):
+			bits = (res,) + val + (idx,)
+		else:
+			assert False, val
+		
+		self.writeline('%%%s = getelementptr %s %%%s, %s' % bits)
+		return res
+	
+	# Some type system helper methods
+	
+	def coerce(self, val, dst, frame):
+		
+		vt = val.type, 0
+		while isinstance(vt[0], types.WRAPPERS):
+			vt = vt[0].over, vt[1] + 1
+		
+		dt = dst, 0
+		while isinstance(dt[0], types.WRAPPERS):
+			dt = dt[0].over, dt[1] + 1
+		
+		while vt[1] > dt[1]:
+			res = self.load(frame, val)
+			val = Value(val.type.over, res)
+			vt = vt[0], vt[1] - 1
+		
+		if vt == dt:
+			return val
+		
+		if vt[0] in types.UINTS and dt[0] in types.UINTS:
+			assert dt[0].bits > vt[0].bits
+			assert not vt[1] and not dt[1]
+			res = frame.varname()
+			bits = res, vt[0].ir, val.var, dt[0].ir
+			self.writeline('%%%s = zext %s %%%s to %s' % bits)
+			return Value(dt[0], res)
+		
+		if isinstance(dt[0], types.trait) and types.compat(vt[0], dt[0]):
+			return self.traitwrap(val, dst, frame)
+		
+		assert False, '%s -> %s' % (val.type, dst)
+	
 	def traitwrap(self, val, trait, frame):
 		
 		assert isinstance(val.type, types.WRAPPERS)
@@ -134,79 +209,6 @@ class CodeGen(object):
 		bits = ptrt.ir, cast, ptrt.ir, objslot
 		self.writeline('store %s %%%s, %s* %%%s' % bits)
 		return Value(trait, wrap)
-	
-	def getlabel(self, prefix):
-		new = self.labels.get(prefix, 0)
-		self.labels[prefix] = new + 1
-		return '%s%i' % (prefix, new)
-	
-	def coerce(self, val, dst, frame):
-		
-		vt = val.type, 0
-		while isinstance(vt[0], types.WRAPPERS):
-			vt = vt[0].over, vt[1] + 1
-		
-		dt = dst, 0
-		while isinstance(dt[0], types.WRAPPERS):
-			dt = dt[0].over, dt[1] + 1
-		
-		while vt[1] > dt[1]:
-			res = self.load(frame, val)
-			val = Value(val.type.over, res)
-			vt = vt[0], vt[1] - 1
-		
-		if vt == dt:
-			return val
-		
-		if vt[0] in types.UINTS and dt[0] in types.UINTS:
-			assert dt[0].bits > vt[0].bits
-			assert not vt[1] and not dt[1]
-			res = frame.varname()
-			bits = res, vt[0].ir, val.var, dt[0].ir
-			self.writeline('%%%s = zext %s %%%s to %s' % bits)
-			return Value(dt[0], res)
-		
-		if isinstance(dt[0], types.trait) and types.compat(vt[0], dt[0]):
-			return self.traitwrap(val, dst, frame)
-		
-		assert False, '%s -> %s' % (val.type, dst)
-	
-	# Some IR writing helpers
-	
-	def alloca(self, frame, t):
-		res = frame.varname()
-		t = t.ir if isinstance(t, (types.base, types.trait)) else t
-		self.writeline('%%%s = alloca %s' % (res, t))
-		return res
-	
-	def load(self, frame, val):
-		
-		res = frame.varname()
-		if isinstance(val, Value):
-			bits = res, val.type.ir, '%' + val.var
-		elif isinstance(val, tuple):
-			bits = res, val[0], val[1]
-			if val[1][0] not in {'@', '%'} and val[1].isdigit():
-				bits = res, val[0], '%' + val[1]
-		else:
-			assert False, val
-		
-		self.writeline('%%%s = load %s %s' % bits)
-		return res
-	
-	def gep(self, frame, val, *args):
-		
-		res = frame.varname()
-		idx = ', '.join('i32 %i' % a for a in args)
-		if isinstance(val, Value):
-			bits = res, val.type.ir, val.var, idx
-		elif isinstance(val, tuple):
-			bits = (res,) + val + (idx,)
-		else:
-			assert False, val
-		
-		self.writeline('%%%s = getelementptr %s %%%s, %s' % bits)
-		return res
 	
 	# Node visitation methods
 	
