@@ -1,2 +1,0 @@
-def do() -> int:
-	return 's'

@@ -369,7 +369,8 @@ class TypeChecker(object):
 		elif isinstance(node.value.type, types.int):
 			assert self.fun.rtype in types.INTS
 		else:
-			assert False
+			msg = "return value does not match declared return type '%s'"
+			raise util.Error(node.value, msg % self.fun.rtype.name)
 
 def variant(mod, t):
 	if isinstance(t, types.WRAPPERS):
@@ -442,7 +443,7 @@ def typer(mod):
 	mod.scope = base
 	for k, fun in mod.code:
 		
-		if fun.args[0].type is None:
+		if fun.args and fun.args[0].type is None:
 			assert len(k) > 1
 			assert fun.args[0].name.name == 'self'
 			if fun.name.name == '__del__':
