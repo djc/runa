@@ -382,7 +382,13 @@ def variant(mod, t):
 	elif hasattr(t, 'over') or isinstance(t, types.concrete):
 		mod.variants.add(t)
 
+VOID = {'__init__', '__del__'}
+
 def process(mod, base, fun):
+	
+	if fun.name.name in VOID and fun.rtype is not None:
+		msg = "method '%s' must return type 'void'"
+		raise util.Error(fun.rtype, msg % fun.name.name)
 	
 	start = Scope(base)
 	if fun.rtype is None:

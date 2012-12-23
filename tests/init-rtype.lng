@@ -1,3 +1,0 @@
-class test:
-	def __init__(self: test) -> int:
-		return 1
