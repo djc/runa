@@ -42,7 +42,7 @@ class CodeGen(object):
 		self.buf = []
 		self.level = 0
 		self.start = True
-		self.tlabels = 0
+		self.labels = {}
 	
 	def visit(self, node, frame):
 		
@@ -137,6 +137,11 @@ class CodeGen(object):
 		bits = ptrt.ir, cast, ptrt.ir, objslot
 		self.writeline('store %s %%%s, %s* %%%s' % bits)
 		return Value(trait, wrap)
+	
+	def getlabel(self, prefix):
+		new = self.labels.get(prefix, 0)
+		self.labels[prefix] = new + 1
+		return '%s%i' % (prefix, new)
 	
 	def coerce(self, val, dst, frame):
 		
@@ -422,10 +427,9 @@ class CodeGen(object):
 	def Ternary(self, node, frame):
 		
 		cond = self.visit(node.cond, frame)
-		llabel = 'T%s' % self.tlabels
-		rlabel = 'T%s' % (self.tlabels + 1)
-		jlabel = 'T%s' % (self.tlabels + 2)
-		self.tlabels += 3
+		llabel = self.getlabel('T')
+		rlabel = self.getlabel('T')
+		jlabel = self.getlabel('T')
 		
 		if isinstance(cond.type, types.WRAPPERS):
 			val = self.load(frame, cond)
