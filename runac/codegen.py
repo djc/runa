@@ -96,6 +96,48 @@ class CodeGen(object):
 			self.writeline('%s: ; %s' % (label, hint))
 		self.indent()
 	
+	def traitwrap(self, val, trait, frame):
+		
+		assert isinstance(val.type, types.WRAPPERS)
+		assert isinstance(trait, types.WRAPPERS)
+		
+		ptrt = types.ref(types.ALL['byte'])
+		wrap = frame.varname()
+		self.writeline('%%%s = alloca %s' % (wrap, types.unwrap(trait).ir))
+		
+		vt = frame.varname()
+		vtt = '%' + trait.over.name + '.vt'
+		self.writeline('%%%s = alloca %s' % (vt, vtt))
+		
+		t = types.unwrap(trait)
+		for i, (k, v) in enumerate(sorted(t.methods.iteritems())):
+			
+			imeth = types.unwrap(val.type).methods[k]
+			iatypes = [a[1] for a in imeth[2]]
+			origt = '%s (%s)*' % (v[1].ir, ', '.join((a.ir for a in iatypes)))
+			iatypes[0] = ptrt
+			newt = '%s (%s)*' % (v[1].ir, ', '.join((a.ir for a in iatypes)))
+			
+			cast = frame.varname()
+			bits = cast, origt, imeth[0], newt
+			self.writeline('%%%s = bitcast %s @%s to %s' % bits)
+			
+			vtentry = self.gep(frame, (vtt + '*', vt), 0, i)
+			bits = newt, cast, newt, vtentry
+			self.writeline('store %s %%%s, %s* %%%s' % bits)
+		
+		vtslot = self.gep(frame, (trait.over.ir + '*', wrap), 0, 0)
+		bits = vtt + '*', vt, vtt + '**', vtslot
+		self.writeline('store %s %%%s, %s %%%s' % bits)
+		
+		cast = frame.varname()
+		bits = cast, val.type.ir, val.var, ptrt.ir
+		self.writeline('%%%s = bitcast %s %%%s to %s' % bits)
+		objslot = self.gep(frame, (trait.over.ir + '*', wrap), 0, 1)
+		bits = ptrt.ir, cast, ptrt.ir, objslot
+		self.writeline('store %s %%%s, %s* %%%s' % bits)
+		return Value(trait, wrap)
+	
 	def coerce(self, val, dst, frame):
 		
 		vt = val.type, 0
@@ -121,6 +163,9 @@ class CodeGen(object):
 			bits = res, vt[0].ir, val.var, dt[0].ir
 			self.writeline('%%%s = zext %s %%%s to %s' % bits)
 			return Value(dt[0], res)
+		
+		if isinstance(dt[0], types.trait) and types.compat(vt[0], dt[0]):
+			return self.traitwrap(val, dst, frame)
 		
 		assert False, '%s -> %s' % (val.type, dst)
 	

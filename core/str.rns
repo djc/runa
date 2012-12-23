@@ -56,6 +56,7 @@ class str:
 trait TStr:
 	def __str__(self) -> $str
 
-def print(s: &str):
+def print(src: &TStr):
+	s = str(src)
 	write(1, s.data, s.len)
 	write(1, "\n".data, 1)
