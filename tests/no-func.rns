@@ -1,0 +1,3 @@
+def main(name: &str, args: &array[str]) -> i32:
+	blah()
+	return 0
