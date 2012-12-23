@@ -22,6 +22,10 @@ class EscapeFinder(object):
 		#	else:
 		#		self.visit(attr, escape)
 	
+	def String(self, node, escape=None):
+		if not escape: return
+		node.escapes = True
+	
 	def Name(self, node, escape=None):
 		if not escape: return
 		self.track.add(node.name)
@@ -45,7 +49,10 @@ class EscapeFinder(object):
 			
 		else:
 			assert False
-		
+	
+	def Ternary(self, node, escape=None):
+		for val in node.values:
+			self.visit(val, escape)
 	
 	def Call(self, node, escape=None):
 		
