@@ -226,6 +226,11 @@ class GT(BinaryOp):
 	lbp = 20
 	fields = 'left', 'right'
 
+class As(BinaryOp):
+	op = 'as'
+	lbp = 30
+	fields = 'left', 'right'
+
 class Call(BinaryOp):
 	
 	op = '('

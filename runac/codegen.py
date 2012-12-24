@@ -375,6 +375,13 @@ class CodeGen(object):
 		bits = frame.varname(), m[1].ir, m[0], ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
 		return Value(m[1], bits[0])
+	
+	def As(self, node, frame):
+		left = self.visit(node.left, frame)
+		assert left.type in types.INTS and node.type in types.INTS
+		assert left.type.bits <= node.type.bits
+		assert left.type in types.SINTS and node.type in types.UINTS
+		return Value(node.type, left.var)
 		
 	def CondBranch(self, node, frame):
 		cond = self.visit(node.cond, frame)
