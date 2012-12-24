@@ -196,6 +196,10 @@ def compat(a, f):
 	elif isinstance(f, trait):
 		
 		for k, (x, rt, atypes) in f.methods.iteritems():
+			
+			if k not in a.methods:
+				return False
+			
 			rc = compat(a.methods[k][1], rt)
 			aargs = [i[1] for i in a.methods[k][2][1:]]
 			fargs = [i[1] for i in atypes[1:]]
@@ -311,11 +315,14 @@ def fill(node):
 	
 	obj = cls()
 	if node.name.name in INTEGERS:
+		
 		cls.signed, cls.bits = INTEGERS[node.name.name]
 		INTS.add(obj)
 		if cls.signed:
 			SINTS.add(obj)
 		else:
 			UINTS.add(obj)
+		
+		ALL['int'].methods.update(cls.methods)
 	
 	return obj
