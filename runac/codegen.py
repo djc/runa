@@ -225,10 +225,7 @@ class CodeGen(object):
 		return Value(node.type, 'true' if node.val else 'false')
 	
 	def Int(self, node, frame):
-		tmp = self.alloca(frame, node.type)
-		bits = node.type.ir, node.val, types.owner(node.type).ir, tmp
-		self.writeline('store %s %s, %s %s' % bits)
-		return Value(types.ref(node.type), tmp)
+		return Value(node.type, node.val)
 	
 	def String(self, node, frame):
 		
