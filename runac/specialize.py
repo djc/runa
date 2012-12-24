@@ -31,8 +31,10 @@ class Specializer(object):
 					assert node.val >= 0
 			else:
 				assert False
+		elif isinstance(types.unwrap(dst), types.trait):
+			node.type = types.get('word')
 		else:
-			assert False
+			assert False, '%s -> %s' % (node.type, dst)
 	
 	# Constants
 	
