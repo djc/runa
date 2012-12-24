@@ -78,6 +78,9 @@ ROOT = Module('', {
 		'__offset__': Decl('runa.offset', '&byte', ('&byte', 'uword')),
 	}),
 	'libc': Module('libc', {
+		'stdio': Module('libc.stdio', {
+			'sprintf': Decl('sprintf', 'i32', ('&byte', '&byte', '...')),
+		}),
 		'string': Module('libc.string', {
 			'strncmp': Decl('strncmp', 'i32', ('&byte', '&byte', 'uword')),
 		}),

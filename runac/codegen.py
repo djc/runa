@@ -169,6 +169,9 @@ class CodeGen(object):
 		if isinstance(dt[0], types.trait) and types.compat(vt[0], dt[0]):
 			return self.traitwrap(val, dst, frame)
 		
+		if isinstance(dst, types.VarArgs):
+			return val
+		
 		assert False, '%s -> %s' % (val.type, dst)
 	
 	def traitwrap(self, val, trait, frame):
@@ -487,7 +490,10 @@ class CodeGen(object):
 			argp = self.load(frame, ('i8**', vtp))
 			args.append(Value(types.ref(types.ALL['byte']), argp))
 		
-		if not node.virtual:
+		if atypes[-1] == types.VarArgs():
+			sig = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
+			name = '%s @%s' % (sig, node.fun.decl)
+		elif not node.virtual:
 			name = '%s @%s' % (rtype.ir, node.fun.decl)
 		else:
 			

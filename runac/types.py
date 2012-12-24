@@ -179,6 +179,8 @@ def compat(a, f):
 	if isinstance(a, (tuple, list)) and isinstance(f, (tuple, list)):
 		if len(a) != len(f):
 			return False
+		if f and f[-1] == VarArgs():
+			return all(compat(i[0], i[1]) for i in zip(a, f[:-1]))
 		return all(compat(i[0], i[1]) for i in zip(a, f))
 	
 	if a == f:
@@ -212,9 +214,16 @@ class Stub(object):
 	def __repr__(self):
 		return '<%s(%r)>' % (self.__class__.__name__, self.name)
 
+class VarArgs(base):
+	@property
+	def ir(self):
+		return '...'
+
 def get(t, stubs={}):
 	if t is None:
 		return void()
+	elif t == '...':
+		return VarArgs()
 	elif isinstance(t, base):
 		return t
 	elif isinstance(t, basestring) and t[0] == '$':
