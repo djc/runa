@@ -1,7 +1,7 @@
 import ast, types, typer
 import sys
 
-ESCAPES = {'\n'}
+ESCAPES = {'\\n': '\\0a', '\\0': '\\00'}
 
 class Value(object):
 	def __init__(self, type, var):
@@ -236,10 +236,8 @@ class CodeGen(object):
 		data = self.alloca(frame, dtype)
 		
 		literal = node.val
-		for c in ESCAPES:
-			escaped = repr(c)[1:-1]
-			sub = '\\0' + hex(ord(c))[2:]
-			literal = literal.replace(escaped, sub)
+		for c, sub in sorted(ESCAPES.iteritems()):
+			literal = literal.replace(c, sub)
 		
 		bits = dtype, literal, dtype, data
 		self.writeline('store %s c"%s", %s* %s' % bits)
