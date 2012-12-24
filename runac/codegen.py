@@ -173,6 +173,12 @@ class CodeGen(object):
 	
 	def traitwrap(self, val, trait, frame):
 		
+		if not isinstance(val.type, types.WRAPPERS):
+			tmp = self.alloca(frame, val.type)
+			bits = val.type.ir, val.var, val.type.ir, tmp
+			self.writeline('store %s %s, %s* %s' % bits)
+			val = Value(types.ref(val.type), tmp)
+		
 		assert isinstance(val.type, types.WRAPPERS)
 		assert isinstance(trait, types.WRAPPERS)
 		
@@ -216,11 +222,7 @@ class CodeGen(object):
 		return frame.get(node.name)
 	
 	def Bool(self, node, frame):
-		tmp = self.alloca(frame, node.type)
-		val = '1' if node.val else '0'
-		bits = node.type.ir, val, types.owner(node.type).ir, tmp
-		self.writeline('store %s %s, %s %s' % bits)
-		return Value(types.ref(node.type), tmp)
+		return Value(node.type, 'true' if node.val else 'false')
 	
 	def Int(self, node, frame):
 		tmp = self.alloca(frame, node.type)
