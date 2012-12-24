@@ -343,6 +343,17 @@ class TypeChecker(object):
 				if types.compat(tmp, formal):
 					res.append((decl, rt, args))
 			
+			if not res:
+				
+				formals = []
+				for t in methods:
+					formals.append(', '.join(i[1].name for i in t[2]))
+				
+				astr = ', '.join(t.name for t in actual)
+				bits = astr, '), ('.join(formals)
+				msg = '(%s) does not fit any of (%s)'
+				raise util.Error(node, msg % bits)
+			
 			assert len(res) == 1, res
 			method = res[0]
 			node.name.name = method[0]
