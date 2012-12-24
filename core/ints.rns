@@ -1,3 +1,5 @@
+from libc.stdio import sprintf
+
 class byte:
 	pass
 
@@ -5,10 +7,16 @@ class i32:
 	pass
 
 class u32:
-	pass
+	def __str__(self) -> $str:
+		data = __malloc__(20)
+		len = sprintf(data, '%u\0'.data, self)
+		return str(len as u32, data)
 
 class word:
-	pass
+	def __str__(self) -> $str:
+		data = __malloc__(20)
+		len = sprintf(data, '%ld\0'.data, self)
+		return str(len as u32, data)
 
 class uword:
 	pass
