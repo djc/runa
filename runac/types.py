@@ -204,7 +204,7 @@ def compat(a, f):
 		return True
 		
 	else:
-		assert False, (a, f)
+		return False
 
 class Stub(object):
 	def __init__(self, name):
