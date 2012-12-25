@@ -13,6 +13,10 @@ class u32:
 		return str(len as u32, data)
 
 class word:
+	
+	def __bool__(self) -> bool:
+		return self != 0
+	
 	def __str__(self) -> $str:
 		data = __malloc__(20)
 		len = sprintf(data, '%ld\0'.data, self)
