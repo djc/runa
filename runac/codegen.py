@@ -150,6 +150,19 @@ class CodeGen(object):
 		while isinstance(dt[0], types.WRAPPERS):
 			dt = dt[0].over, dt[1] + 1
 		
+		if dst == types.get('bool') and vt[0] != types.get('bool'):
+			
+			if not vt[1]:
+				tmp = self.alloca(frame, vt[0])
+				bits = val.type.ir, val.var, val.type.ir, tmp
+				self.writeline('store %s %s, %s* %s' % bits)
+				val = Value(types.ref(vt[0]), tmp)
+			
+			method = vt[0].methods['__bool__']
+			bits = frame.varname(), method[0], val.type.ir, val.var
+			self.writeline('%s = call i1 @%s(%s %s)' % bits)
+			return Value(types.get('bool'), bits[0])
+		
 		while vt[1] > dt[1]:
 			res = self.load(frame, val)
 			val = Value(val.type.over, res)
@@ -433,15 +446,16 @@ class CodeGen(object):
 	def Ternary(self, node, frame):
 		
 		cond = self.visit(node.cond, frame)
-		llabel = self.getlabel('T')
-		rlabel = self.getlabel('T')
-		jlabel = self.getlabel('T')
+		if types.unwrap(cond.type) != types.get('bool'):
+			cond = self.coerce(cond, types.get('bool'), frame)
 		
 		if isinstance(cond.type, types.WRAPPERS):
 			val = self.load(frame, cond)
 			cond = Value(types.ALL['bool'](), val)
 		
-		assert cond.type == types.ALL['bool']()
+		llabel = self.getlabel('T')
+		rlabel = self.getlabel('T')
+		jlabel = self.getlabel('T')
 		bits = cond.var, llabel, rlabel
 		self.writeline('br i1 %s, label %%%s, label %%%s' % bits)
 		
