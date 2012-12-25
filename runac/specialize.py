@@ -24,8 +24,15 @@ class Specializer(object):
 	def specialize(self, node, dst):
 		if not isinstance(node.type, types.GENERIC):
 			return
-		elif node.type == types.int() and dst in types.INTS:
+		elif isinstance(node, ast.Ternary):
+			self.visit(node)
+			self.specialize(node.values[0], dst)
+			self.specialize(node.values[1], dst)
+			assert node.values[0].type == node.values[1].type
+			node.type = node.values[0].type
+		elif node.type == types.int() and types.unwrap(dst) in types.INTS:
 			if isinstance(node, ast.Int):
+				dst = types.unwrap(dst)
 				node.type = dst
 				if not dst.signed:
 					assert node.val >= 0
@@ -77,9 +84,16 @@ class Specializer(object):
 	
 	def Call(self, node):
 		for i, arg in enumerate(node.args):
-			if not isinstance(arg.type, types.GENERIC): continue
+			if not isinstance(arg.type, types.GENERIC):
+				self.visit(arg)
+				continue
 			self.specialize(arg, node.fun.type.over[1][i])
-			assert not isinstance(arg.type, types.GENERIC)
+			assert not isinstance(arg.type, types.GENERIC), arg.type
+	
+	def Ternary(self, node):
+		self.visit(node.cond)
+		if isinstance(node.cond.type, types.GENERIC):
+			self.specialize(node.cond, types.get('ToBool'))
 	
 	def propagate(self):
 		for i, bl in self.cfg.blocks.iteritems():
