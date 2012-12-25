@@ -54,6 +54,9 @@ class Specializer(object):
 	def EQ(self, node):
 		self.compare(node)
 	
+	def NE(self, node):
+		self.compare(node)
+	
 	def LT(self, node):
 		self.compare(node)
 	
