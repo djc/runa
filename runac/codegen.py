@@ -322,7 +322,7 @@ class CodeGen(object):
 			while isinstance(right.type, types.WRAPPERS):
 				right = Value(right.type.over, self.load(frame, right))
 			
-			assert left.type == right.type
+			assert left.type == right.type, (left.type, right.type)
 			if op not in {'eq', 'ne'}:
 				op = {False: 'u', True: 's'}[left.type.signed] + op
 			
