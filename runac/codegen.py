@@ -124,6 +124,15 @@ class CodeGen(object):
 		self.writeline('%s = load %s %s' % bits)
 		return res
 	
+	def store(self, val, dst):
+		if isinstance(val, Value):
+			bits = val.type.ir, val.var, val.type.ir, dst
+		elif isinstance(val, tuple):
+			bits = val[0], val[1], val[0], dst
+		else:
+			assert False
+		self.writeline('store %s %s, %s* %s' % bits)
+	
 	def gep(self, frame, val, *args):
 		
 		res = frame.varname()
@@ -154,8 +163,7 @@ class CodeGen(object):
 			
 			if not vt[1]:
 				tmp = self.alloca(frame, vt[0])
-				bits = val.type.ir, val.var, val.type.ir, tmp
-				self.writeline('store %s %s, %s* %s' % bits)
+				self.store(val, tmp)
 				val = Value(types.ref(vt[0]), tmp)
 			
 			method = vt[0].methods['__bool__']
@@ -191,8 +199,7 @@ class CodeGen(object):
 		
 		if not isinstance(val.type, types.WRAPPERS):
 			tmp = self.alloca(frame, val.type)
-			bits = val.type.ir, val.var, val.type.ir, tmp
-			self.writeline('store %s %s, %s* %s' % bits)
+			self.store(val, tmp)
 			val = Value(types.ref(val.type), tmp)
 		
 		assert isinstance(val.type, types.WRAPPERS)
@@ -215,21 +222,16 @@ class CodeGen(object):
 			cast = frame.varname()
 			bits = cast, origt, imeth[0], newt
 			self.writeline('%s = bitcast %s @%s to %s' % bits)
-			
-			vtentry = self.gep(frame, (vtt + '*', vt), 0, i)
-			bits = newt, cast, newt, vtentry
-			self.writeline('store %s %s, %s* %s' % bits)
+			self.store((newt, cast), self.gep(frame, (vtt + '*', vt), 0, i))
 		
 		vtslot = self.gep(frame, (trait.over.ir + '*', wrap), 0, 0)
-		bits = vtt + '*', vt, vtt + '**', vtslot
-		self.writeline('store %s %s, %s %s' % bits)
+		self.store((vtt + '*', vt), vtslot)
 		
 		cast = frame.varname()
 		bits = cast, val.type.ir, val.var, ptrt.ir
 		self.writeline('%s = bitcast %s %s to %s' % bits)
 		objslot = self.gep(frame, (trait.over.ir + '*', wrap), 0, 1)
-		bits = ptrt.ir, cast, ptrt.ir, objslot
-		self.writeline('store %s %s, %s* %s' % bits)
+		self.store((ptrt.ir, cast), objslot)
 		return Value(trait, wrap)
 	
 	# Node visitation methods
@@ -252,23 +254,18 @@ class CodeGen(object):
 		for c, sub in sorted(ESCAPES.iteritems()):
 			literal = literal.replace(c, sub)
 		
-		bits = dtype, literal, dtype, data
-		self.writeline('store %s c"%s", %s* %s' % bits)
-		
+		self.store((dtype, 'c"%s"' % literal), data)
 		t = types.unwrap(node.type)
 		full = self.alloca(frame, t)
 		lenvar = self.gep(frame, ('%str*', full), 0, 0)
 		
 		lentype = t.attribs['len'][1].ir
-		bits = lentype, len(node.val), lentype, lenvar
-		self.writeline('store %s %i, %s* %s' % bits)
+		self.store((lentype, len(node.val)), lenvar)
 		
 		cast = frame.varname()
 		bits = cast, dtype, data
 		self.writeline('%s = bitcast %s* %s to i8*' % bits)
-		
-		dataptr = self.gep(frame, ('%str*', full), 0, 1)
-		self.writeline('store i8* %s, i8** %s' % (cast, dataptr))
+		self.store(('i8*', cast), self.gep(frame, ('%str*', full), 0, 1))
 		return Value(node.type, full)
 	
 	def Init(self, node, frame):
@@ -424,20 +421,16 @@ class CodeGen(object):
 			assert False
 		
 		if types.ref(val.type) == target.type:
-			bits = val.type.ir, val.var, target.type.ir, target.var
-			self.writeline('store %s %s, %s %s' % bits)
+			self.store(val, target.var)
 			return
 		
 		if types.owner(val.type) == target.type:
-			bits = val.type.ir, val.var, target.type.ir, target.var
-			self.writeline('store %s %s, %s %s' % bits)
+			self.store(val, target.var)
 			return
 		
 		w = lambda t: isinstance(t.type, types.WRAPPERS)
 		if w(val) and w(target) and val.type.over == target.type.over:
-			tmp = self.load(frame, val)
-			bits = val.type.over.ir, tmp, target.type.ir, target.var
-			self.writeline('store %s %s, %s %s' % bits)
+			self.store((val.type.over.ir, self.load(frame, val)), target.var)
 			return
 		
 		assert False
