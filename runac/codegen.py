@@ -316,6 +316,16 @@ class CodeGen(object):
 		self.writeline('%s = select i1 %s, %s %s, %s %s' % bits)
 		return Value(left.type, res)
 	
+	def Not(self, node, frame):
+		
+		val = self.visit(node.value, frame)
+		if types.unwrap(val.type) != types.get('bool'):
+			val = self.coerce(val, types.get('bool'), frame)
+		
+		bits = frame.varname(), val.var
+		self.writeline('%s = select i1 %s, i1 false, i1 true' % bits)
+		return Value(types.get('bool'), bits[0])
+	
 	def And(self, node, frame):
 		return self.boolean('and', node, frame)
 	
