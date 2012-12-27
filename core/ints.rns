@@ -1,4 +1,4 @@
-from libc.stdio import sprintf
+from libc.stdio import snprintf
 
 class byte:
 	pass
@@ -9,7 +9,7 @@ class i32:
 class u32:
 	def __str__(self) -> $str:
 		data = __malloc__(20)
-		len = sprintf(data, '%u\0'.data, self)
+		len = snprintf(data, 20, '%u\0'.data, self)
 		return str(len as u32, data)
 
 class word:
@@ -19,7 +19,7 @@ class word:
 	
 	def __str__(self) -> $str:
 		data = __malloc__(20)
-		len = sprintf(data, '%ld\0'.data, self)
+		len = snprintf(data, 20, '%ld\0'.data, self)
 		return str(len as u32, data)
 
 class uword:

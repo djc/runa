@@ -79,7 +79,9 @@ ROOT = Module('', {
 	}),
 	'libc': Module('libc', {
 		'stdio': Module('libc.stdio', {
-			'sprintf': Decl('sprintf', 'i32', ('&byte', '&byte', '...')),
+			'snprintf': Decl('snprintf', 'i32', (
+				'&byte', 'i32', '&byte', '...'
+			)),
 		}),
 		'string': Module('libc.string', {
 			'strncmp': Decl('strncmp', 'i32', ('&byte', '&byte', 'uword')),
