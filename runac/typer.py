@@ -260,6 +260,12 @@ class TypeChecker(object):
 	def Sub(self, node, scope):
 		self.arith('sub', node, scope)
 	
+	def Mul(self, node, scope):
+		self.arith('mul', node, scope)
+	
+	def Div(self, node, scope):
+		self.arith('div', node, scope)
+	
 	def As(self, node, scope):
 		self.visit(node.left, scope)
 		node.type = scope[node.right.name]
