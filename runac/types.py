@@ -106,6 +106,7 @@ BASIC = {
 	'u32': 'i32',
 	'int': 'i64',
 	'uint': 'i64',
+	'float': 'double',
 }
 
 INTEGERS = {
@@ -115,6 +116,8 @@ INTEGERS = {
 	'int': (True, 64),
 	'uint': (False, 64),
 }
+
+BASIC_FLOATS = {'float': 64}
 
 class module(base):
 	def __init__(self, path=None):
@@ -326,5 +329,9 @@ def fill(node):
 			UINTS.add(obj)
 		
 		ALL['anyint'].methods.update(cls.methods)
+	
+	elif node.name.name in BASIC_FLOATS:
+		cls.bits = BASIC_FLOATS[node.name.name]
+		FLOATS.add(obj)
 	
 	return obj
