@@ -245,6 +245,9 @@ class CodeGen(object):
 	def Int(self, node, frame):
 		return Value(node.type, node.val)
 	
+	def Float(self, node, frame):
+		return Value(node.type, node.val)
+	
 	def String(self, node, frame):
 		
 		dtype = '[%i x i8]' % len(node.val.decode('string_escape'))
