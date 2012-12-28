@@ -335,7 +335,8 @@ class CodeGen(object):
 		
 		left = self.visit(node.left, frame)
 		right = self.visit(node.right, frame)
-		if types.unwrap(left.type) in types.INTS:
+		vtype = types.unwrap(left.type)
+		if vtype in types.INTS or vtype == types.get('bool'):
 			
 			while isinstance(left.type, types.WRAPPERS):
 				left = Value(left.type.over, self.load(frame, left))
