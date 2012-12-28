@@ -221,16 +221,19 @@ class TypeChecker(object):
 	# Comparison operators
 	
 	def compare(self, op, node, scope):
+		
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
+		
 		if node.left.type == node.right.type:
 			node.type = scope['bool']
-		elif node.left.type == types.anyint():
-			node.type = scope['bool']
-		elif node.right.type == types.anyint():
-			node.type = scope['bool']
+		elif types.anyint() in (node.left.type, node.right.type):
+			assert types.unwrap(node.left.type) in types.INTS
+			assert types.unwrap(node.right.type) in types.INTS
 		else:
 			assert False, '%s sides different types' % op
+		
+		node.type = scope['bool']
 	
 	def EQ(self, node, scope):
 		self.compare('eq', node, scope)
