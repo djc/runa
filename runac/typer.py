@@ -199,6 +199,9 @@ class TypeChecker(object):
 	def Int(self, node, scope):
 		node.type = types.anyint()
 	
+	def Float(self, node, scope):
+		node.type = types.anyfloat()
+	
 	def String(self, node, scope):
 		node.type = types.ref(scope['str'])
 	
@@ -230,6 +233,9 @@ class TypeChecker(object):
 		elif types.anyint() in (node.left.type, node.right.type):
 			assert types.unwrap(node.left.type) in types.INTS
 			assert types.unwrap(node.right.type) in types.INTS
+		elif types.anyfloat() in (node.left.type, node.right.type):
+			assert types.unwrap(node.left.type) in types.FLOATS
+			assert types.unwrap(node.right.type) in types.FLOATS
 		else:
 			assert False, '%s sides different types' % op
 		
