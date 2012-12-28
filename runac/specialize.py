@@ -15,6 +15,8 @@ class Specializer(object):
 	def specialize(self, node, dst):
 		if node.type == dst:
 			return
+		elif node.type == types.anyint() and dst is None:
+			node.type = types.get('int')
 		elif node.type == types.anyint() and types.unwrap(dst) in types.INTS:
 			if isinstance(node, ast.Int):
 				dst = types.unwrap(dst)
@@ -31,8 +33,7 @@ class Specializer(object):
 	# Constants
 	
 	def Int(self, node, type=None):
-		if type is not None:
-			self.specialize(node, type)
+		self.specialize(node, type)
 	
 	def Name(self, node, type=None):
 		if type is not None:
