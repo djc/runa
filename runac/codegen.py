@@ -338,8 +338,9 @@ class CodeGen(object):
 		
 		left = self.visit(node.left, frame)
 		right = self.visit(node.right, frame)
-		vtype = types.unwrap(left.type)
-		if vtype in types.INTS or vtype == types.get('bool'):
+		
+		vtypes = {types.get('bool')} | types.INTS | types.FLOATS
+		if types.unwrap(left.type) in vtypes:
 			
 			while isinstance(left.type, types.WRAPPERS):
 				left = Value(left.type.over, self.load(frame, left))
@@ -350,9 +351,10 @@ class CodeGen(object):
 			if op not in {'eq', 'ne'}:
 				op = {False: 'u', True: 's'}[left.type.signed] + op
 			
+			inst = 'fcmp' if left.type in types.FLOATS else 'icmp'
 			tmp = frame.varname()
-			bits = tmp, op, left.type.ir, left.var, right.var
-			self.writeline('%s = icmp %s %s %s, %s' % bits)
+			bits = tmp, inst, op, left.type.ir, left.var, right.var
+			self.writeline('%s = %s %s %s %s, %s' % bits)
 			return Value(types.get('bool'), tmp)
 		
 		assert left.type == right.type
