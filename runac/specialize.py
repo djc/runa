@@ -17,6 +17,8 @@ class Specializer(object):
 			return
 		elif node.type == types.anyint() and dst is None:
 			node.type = types.get('int')
+		elif node.type == types.anyfloat() and dst is None:
+			node.type = types.get('float')
 		elif node.type == types.anyint() and types.unwrap(dst) in types.INTS:
 			if isinstance(node, ast.Int):
 				dst = types.unwrap(dst)
@@ -25,14 +27,27 @@ class Specializer(object):
 					assert node.val >= 0
 			else:
 				assert False, (node.type, dst)
+		elif node.type == types.anyfloat() and types.unwrap(dst) in types.FLOATS:
+			if isinstance(node, ast.Float):
+				node.type = types.unwrap(dst)
+			else:
+				assert False, (node.type, dst)
 		elif isinstance(types.unwrap(dst), types.trait):
-			node.type = types.get('int')
+			if node.type == types.anyint():
+				node.type = types.get('int')
+			elif node.type == types.anyfloat():
+				node.type = types.get('float')
+			else:
+				assert False, 'specialize %s to trait' % node.type
 		else:
 			assert False, '%s -> %s' % (node.type, dst)
 	
 	# Constants
 	
 	def Int(self, node, type=None):
+		self.specialize(node, type)
+	
+	def Float(self, node, type=None):
 		self.specialize(node, type)
 	
 	def Name(self, node, type=None):
