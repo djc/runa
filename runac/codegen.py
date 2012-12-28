@@ -205,7 +205,7 @@ class CodeGen(object):
 		assert isinstance(val.type, types.WRAPPERS)
 		assert isinstance(trait, types.WRAPPERS)
 		
-		ptrt = types.ref(types.ALL['byte'])
+		ptrt = types.ref(types.get('byte'))
 		wrap = self.alloca(frame, types.unwrap(trait))
 		vtt = '%' + trait.over.name + '.vt'
 		vt = self.alloca(frame, vtt)
@@ -350,7 +350,7 @@ class CodeGen(object):
 			tmp = frame.varname()
 			bits = tmp, op, left.type.ir, left.var, right.var
 			self.writeline('%s = icmp %s %s %s, %s' % bits)
-			return Value(types.ALL['bool'](), tmp)
+			return Value(types.get('bool'), tmp)
 		
 		assert left.type == right.type
 		inv = False
@@ -363,7 +363,7 @@ class CodeGen(object):
 		bits = frame.varname(), m[1].ir, m[0], ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
 		
-		val = Value(types.ALL['bool'](), bits[0])
+		val = Value(types.get('bool'), bits[0])
 		if not inv:
 			return val
 		
@@ -483,7 +483,7 @@ class CodeGen(object):
 		
 		if isinstance(cond.type, types.WRAPPERS):
 			val = self.load(frame, cond)
-			cond = Value(types.ALL['bool'](), val)
+			cond = Value(types.get('bool'), val)
 		
 		llabel = self.getlabel('T')
 		rlabel = self.getlabel('T')
@@ -532,7 +532,7 @@ class CodeGen(object):
 			val = wrapped = self.visit(arg, frame)
 			vtp = self.gep(frame, val, 0, 1)
 			argp = self.load(frame, ('i8**', vtp))
-			args.append(Value(types.ref(types.ALL['byte']), argp))
+			args.append(Value(types.ref(types.get('byte')), argp))
 		
 		if atypes[-1] == types.VarArgs():
 			sig = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
@@ -550,7 +550,7 @@ class CodeGen(object):
 			vt = self.load(frame, (vtt + '*', vtp))
 			fp = self.gep(frame, (vtt, vt), 0, 0)
 			
-			atypes[0] = types.ref(types.ALL['byte'])
+			atypes[0] = types.ref(types.get('byte'))
 			ft = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
 			f = self.load(frame, (ft + '*', fp))
 			name = '%s %s' % (ft, f)
