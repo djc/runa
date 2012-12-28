@@ -385,6 +385,7 @@ class CodeGen(object):
 				right = Value(right.type.over, self.load(frame, right))
 			
 			assert left.type == right.type
+			op = {'div': 'sdiv'}.get(op, op)
 			res = frame.varname()
 			bits = res, op, left.type.ir, left.var, right.var
 			self.writeline('%s = %s %s %s, %s' % bits)
@@ -400,6 +401,15 @@ class CodeGen(object):
 	
 	def Add(self, node, frame):
 		return self.arith('add', node, frame)
+	
+	def Sub(self, node, frame):
+		return self.arith('sub', node, frame)
+	
+	def Mul(self, node, frame):
+		return self.arith('mul', node, frame)
+	
+	def Div(self, node, frame):
+		return self.arith('div', node, frame)
 	
 	# Miscellaneous
 	
