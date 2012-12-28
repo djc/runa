@@ -63,6 +63,26 @@ class Specializer(object):
 	def GT(self, node, type=None):
 		self.compare(node, type)
 	
+	# Arithmetic operators
+	
+	def arith(self, op, node, type):
+		self.visit(node.left, type)
+		self.visit(node.right, type)
+		assert node.left.type == node.right.type
+		node.type = node.left.type
+	
+	def Add(self, node, type=None):
+		self.arith('add', node, type)
+	
+	def Sub(self, node, type=None):
+		self.arith('sub', node, type)
+	
+	def Mul(self, node, type=None):
+		self.arith('mul', node, type)
+	
+	def Div(self, node, type=None):
+		self.arith('div', node, type)
+	
 	# Miscellaneous
 	
 	def CondBranch(self, node, type=None):
