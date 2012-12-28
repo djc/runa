@@ -197,7 +197,7 @@ class TypeChecker(object):
 		node.type = scope['bool']
 	
 	def Int(self, node, scope):
-		node.type = types.int()
+		node.type = types.anyint()
 	
 	def String(self, node, scope):
 		node.type = types.ref(scope['str'])
@@ -225,9 +225,9 @@ class TypeChecker(object):
 		self.visit(node.right, scope)
 		if node.left.type == node.right.type:
 			node.type = scope['bool']
-		elif node.left.type == types.int():
+		elif node.left.type == types.anyint():
 			node.type = scope['bool']
-		elif node.right.type == types.int():
+		elif node.right.type == types.anyint():
 			node.type = scope['bool']
 		else:
 			assert False, '%s sides different types' % op
@@ -410,7 +410,7 @@ class TypeChecker(object):
 		self.visit(node.value, scope)
 		if node.value.type == self.fun.rtype:
 			return
-		elif isinstance(node.value.type, types.int):
+		elif isinstance(node.value.type, types.anyint):
 			assert self.fun.rtype in types.INTS
 		else:
 			msg = "return value does not match declared return type '%s'"

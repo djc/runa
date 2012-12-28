@@ -89,12 +89,12 @@ class void(base):
 	ir = 'void'
 	byval = True
 
-class float(base):
+class anyint(base):
 	@property
 	def ir(self):
 		raise TypeError('not a concrete type')
 
-class int(base):
+class anyfloat(base):
 	@property
 	def ir(self):
 		raise TypeError('not a concrete type')
@@ -185,7 +185,7 @@ def compat(a, f):
 	
 	if a == f:
 		return True
-	elif isinstance(a, int) and f in INTS:
+	elif isinstance(a, anyint) and f in INTS:
 		return True
 	elif isinstance(a, ref) and isinstance(f, owner):
 		return False
@@ -259,12 +259,12 @@ for k, cls in ALL.iteritems():
 		atypes = [(n, get(t)) for (n, t) in mdata[2]]
 		cls.methods[m] = (m[0], rtype, atypes)
 
-SINTS = {int()}
+SINTS = {anyint()}
 UINTS = set()
 INTS = set()
-FLOATS = {float()}
+FLOATS = {anyfloat()}
 WRAPPERS = owner, ref
-GENERIC = int, float
+GENERIC = anyint, anyfloat
 
 def add(node):
 	
@@ -323,6 +323,6 @@ def fill(node):
 		else:
 			UINTS.add(obj)
 		
-		ALL['int'].methods.update(cls.methods)
+		ALL['anyint'].methods.update(cls.methods)
 	
 	return obj

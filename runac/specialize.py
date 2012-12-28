@@ -15,7 +15,7 @@ class Specializer(object):
 	def specialize(self, node, dst):
 		if node.type == dst:
 			return
-		elif node.type == types.int() and types.unwrap(dst) in types.INTS:
+		elif node.type == types.anyint() and types.unwrap(dst) in types.INTS:
 			if isinstance(node, ast.Int):
 				dst = types.unwrap(dst)
 				node.type = dst
