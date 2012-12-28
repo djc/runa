@@ -168,15 +168,15 @@ class Module(object):
 	def merge(self, mod):
 		
 		for k, v in mod.refs.iteritems():
-			assert k not in self.refs
+			assert k not in self.refs, k
 			self.refs[k] = v
 		
 		for k, v in mod.constants.iteritems():
-			assert k not in self.constants
+			assert k not in self.constants, k
 			self.constants[k] = v
 		
 		for k, v in mod.types.iteritems():
-			assert k not in self.types
+			assert k not in self.types, k
 			self.types[k] = v
 		
 		self.code += mod.code
