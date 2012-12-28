@@ -264,7 +264,7 @@ for k, cls in ALL.iteritems():
 
 SINTS = {anyint()}
 UINTS = set()
-INTS = set()
+INTS = {anyint()}
 FLOATS = {anyfloat()}
 WRAPPERS = owner, ref
 
