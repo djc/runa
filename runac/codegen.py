@@ -372,7 +372,7 @@ class CodeGen(object):
 	
 	# Arithmetic operators
 	
-	def Add(self, node, frame):
+	def arith(self, op, node, frame):
 		
 		left = self.visit(node.left, frame)
 		right = self.visit(node.right, frame)
@@ -387,15 +387,20 @@ class CodeGen(object):
 			rightval = self.load(frame, right)
 			
 			res = frame.varname()
-			bits = res, left.type.over.ir, leftval, rightval
-			self.writeline('%s = add %s %s, %s' % bits)
+			bits = res, op, left.type.over.ir, leftval, rightval
+			self.writeline('%s = %s %s %s, %s' % bits)
 			return Value(left.type.over, res)
 		
-		m = left.type.over.methods['__add__']
+		m = left.type.over.methods['__%s__' % op]
 		args = ['%s %s' % (a.type.ir, a.var) for a in (left, right)]
 		bits = frame.varname(), m[1].ir, m[0], ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
 		return Value(m[1], bits[0])
+	
+	def Add(self, node, frame):
+		return self.arith('add', node, frame)
+	
+	# Miscellaneous
 	
 	def As(self, node, frame):
 		left = self.visit(node.left, frame)
