@@ -6,30 +6,15 @@ class Specializer(object):
 		self.mod = mod
 		self.fun = fun
 		self.cfg = fun.flow
+		self.track = {}
 	
-	def visit(self, node):
-		
+	def visit(self, node, type=None):
 		if hasattr(self, node.__class__.__name__):
-			getattr(self, node.__class__.__name__)(node)
-			return
-		
-		for k in node.fields:
-			attr = getattr(node, k)
-			if isinstance(attr, list):
-				for v in attr:
-					self.visit(v)
-			else:
-				self.visit(attr)
+			getattr(self, node.__class__.__name__)(node, type)
 	
 	def specialize(self, node, dst):
-		if not isinstance(node.type, types.GENERIC):
+		if node.type == dst:
 			return
-		elif isinstance(node, ast.Ternary):
-			self.visit(node)
-			self.specialize(node.values[0], dst)
-			self.specialize(node.values[1], dst)
-			assert node.values[0].type == node.values[1].type
-			node.type = node.values[0].type
 		elif node.type == types.int() and types.unwrap(dst) in types.INTS:
 			if isinstance(node, ast.Int):
 				dst = types.unwrap(dst)
@@ -37,7 +22,7 @@ class Specializer(object):
 				if not dst.signed:
 					assert node.val >= 0
 			else:
-				assert False
+				assert False, (node.type, dst)
 		elif isinstance(types.unwrap(dst), types.trait):
 			node.type = types.get('word')
 		else:
@@ -45,59 +30,78 @@ class Specializer(object):
 	
 	# Constants
 	
-	def Name(self, node):
+	def Int(self, node, type=None):
+		if type is not None:
+			self.specialize(node, type)
+	
+	def Name(self, node, type=None):
 		assert not isinstance(node.type, types.GENERIC)
+		if type is not None:
+			self.track[node.name] = type
 	
 	# Comparison operators
 	
-	def compare(self, node):
+	def compare(self, node, type):
 		if isinstance(node.left.type, types.GENERIC):
 			assert not isinstance(node.right.type, types.GENERIC)
-			self.specialize(node.left, node.right.type)
+			self.visit(node.left, node.right.type)
+			self.visit(node.right)
 		elif isinstance(node.right.type, types.GENERIC):
 			assert not isinstance(node.left.type, types.GENERIC)
-			self.specialize(node.right, node.left.type)
+			self.visit(node.right, node.left.type)
+			self.visit(node.left)
 	
-	def EQ(self, node):
-		self.compare(node)
+	def EQ(self, node, type=None):
+		self.compare(node, type)
 	
-	def NE(self, node):
-		self.compare(node)
+	def NE(self, node, type=None):
+		self.compare(node, type)
 	
-	def LT(self, node):
-		self.compare(node)
+	def LT(self, node, type=None):
+		self.compare(node, type)
 	
-	def GT(self, node):
-		self.compare(node)
+	def GT(self, node, type=None):
+		self.compare(node, type)
 	
-	def Attrib(self, node):
+	# Miscellaneous
+	
+	def CondBranch(self, node, type=None):
+		self.visit(node.cond, types.get('ToBool'))
+	
+	def Assign(self, node, type=None):
+		self.visit(node.right)
+	
+	def Attrib(self, node, type=None):
 		self.visit(node.obj)
 		assert not isinstance(node.type, types.GENERIC)
 	
-	def Return(self, node):
-		
-		if node.value is None:
-			return
-		
-		self.visit(node.value)
-		self.specialize(node.value, self.fun.rtype)
+	def Return(self, node, type=None):
+		if node.value is not None:
+			self.visit(node.value, self.fun.rtype)
 	
-	def Call(self, node):
+	def Call(self, node, type=None):
 		for i, arg in enumerate(node.args):
+			
 			if not isinstance(arg.type, types.GENERIC):
 				self.visit(arg)
 				continue
-			self.specialize(arg, node.fun.type.over[1][i])
+			
+			self.visit(arg, node.fun.type.over[1][i])
 			assert not isinstance(arg.type, types.GENERIC), arg.type
 	
-	def Ternary(self, node):
-		self.visit(node.cond)
+	def Ternary(self, node, type=None):
+		
 		if isinstance(node.cond.type, types.GENERIC):
-			self.specialize(node.cond, types.get('ToBool'))
+			self.visit(node.cond, types.get('ToBool'))
+		
+		self.visit(node.values[0], type)
+		self.visit(node.values[1], type)
+		assert node.values[0].type == node.values[1].type
+		node.type = node.values[0].type
 	
 	def propagate(self):
 		for i, bl in self.cfg.blocks.iteritems():
-			for step in bl.steps:
+			for step in reversed(bl.steps):
 				self.visit(step)
 
 def specialize(mod):
