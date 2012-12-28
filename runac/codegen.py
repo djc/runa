@@ -353,12 +353,24 @@ class CodeGen(object):
 			return Value(types.ALL['bool'](), tmp)
 		
 		assert left.type == right.type
+		inv = False
+		if op in {'eq', 'ne'} and '__%s__' % op not in left.type.over.methods:
+			op = {'eq': 'ne', 'ne': 'eq'}[op]
+			inv = True
+		
 		m = left.type.over.methods['__' + op + '__']
 		args = ['%s %s' % (a.type.ir, a.var) for a in (left, right)]
 		bits = frame.varname(), m[1].ir, m[0], ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
-		return Value(types.ALL['bool'](), bits[0])
 		
+		val = Value(types.ALL['bool'](), bits[0])
+		if not inv:
+			return val
+		
+		bits = frame.varname(), val.var
+		self.writeline('%s = select i1 %s, i1 false, i1 true' % bits)
+		return Value(types.get('bool'), bits[0])
+	
 	def EQ(self, node, frame):
 		return self.compare('eq', node, frame)
 	
