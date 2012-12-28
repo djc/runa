@@ -43,12 +43,13 @@ class Specializer(object):
 	# Comparison operators
 	
 	def compare(self, node, type):
-		if types.generic(node.left.type):
-			assert not types.generic(node.right.type)
+		if types.generic(node.left.type) and types.generic(node.right.type):
+			self.visit(node.left)
+			self.visit(node.right)
+		elif types.generic(node.left.type):
 			self.visit(node.left, node.right.type)
 			self.visit(node.right)
 		elif types.generic(node.right.type):
-			assert not types.generic(node.left.type)
 			self.visit(node.right, node.left.type)
 			self.visit(node.left)
 	
