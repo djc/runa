@@ -72,10 +72,10 @@ class Decl(object):
 
 ROOT = Module('', {
 	'__internal__': Module('__internal__', {
-		'__malloc__': Decl('runa.malloc', '$byte', ('uword',)),
+		'__malloc__': Decl('runa.malloc', '$byte', ('uint',)),
 		'__free__': Decl('runa.free', 'void', ('$byte',)),
 		'__memcpy__': Decl('runa.memcpy', 'void', ('&byte', '&byte', 'u32')),
-		'__offset__': Decl('runa.offset', '&byte', ('&byte', 'uword')),
+		'__offset__': Decl('runa.offset', '&byte', ('&byte', 'uint')),
 	}),
 	'libc': Module('libc', {
 		'stdio': Module('libc.stdio', {
@@ -84,10 +84,10 @@ ROOT = Module('', {
 			)),
 		}),
 		'string': Module('libc.string', {
-			'strncmp': Decl('strncmp', 'i32', ('&byte', '&byte', 'uword')),
+			'strncmp': Decl('strncmp', 'i32', ('&byte', '&byte', 'uint')),
 		}),
 		'unistd': Module('libc.unistd', {
-			'write': Decl('write', 'word', ('i32', '&byte', 'uword')),
+			'write': Decl('write', 'int', ('i32', '&byte', 'uint')),
 		}),
 	}),
 })

@@ -1,2 +1,2 @@
-def do() -> word:
+def do() -> int:
 	return 's'

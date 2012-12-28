@@ -104,16 +104,16 @@ BASIC = {
 	'byte': 'i8',
 	'i32': 'i32',
 	'u32': 'i32',
-	'word': 'i64',
-	'uword': 'i64',
+	'int': 'i64',
+	'uint': 'i64',
 }
 
 INTEGERS = {
 	'byte': (False, 8),
 	'i32': (True, 32),
 	'u32': (False, 32),
-	'word': (True, 64),
-	'uword': (False, 64),
+	'int': (True, 64),
+	'uint': (False, 64),
 }
 
 class module(base):

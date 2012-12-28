@@ -12,7 +12,7 @@ class u32:
 		len = snprintf(data, 20, '%u\0'.data, self)
 		return str(len as u32, data)
 
-class word:
+class int:
 	
 	def __bool__(self) -> bool:
 		return self != 0
@@ -22,5 +22,5 @@ class word:
 		len = snprintf(data, 20, '%ld\0'.data, self)
 		return str(len as u32, data)
 
-class uword:
+class uint:
 	pass

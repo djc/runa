@@ -24,7 +24,7 @@ class Specializer(object):
 			else:
 				assert False, (node.type, dst)
 		elif isinstance(types.unwrap(dst), types.trait):
-			node.type = types.get('word')
+			node.type = types.get('int')
 		else:
 			assert False, '%s -> %s' % (node.type, dst)
 	
