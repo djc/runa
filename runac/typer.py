@@ -412,7 +412,8 @@ class TypeChecker(object):
 		if node.values[0].type == node.values[1].type:
 			node.type = node.values[0].type
 		else:
-			assert False, 'ternary sides different types'
+			bits = tuple(i.type.name for i in node.values)
+			raise util.Error(node, "unmatched types '%s', '%s'" % bits)
 	
 	def Return(self, node, scope):
 		

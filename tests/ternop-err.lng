@@ -1,2 +1,0 @@
-def main(name: str, args: array[str]):
-	a = 1 if True else 'a'
