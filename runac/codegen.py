@@ -376,21 +376,22 @@ class CodeGen(object):
 		
 		left = self.visit(node.left, frame)
 		right = self.visit(node.right, frame)
+		if types.unwrap(left.type) in types.INTS:
+			
+			while isinstance(left.type, types.WRAPPERS):
+				left = Value(left.type.over, self.load(frame, left))
+			
+			while isinstance(right.type, types.WRAPPERS):
+				right = Value(right.type.over, self.load(frame, right))
+			
+			assert left.type == right.type
+			res = frame.varname()
+			bits = res, op, left.type.ir, left.var, right.var
+			self.writeline('%s = %s %s %s, %s' % bits)
+			return Value(left.type, res)
 		
-		assert left.type == right.type
 		assert isinstance(left.type, types.WRAPPERS)
 		assert isinstance(right.type, types.WRAPPERS)
-		
-		if left.type.over in types.INTS:
-			
-			leftval = self.load(frame, left)
-			rightval = self.load(frame, right)
-			
-			res = frame.varname()
-			bits = res, op, left.type.over.ir, leftval, rightval
-			self.writeline('%s = %s %s %s, %s' % bits)
-			return Value(left.type.over, res)
-		
 		m = left.type.over.methods['__%s__' % op]
 		args = ['%s %s' % (a.type.ir, a.var) for a in (left, right)]
 		bits = frame.varname(), m[1].ir, m[0], ', '.join(args)
