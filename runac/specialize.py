@@ -35,9 +35,10 @@ class Specializer(object):
 			self.specialize(node, type)
 	
 	def Name(self, node, type=None):
-		assert not isinstance(node.type, types.GENERIC)
 		if type is not None:
 			self.track[node.name] = type
+		else:
+			assert not isinstance(node.type, types.GENERIC)
 	
 	# Comparison operators
 	
@@ -89,7 +90,8 @@ class Specializer(object):
 		self.visit(node.cond, types.get('ToBool'))
 	
 	def Assign(self, node, type=None):
-		self.visit(node.right)
+		if isinstance(node.left, ast.Name):
+			self.visit(node.right, self.track.get(node.left.name))
 	
 	def Attrib(self, node, type=None):
 		self.visit(node.obj)
@@ -107,7 +109,8 @@ class Specializer(object):
 				continue
 			
 			self.visit(arg, node.fun.type.over[1][i])
-			assert not isinstance(arg.type, types.GENERIC), arg.type
+			if not isinstance(arg, ast.Name):
+				assert not isinstance(arg.type, types.GENERIC), arg.type
 	
 	def Ternary(self, node, type=None):
 		
