@@ -174,6 +174,9 @@ def unwrap(t):
 		t = t.over
 	return t
 
+def generic(t):
+	return isinstance(unwrap(t), (anyint, anyfloat))
+
 def compat(a, f):
 	
 	if isinstance(a, (tuple, list)) and isinstance(f, (tuple, list)):
@@ -264,7 +267,6 @@ UINTS = set()
 INTS = set()
 FLOATS = {anyfloat()}
 WRAPPERS = owner, ref
-GENERIC = anyint, anyfloat
 
 def add(node):
 	

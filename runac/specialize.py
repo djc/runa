@@ -38,17 +38,17 @@ class Specializer(object):
 		if type is not None:
 			self.track[node.name] = type
 		else:
-			assert not isinstance(node.type, types.GENERIC)
+			assert not types.generic(node.type)
 	
 	# Comparison operators
 	
 	def compare(self, node, type):
-		if isinstance(node.left.type, types.GENERIC):
-			assert not isinstance(node.right.type, types.GENERIC)
+		if types.generic(node.left.type):
+			assert not types.generic(node.right.type)
 			self.visit(node.left, node.right.type)
 			self.visit(node.right)
-		elif isinstance(node.right.type, types.GENERIC):
-			assert not isinstance(node.left.type, types.GENERIC)
+		elif types.generic(node.right.type):
+			assert not types.generic(node.left.type)
 			self.visit(node.right, node.left.type)
 			self.visit(node.left)
 	
@@ -95,7 +95,7 @@ class Specializer(object):
 	
 	def Attrib(self, node, type=None):
 		self.visit(node.obj)
-		assert not isinstance(node.type, types.GENERIC)
+		assert not types.generic(node.type)
 	
 	def Return(self, node, type=None):
 		if node.value is not None:
@@ -104,17 +104,17 @@ class Specializer(object):
 	def Call(self, node, type=None):
 		for i, arg in enumerate(node.args):
 			
-			if not isinstance(arg.type, types.GENERIC):
+			if not types.generic(arg.type):
 				self.visit(arg)
 				continue
 			
 			self.visit(arg, node.fun.type.over[1][i])
 			if not isinstance(arg, ast.Name):
-				assert not isinstance(arg.type, types.GENERIC), arg.type
+				assert not types.generic(arg.type), arg.type
 	
 	def Ternary(self, node, type=None):
 		
-		if isinstance(node.cond.type, types.GENERIC):
+		if types.generic(node.cond.type):
 			self.visit(node.cond, types.get('ToBool'))
 		
 		self.visit(node.values[0], type)
