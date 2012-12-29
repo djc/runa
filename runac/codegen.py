@@ -273,8 +273,10 @@ class CodeGen(object):
 	
 	def Init(self, node, frame):
 		
-		if not node.escapes:
+		if not node.escapes and node.type.byval:
 			return Value(types.ref(node.type), self.alloca(frame, node.type))
+		elif not node.escapes:
+			return Value(node.type, self.alloca(frame, node.type.over))
 		
 		assert isinstance(node.type, types.owner), 'escaping %s' % node.type
 		sizevar = '@%s.size' % node.type.over.ir[1:]
