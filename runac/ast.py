@@ -322,9 +322,10 @@ class Function(Node):
 		self.name = p.advance(Name)
 		p.advance(Call)
 		
-		cur = Argument(self.pos)
 		self.args = []
+		cur = Argument(self.pos)
 		next = p.expr()
+		cur.pos = next.pos
 		while not isinstance(next, RightPar):
 			
 			cur.name = next
@@ -335,6 +336,7 @@ class Function(Node):
 			self.args.append(cur)
 			cur	= Argument(self.pos)
 			next = p.expr()
+			cur.pos = next.pos
 			
 			if isinstance(next, Comma):
 				next = p.expr()
