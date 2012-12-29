@@ -445,6 +445,9 @@ class CodeGen(object):
 		bits = cond.var, node.tg1, node.tg2
 		self.writeline('br i1 %s, label %%L%s, label %%L%s' % bits)
 	
+	def Branch(self, node, frame):
+		self.writeline('br label %%L%s' % node.label)
+	
 	def Assign(self, node, frame):
 		
 		val = self.visit(node.right, frame)
