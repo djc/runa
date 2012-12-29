@@ -509,6 +509,13 @@ def typer(mod):
 	mod.scope = base
 	for k, fun in mod.code:
 		
+		if isinstance(k, tuple) and k[1] != '__new__':
+			if not fun.args:
+				raise util.Error(fun, "missing 'self' argument")
+			elif fun.args[0].name.name != 'self':
+				msg = "first method argument must be called 'self'"
+				raise util.Error(fun.args[0], msg)
+		
 		if fun.args and fun.args[0].type is None:
 			assert len(k) > 1
 			assert fun.args[0].name.name == 'self'
@@ -516,12 +523,5 @@ def typer(mod):
 				fun.args[0].type = types.owner(base[k[0]])
 			else:
 				fun.args[0].type = types.ref(base[k[0]])
-		
-		if isinstance(k, tuple) and k[1] != '__new__':
-			if not fun.args:
-				raise util.Error(fun, "missing 'self' argument")
-			elif fun.args[0].name.name != 'self':
-				msg = "first method argument must be called 'self'"
-				raise util.Error(fun.args[0], msg)
 		
 		process(mod, base, fun)
