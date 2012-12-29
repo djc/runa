@@ -4,13 +4,14 @@ class xrange:
 	stop: int
 	step: int
 	
-	def __init__(self: xrange, start: int, stop: int, step: int):
+	def __init__(self, start: int, stop: int, step: int):
 		self.start = start
 		self.stop = stop
 		self.step = step
 
-def main(name: str, args: array[str]):
+def main(name: &str, args: &array[str]) -> i32:
 	r = xrange(0, 5, 1)
 	print(r.start)
 	print(r.stop)
 	print(r.step)
+	return 0
