@@ -517,8 +517,6 @@ def typer(mod):
 				raise util.Error(fun.args[0], msg)
 		
 		if fun.args and fun.args[0].type is None:
-			assert len(k) > 1
-			assert fun.args[0].name.name == 'self'
 			if fun.name.name == '__del__':
 				fun.args[0].type = types.owner(base[k[0]])
 			else:
