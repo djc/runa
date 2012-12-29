@@ -1,0 +1,3 @@
+tests/no-self.rns [2.2]: missing 'self' argument
+    def __init__():
+    ^
