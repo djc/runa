@@ -517,4 +517,7 @@ def typer(mod):
 			else:
 				fun.args[0].type = types.ref(base[k[0]])
 		
+		if isinstance(k, tuple) and not fun.args:
+			raise util.Error(fun, "missing 'self' argument")
+		
 		process(mod, base, fun)
