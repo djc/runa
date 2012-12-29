@@ -96,6 +96,10 @@ Walter Bright
 C's Biggest Mistake
 http://www.drdobbs.com/architecture-and-design/cs-biggest-mistake/228701625
 
+Mike Vanier
+Scalable computer programming languages
+http://users.cms.caltech.edu/~mvanier/hacking/rants/scalable_computer_programming_languages.html
+
 
 Implementation notes
 ====================
