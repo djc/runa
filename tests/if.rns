@@ -1,4 +1,4 @@
-def main(name: str, args: array[str]):
+def main(name: &str, args: &array[str]) -> i32:
 	
 	if 1:
 		print('T')
@@ -14,3 +14,5 @@ def main(name: str, args: array[str]):
 		print('E')
 	else:
 		print('A')
+	
+	return 0
