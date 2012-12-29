@@ -515,6 +515,10 @@ def typer(mod):
 			elif fun.args[0].name.name != 'self':
 				msg = "first method argument must be called 'self'"
 				raise util.Error(fun.args[0], msg)
+			elif fun.args[0].type is not None:
+				if fun.args[0].type.name != k[0]:
+					msg = "first method argument must be of type '%s'"
+					raise util.Error(fun.args[0].type, msg % k[0])
 		
 		if fun.args and fun.args[0].type is None:
 			if fun.name.name == '__del__':
