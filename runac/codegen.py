@@ -441,7 +441,11 @@ class CodeGen(object):
 		return Value(node.type, left.var)
 		
 	def CondBranch(self, node, frame):
+		
 		cond = self.visit(node.cond, frame)
+		if types.unwrap(cond.type) != types.get('bool'):
+			cond = self.coerce(cond, types.get('bool'), frame)
+		
 		bits = cond.var, node.tg1, node.tg2
 		self.writeline('br i1 %s, label %%L%s, label %%L%s' % bits)
 	
