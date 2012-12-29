@@ -377,7 +377,9 @@ class Return(Statement):
 	fields = 'value',
 	
 	def nud(self, p):
-		self.value = p.expr()
+		self.value = None
+		if not isinstance(p.token, NL):
+			self.value = p.expr()
 		return self
 
 class Ternary(Expr):
