@@ -480,7 +480,13 @@ def typer(mod):
 		base[name] = obj.realize() if isinstance(obj, Decl) else obj
 	
 	for k, v in mod.constants.iteritems():
-		assert False, 'unimplemented'
+		if isinstance(v, ast.String):
+			v.type = types.get('&str')
+		elif isinstance(v, ast.Int):
+			v.type = types.get('&int')
+		else:
+			assert False, v
+		base[k] = v
 	
 	for k, v in mod.types.iteritems():
 		base[k] = mod.types[k] = types.fill(v)
