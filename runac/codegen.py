@@ -429,7 +429,11 @@ class CodeGen(object):
 	# Miscellaneous
 	
 	def As(self, node, frame):
+		
 		left = self.visit(node.left, frame)
+		while isinstance(left.type, types.WRAPPERS):
+			left = Value(left.type.over, self.load(frame, left))
+		
 		assert left.type in types.INTS and node.type in types.INTS
 		assert left.type.bits <= node.type.bits
 		assert left.type in types.SINTS and node.type in types.UINTS
