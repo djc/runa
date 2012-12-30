@@ -51,10 +51,14 @@ class Specializer(object):
 		self.specialize(node, type)
 	
 	def Name(self, node, type=None):
-		if type is not None:
+		if not types.generic(node.type):
+			return
+		elif isinstance(types.unwrap(type), types.trait):
+			self.specialize(node, type)
+		elif type is not None:
 			self.track[node.name] = type
 		else:
-			assert not types.generic(node.type)
+			self.specialize(node, type)
 	
 	# Comparison operators
 	
