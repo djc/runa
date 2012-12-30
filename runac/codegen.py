@@ -609,6 +609,27 @@ class CodeGen(object):
 		for step in node.steps:
 			self.visit(step, frame)
 	
+	def const(self, name, val, frame):
+		
+		if types.unwrap(val.type) != types.get('str'):
+			bits = name, types.unwrap(val.type).ir, val.val
+			self.writeline('@%s = constant %s %s' % bits)
+			frame[name] = Value(val.type, '@%s' % name)
+			return
+		
+		slen = len(val.val.decode('string_escape'))
+		dtype = '[%i x i8]' % slen
+		literal = val.val
+		for c, sub in sorted(ESCAPES.iteritems()):
+			literal = literal.replace(c, sub)
+			
+		bits = name, dtype, literal
+		self.writeline('@%s.data = constant %s c"%s"' % bits)
+		bits = name, slen, 'i8* bitcast (%s* @%s.data to i8*)' % (dtype, name)
+		self.writeline('@%s = constant %%str { i32 %s, %s }' % bits)
+		frame[name] = Value(val.type, '@%s' % name)
+		
+	
 	def declare(self, ref):
 		
 		if isinstance(ref, typer.Decl) and ref.decl.startswith('runa.'):
@@ -660,7 +681,6 @@ class CodeGen(object):
 	
 	def Module(self, mod):
 		
-		assert not mod.constants
 		for k, v in mod.refs.iteritems():
 			self.declare(typer.resolve(mod, v))
 		
@@ -676,6 +696,10 @@ class CodeGen(object):
 			self.type(var)
 		
 		frame = Frame()
+		for k, v in mod.constants.iteritems():
+			self.const(k, v, frame)
+		
+		self.newline()
 		for k, v in mod.code:
 			self.visit(v, frame)
 		
