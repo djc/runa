@@ -21,19 +21,25 @@ def run(self, key):
 	try:
 		runac.compile(runac.ir(fullname), bin)
 	except runac.Error as e:
+		ret = 0
 		out = e.show(fullname)
 	
 	if not out:
-		out = subprocess.check_output([bin] + spec.get('args', []))
+		cmd = [bin] + spec.get('args', [])
+		proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+		ret = proc.wait()
+		out = proc.stdout.read()
 	
 	if os.path.exists(base + '.out'):
 		expected = open(base + '.out').read()
 	else:
 		expected = ''
 	
+	expret = spec.get('ret', 0)
 	if self is None:
-		return expected == out
+		return expret == ret and expected == out
 	else:
+		self.assertEqual(ret, expret)
 		self.assertMultiLineEqual(expected, out)
 
 def testfunc(key):
