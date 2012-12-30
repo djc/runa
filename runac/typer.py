@@ -228,16 +228,17 @@ class TypeChecker(object):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		
+		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
 		if node.left.type == node.right.type:
 			node.type = scope['bool']
-		elif types.anyint() in (node.left.type, node.right.type):
-			assert types.unwrap(node.left.type) in types.INTS
-			assert types.unwrap(node.right.type) in types.INTS
-		elif types.anyfloat() in (node.left.type, node.right.type):
-			assert types.unwrap(node.left.type) in types.FLOATS
-			assert types.unwrap(node.right.type) in types.FLOATS
-		else:
-			assert False, '%s sides different types' % op
+		elif lt in types.INTS and rt not in types.INTS:
+			msg = "value of type '%s' may only be compared to integer type"
+			raise util.Error(node, msg % node.left.type.name)
+		elif lt in types.FLOATS and rt not in types.FLOATS:
+			msg = "value of type '%s' may only be compared to float type"
+			raise util.Error(node, msg % node.left.type.name)
+		elif lt not in types.INTS and lt not in types.FLOATS:
+			assert False, '%s sides different types (%s, %s)' % (op, lt, rt)
 		
 		node.type = scope['bool']
 	
