@@ -455,8 +455,16 @@ class CodeGen(object):
 		
 		val = self.visit(node.right, frame)
 		if isinstance(node.left, ast.Name):
-			frame[node.left.name] = val
+			
+			if node.left.name not in frame:
+				addr = self.alloca(frame, val.type)
+			else:
+				addr = frame[node.left.name].var
+			
+			self.store(val, addr)
+			frame[node.left.name] = Value(types.ref(val.type), addr)
 			return
+			
 		elif isinstance(node.left, ast.Attrib):
 			target = self.visit(node.left, frame)
 		else:
