@@ -2,7 +2,6 @@
 URL = 'Asara'
 YEAR = 1983
 
-def main(name: &str, args: &array[str]) -> i32:
+def main():
 	print(URL)
 	print(str(YEAR))
-	return 0

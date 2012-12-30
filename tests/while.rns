@@ -1,4 +1,4 @@
-def main(name: &str, args: &array[str]) -> i32:
+def main():
 	
 	i = 0
 	while i < 5:
@@ -9,5 +9,3 @@ def main(name: &str, args: &array[str]) -> i32:
 	while i:
 		print(i)
 		i = i - 1
-	
-	return 0

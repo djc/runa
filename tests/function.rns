@@ -1,6 +1,5 @@
 def add(x: int, y: int) -> int:
 	return x + y
 
-def main(name: &str, args: &array[str]) -> i32:
+def main():
 	print(add(3, 4))
-	return 0

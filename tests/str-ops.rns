@@ -1,4 +1,4 @@
-def main(name: &str, args: &array[str]) -> i32:
+def main():
 	print('' if 'a' == 'b' else 'X')
 	print('' if 'aa' == 'a' else 'X')
 	print('X' if 'aaa' == 'aaa' else '')
@@ -6,4 +6,3 @@ def main(name: &str, args: &array[str]) -> i32:
 	print('' if 'b' < 'a' else 'X')
 	print('a' + 'b')
 	print('test'.__copy__())
-	return 0

@@ -1,4 +1,4 @@
-def main(name: &str, args: &array[str]) -> i32:
+def main():
 	
 	print('bool')
 	print(True)
@@ -31,4 +31,3 @@ def main(name: &str, args: &array[str]) -> i32:
 	print('a' < 'b')
 	print('a' < 'a')
 	print('b' < 'a')
-	return 0

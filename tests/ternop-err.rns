@@ -1,3 +1,2 @@
-def main(name: &str, args: &array[str]) -> i32:
+def main():
 	a = 1 if True else 'a'
-	return 0

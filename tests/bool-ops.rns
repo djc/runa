@@ -1,4 +1,4 @@
-def main(name: &str, args: &array[str]) -> i32:
+def main():
 	print('a' and 'b')
 	print('' and 'a')
 	print('a' and '')
@@ -6,4 +6,3 @@ def main(name: &str, args: &array[str]) -> i32:
 	print('' or 'a')
 	print('a' or '')
 	print(True)
-	return 0

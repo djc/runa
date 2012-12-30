@@ -1,2 +1,2 @@
-def main(name: &str, args: &array[str]) -> i32:
+def main() -> i32:
 	print('x')

@@ -1,6 +1,5 @@
-def main(name: &str, args: &array[str]) -> i32:
+def main():
 	print(0)
 	print(1 + 0)
 	print(0 - 1)
 	print('a' + '')
-	return 0

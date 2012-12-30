@@ -9,9 +9,8 @@ class xrange:
 		self.stop = stop
 		self.step = step
 
-def main(name: &str, args: &array[str]) -> i32:
+def main():
 	r = xrange(0, 5, 1)
 	print(r.start)
 	print(r.stop)
 	print(r.step)
-	return 0
