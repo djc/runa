@@ -42,6 +42,7 @@ class CodeGen(object):
 		self.buf = []
 		self.level = 0
 		self.start = True
+		self.main = False
 		self.labels = {}
 	
 	def visit(self, node, frame):
@@ -529,6 +530,9 @@ class CodeGen(object):
 		
 	def Return(self, node, frame):
 		
+		if node.value is None and self.main:
+			self.writeline('ret i32 0')
+			return
 		if node.value is None:
 			self.writeline('ret void')
 			return
@@ -596,7 +600,11 @@ class CodeGen(object):
 		if hasattr(node, 'irname'):
 			irname = node.irname
 		
-		self.write('define %s @%s(' % (node.rtype.ir, irname))
+		rt = node.rtype.ir
+		if irname == 'main' and rt == 'void':
+			rt = 'i32'
+		
+		self.write('define %s @%s(' % (rt, irname))
 		first = True
 		for arg in node.args:
 			
@@ -611,6 +619,7 @@ class CodeGen(object):
 		self.newline()
 		self.indent()
 		
+		self.main = irname == 'main' and node.rtype.ir == 'void'
 		for i, block in sorted(node.flow.blocks.iteritems()):
 			self.visit(block, frame)
 		
@@ -642,7 +651,6 @@ class CodeGen(object):
 		bits = name, slen, 'i8* bitcast (%s* @%s.data to i8*)' % (dtype, name)
 		self.writeline('@%s = constant %%str { i32 %s, %s }' % bits)
 		frame[name] = Value(val.type, '@%s' % name)
-		
 	
 	def declare(self, ref):
 		
