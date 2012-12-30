@@ -213,6 +213,10 @@ def module(node):
 		elif isinstance(n, ast.Trait):
 			mod.types[n.name.name] = n
 		
+		elif isinstance(n, ast.Assign):
+			assert isinstance(n.left, ast.Name), n.left
+			mod.constants[n.left.name] = n.right
+		
 		else:
 			assert False, n
 	
