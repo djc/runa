@@ -510,7 +510,7 @@ def typer(mod):
 			msg = '2nd argument to main() must be of type &array[str]'
 			raise util.Error(fun.args[1].type, msg)
 		
-		if k == 'main' and rtype != base['i32']:
+		if k == 'main' and rtype not in {types.void(), base['i32']}:
 			raise util.Error(fun, 'main() return type must be i32')
 	
 	mod.scope = base
