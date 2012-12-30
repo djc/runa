@@ -1,0 +1,4 @@
+# test: {"ret": 5}
+def main() -> i32:
+	print('failing')
+	return 5
