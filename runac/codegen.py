@@ -241,7 +241,9 @@ class CodeGen(object):
 	# Node visitation methods
 	
 	def Name(self, node, frame):
-		return frame.get(node.name)
+		val = frame[node.name]
+		addr = self.load(frame, val)
+		return Value(val.type.over, addr)
 	
 	def Bool(self, node, frame):
 		return Value(node.type, 'true' if node.val else 'false')
