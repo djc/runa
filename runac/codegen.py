@@ -284,7 +284,7 @@ class CodeGen(object):
 		
 		assert isinstance(node.type, types.owner), 'escaping %s' % node.type
 		sizevar = '@%s.size' % node.type.over.ir[1:]
-		size = self.load(frame, ('i64*', sizevar))
+		size = self.load(frame, Value(types.get('&int'), sizevar))
 		
 		bits = frame.varname(), size
 		self.writeline('%s = call i8* @runa.malloc(i64 %s)' % bits)
@@ -552,7 +552,7 @@ class CodeGen(object):
 			
 			val = wrapped = self.visit(arg, frame)
 			vtp = self.gep(frame, val, 0, 1)
-			argp = self.load(frame, ('i8**', vtp))
+			argp = self.load(frame, Value(types.get('&&byte'), vtp))
 			args.append(Value(types.ref(types.get('byte')), argp))
 		
 		if atypes[-1] == types.VarArgs():
