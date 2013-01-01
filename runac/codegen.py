@@ -594,7 +594,6 @@ class CodeGen(object):
 	
 	def Function(self, node, frame):
 		
-		self.tlabels = 0
 		frame = Frame(frame)
 		irname = node.name.name
 		if hasattr(node, 'irname'):
