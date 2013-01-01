@@ -106,19 +106,10 @@ class CodeGen(object):
 		return res
 	
 	def load(self, frame, val):
-		
-		res = frame.varname()
-		if isinstance(val, Value):
-			bits = res, val.type.ir, val.var
-		elif isinstance(val, tuple):
-			bits = res, val[0], val[1]
-			if val[1][0] not in {'@', '%'} and val[1].isdigit():
-				bits = res, val[0], '%' + val[1]
-		else:
-			assert False, val
-		
+		assert isinstance(val, Value)
+		bits = frame.varname(), val.type.ir, val.var
 		self.writeline('%s = load %s %s' % bits)
-		return res
+		return Value(val.type.over, bits[0])
 	
 	def store(self, val, dst):
 		if isinstance(val, Value):
@@ -162,7 +153,7 @@ class CodeGen(object):
 			
 			if vt[0] == boolt:
 				while val.type != boolt:
-					val = Value(val.type.over, self.load(frame, val))
+					val = self.load(frame, val)
 				return val
 			
 			if not vt[1]:
@@ -176,8 +167,7 @@ class CodeGen(object):
 			return Value(boolt, bits[0])
 		
 		while vt[1] > dt[1]:
-			res = self.load(frame, val)
-			val = Value(val.type.over, res)
+			val = self.load(frame, val)
 			vt = vt[0], vt[1] - 1
 		
 		if vt == dt:
@@ -241,9 +231,7 @@ class CodeGen(object):
 	# Node visitation methods
 	
 	def Name(self, node, frame):
-		val = frame[node.name]
-		addr = self.load(frame, val)
-		return Value(val.type.over, addr)
+		return self.load(frame, frame[node.name])
 	
 	def Bool(self, node, frame):
 		return Value(node.type, 'true' if node.val else 'false')
@@ -286,7 +274,7 @@ class CodeGen(object):
 		sizevar = '@%s.size' % node.type.over.ir[1:]
 		size = self.load(frame, Value(types.get('&int'), sizevar))
 		
-		bits = frame.varname(), size
+		bits = frame.varname(), size.var
 		self.writeline('%s = call i8* @runa.malloc(i64 %s)' % bits)
 		
 		res = frame.varname()
@@ -349,9 +337,9 @@ class CodeGen(object):
 		if types.unwrap(left.type) in vtypes:
 			
 			if isinstance(left.type, types.WRAPPERS):
-				left = Value(left.type.over, self.load(frame, left))
+				left = self.load(frame, left)
 			if isinstance(right.type, types.WRAPPERS):
-				right = Value(right.type.over, self.load(frame, right))
+				right = self.load(frame, right)
 			
 			assert left.type == right.type, (left.type, right.type)
 			if op not in {'eq', 'ne'}:
@@ -403,10 +391,9 @@ class CodeGen(object):
 		if types.unwrap(left.type) in types.INTS:
 			
 			if isinstance(left.type, types.WRAPPERS):
-				left = Value(left.type.over, self.load(frame, left))
-			
+				left = self.load(frame, left)
 			if isinstance(right.type, types.WRAPPERS):
-				right = Value(right.type.over, self.load(frame, right))
+				right = self.load(frame, right)
 			
 			assert left.type == right.type
 			op = {'div': 'sdiv'}.get(op, op)
@@ -485,7 +472,7 @@ class CodeGen(object):
 		
 		w = lambda t: isinstance(t.type, types.WRAPPERS)
 		if w(val) and w(target) and val.type.over == target.type.over:
-			self.store((val.type.over, self.load(frame, val)), target.var)
+			self.store(self.load(frame, val), target.var)
 			return
 		
 		assert False
@@ -534,8 +521,7 @@ class CodeGen(object):
 		value = self.visit(node.value, frame)
 		if isinstance(value.type, types.WRAPPERS):
 			if value.type.over.byval:
-				tmp = self.load(frame, value)
-				value = Value(value.type.over, tmp)
+				value = self.load(frame, value)
 		self.writeline('ret %s %s' % (value.type.ir, value.var))
 	
 	def Call(self, node, frame):
@@ -552,8 +538,7 @@ class CodeGen(object):
 			
 			val = wrapped = self.visit(arg, frame)
 			vtp = self.gep(frame, val, 0, 1)
-			argp = self.load(frame, Value(types.get('&&byte'), vtp))
-			args.append(Value(types.ref(types.get('byte')), argp))
+			args.append(self.load(frame, Value(types.get('&&byte'), vtp)))
 		
 		if atypes[-1] == types.VarArgs():
 			sig = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
