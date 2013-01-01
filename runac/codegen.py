@@ -568,14 +568,16 @@ class CodeGen(object):
 			
 			vtp = self.gep(frame, wrapped, 0, 0)
 			vtt = '%%%s.vt*' % t.name
-			vt = self.load(frame, (vtt + '*', vtp))
+			vt = frame.varname()
+			self.writeline('%s = load %s* %s' % (vt, vtt, vtp))
 			fp = self.gep(frame, (vtt, vt), 0, 0)
 			
 			atypes[0] = types.ref(types.get('byte'))
 			ft = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
-			f = self.load(frame, (ft + '*', fp))
+			f = frame.varname()
+			self.writeline('%s = load %s* %s' % (f, ft, fp))
 			name = '%s %s' % (ft, f)
-			
+		
 		argstr = ', '.join('%s %s' % (a.type.ir, a.var) for a in args)
 		if rtype == types.void():
 			self.writeline('call %s(%s)' % (name, argstr))
