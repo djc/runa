@@ -539,11 +539,10 @@ class CodeGen(object):
 			vtp = self.gep(frame, val, 0, 1)
 			args.append(self.load(frame, Value(types.get('&&byte'), vtp)))
 		
+		type, name = rtype, '@' + node.fun.decl
 		if atypes[-1] == types.VarArgs():
-			name = '%s @%s' % (node.fun.type.ir, node.fun.decl)
-		elif not node.virtual:
-			name = '%s @%s' % (rtype.ir, node.fun.decl)
-		else:
+			type = node.fun.type
+		elif node.virtual:
 			
 			mname = node.fun.decl.split('.', 1)[1]
 			t = types.unwrap(node.fun.type.over[1][0])
@@ -558,16 +557,16 @@ class CodeGen(object):
 			ft = copy.copy(node.fun.type)
 			ft.over = ft.over[0], [types.get('&byte')] + ft.over[1][1:]
 			fun = self.load(frame, Value(types.ref(ft), fp))
-			name = '%s %s' % (fun.type.ir, fun.var)
+			type, name = fun.type, fun.var
 		
 		argstr = ', '.join('%s %s' % (a.type.ir, a.var) for a in args)
 		if rtype == types.void():
-			self.writeline('call %s(%s)' % (name, argstr))
+			self.writeline('call %s %s(%s)' % (type.ir, name, argstr))
 			return args[0] if isinstance(node.args[0], typer.Init) else None
 		
 		res = frame.varname()
-		bits = res, name, argstr
-		self.writeline('%s = call %s(%s)' % bits)
+		bits = res, type.ir, name, argstr
+		self.writeline('%s = call %s %s(%s)' % bits)
 		return Value(rtype, res)
 	
 	def Function(self, node, frame):
