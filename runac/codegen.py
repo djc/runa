@@ -559,6 +559,10 @@ class CodeGen(object):
 				continue
 			
 			val = wrapped = self.visit(arg, frame)
+			if isinstance(val.type.over, types.WRAPPERS):
+				addr = self.load(frame, val)
+				val = wrapped = Value(val.type.over, addr)
+			
 			vtp = self.gep(frame, val, 0, 1)
 			argp = self.load(frame, ('i8**', vtp))
 			args.append(Value(types.ref(types.get('byte')), argp))
