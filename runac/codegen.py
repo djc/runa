@@ -157,7 +157,13 @@ class CodeGen(object):
 		while isinstance(dt[0], types.WRAPPERS):
 			dt = dt[0].over, dt[1] + 1
 		
-		if dst == types.get('bool') and vt[0] != types.get('bool'):
+		boolt = types.get('bool')
+		if dst == boolt:
+			
+			if vt[0] == boolt:
+				while val.type != boolt:
+					val = Value(val.type.over, self.load(frame, val))
+				return val
 			
 			if not vt[1]:
 				tmp = self.alloca(frame, vt[0])
@@ -167,7 +173,7 @@ class CodeGen(object):
 			method = vt[0].methods['__bool__']
 			bits = frame.varname(), method[0], val.type.ir, val.var
 			self.writeline('%s = call i1 @%s(%s %s)' % bits)
-			return Value(types.get('bool'), bits[0])
+			return Value(boolt, bits[0])
 		
 		while vt[1] > dt[1]:
 			res = self.load(frame, val)
@@ -443,7 +449,7 @@ class CodeGen(object):
 	def CondBranch(self, node, frame):
 		
 		cond = self.visit(node.cond, frame)
-		if types.unwrap(cond.type) != types.get('bool'):
+		if cond.type != types.get('bool'):
 			cond = self.coerce(cond, types.get('bool'), frame)
 		
 		bits = cond.var, node.tg1, node.tg2
@@ -502,12 +508,8 @@ class CodeGen(object):
 	def Ternary(self, node, frame):
 		
 		cond = self.visit(node.cond, frame)
-		if types.unwrap(cond.type) != types.get('bool'):
+		if cond.type != types.get('bool'):
 			cond = self.coerce(cond, types.get('bool'), frame)
-		
-		if isinstance(cond.type, types.WRAPPERS):
-			val = self.load(frame, cond)
-			cond = Value(types.get('bool'), val)
 		
 		llabel = self.getlabel('T')
 		rlabel = self.getlabel('T')
