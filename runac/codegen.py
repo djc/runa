@@ -348,9 +348,9 @@ class CodeGen(object):
 		vtypes = {types.get('bool')} | types.INTS | types.FLOATS
 		if types.unwrap(left.type) in vtypes:
 			
-			while isinstance(left.type, types.WRAPPERS):
+			if isinstance(left.type, types.WRAPPERS):
 				left = Value(left.type.over, self.load(frame, left))
-			while isinstance(right.type, types.WRAPPERS):
+			if isinstance(right.type, types.WRAPPERS):
 				right = Value(right.type.over, self.load(frame, right))
 			
 			assert left.type == right.type, (left.type, right.type)
@@ -402,10 +402,10 @@ class CodeGen(object):
 		right = self.visit(node.right, frame)
 		if types.unwrap(left.type) in types.INTS:
 			
-			while isinstance(left.type, types.WRAPPERS):
+			if isinstance(left.type, types.WRAPPERS):
 				left = Value(left.type.over, self.load(frame, left))
 			
-			while isinstance(right.type, types.WRAPPERS):
+			if isinstance(right.type, types.WRAPPERS):
 				right = Value(right.type.over, self.load(frame, right))
 			
 			assert left.type == right.type
@@ -438,11 +438,7 @@ class CodeGen(object):
 	# Miscellaneous
 	
 	def As(self, node, frame):
-		
 		left = self.visit(node.left, frame)
-		while isinstance(left.type, types.WRAPPERS):
-			left = Value(left.type.over, self.load(frame, left))
-		
 		assert left.type in types.INTS and node.type in types.INTS
 		assert left.type.bits <= node.type.bits
 		assert left.type in types.SINTS and node.type in types.UINTS
@@ -495,13 +491,7 @@ class CodeGen(object):
 		assert False
 	
 	def Attrib(self, node, frame):
-		
 		obj = self.visit(node.obj, frame)
-		while isinstance(obj.type, types.WRAPPERS):
-			if not isinstance(obj.type.over, types.WRAPPERS):
-				break
-			obj = Value(obj.type.over, self.load(frame, obj))
-		
 		t = types.unwrap(obj.type)
 		idx, type = t.attribs[node.attrib.name]
 		name = self.gep(frame, obj, 0, idx)
@@ -561,10 +551,6 @@ class CodeGen(object):
 				continue
 			
 			val = wrapped = self.visit(arg, frame)
-			if isinstance(val.type.over, types.WRAPPERS):
-				addr = self.load(frame, val)
-				val = wrapped = Value(val.type.over, addr)
-			
 			vtp = self.gep(frame, val, 0, 1)
 			argp = self.load(frame, ('i8**', vtp))
 			args.append(Value(types.ref(types.get('byte')), argp))
