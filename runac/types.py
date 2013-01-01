@@ -170,7 +170,8 @@ class function(base):
 	
 	@property
 	def ir(self):
-		raise NotImplementedError
+		args = ', '.join(a.ir for a in self.over[1])
+		return '%s (%s)*' % (self.over[0].ir, args)
 
 def unwrap(t):
 	while isinstance(t, WRAPPERS):
