@@ -199,7 +199,7 @@ class CodeGen(object):
 		assert isinstance(val.type, types.WRAPPERS)
 		assert isinstance(trait, types.WRAPPERS)
 		
-		ptrt = types.ref(types.get('byte'))
+		ptrt = types.get('&byte')
 		wrap = self.alloca(frame, types.unwrap(trait))
 		vtt = '%' + trait.over.name + '.vt'
 		vt = self.alloca(frame, vtt)
@@ -557,7 +557,7 @@ class CodeGen(object):
 			self.writeline('%s = load %s* %s' % (vt, vtt, vtp))
 			fp = self.gep(frame, (vtt, vt), 0, 0)
 			
-			atypes[0] = types.ref(types.get('byte'))
+			atypes[0] = types.get('&byte')
 			ft = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
 			f = frame.varname()
 			self.writeline('%s = load %s* %s' % (f, ft, fp))
