@@ -618,12 +618,17 @@ class CodeGen(object):
 				self.write(', ')
 			
 			self.write(arg.type.ir + ' %' + arg.name.name)
-			frame[arg.name.name] = Value(arg.type, '%' + arg.name.name)
 			first = False
 		
 		self.write(') {')
 		self.newline()
 		self.indent()
+		
+		self.label('L0', 'entry')
+		for arg in node.args:
+			addr = self.alloca(frame, arg.type)
+			frame[arg.name.name] = Value(types.ref(arg.type), addr)
+			self.store((arg.type, '%' + arg.name.name), addr)
 		
 		self.main = irname == 'main' and node.rtype.ir == 'void'
 		for i, block in sorted(node.flow.blocks.iteritems()):
@@ -634,7 +639,8 @@ class CodeGen(object):
 		self.newline()
 	
 	def Block(self, node, frame):
-		self.label('L%s' % node.id, node.anno)
+		if node.id:
+			self.label('L%s' % node.id, node.anno)
 		for step in node.steps:
 			self.visit(step, frame)
 	
