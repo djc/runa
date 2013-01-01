@@ -1,5 +1,5 @@
 import ast, types, typer
-import sys
+import sys, copy
 
 ESCAPES = {'\\n': '\\0a', '\\0': '\\00'}
 
@@ -205,18 +205,17 @@ class CodeGen(object):
 		vt = self.alloca(frame, vtt)
 		
 		t = types.unwrap(trait)
-		for i, (k, v) in enumerate(sorted(t.methods.iteritems())):
+		for i, (k, tmeth) in enumerate(sorted(t.methods.iteritems())):
 			
-			imeth = types.unwrap(val.type).methods[k]
-			iatypes = [a[1] for a in imeth[2]]
-			origt = '%s (%s)*' % (v[1].ir, ', '.join((a.ir for a in iatypes)))
-			iatypes[0] = ptrt
-			newt = '%s (%s)*' % (v[1].ir, ', '.join((a.ir for a in iatypes)))
+			cmeth = types.unwrap(val.type).methods[k]
+			cmt = types.function(cmeth[1], [a[1] for a in cmeth[2]])
+			tmt = types.function(tmeth[1], [a[1] for a in tmeth[2]])
+			tmt.over[1][0] = ptrt
 			
 			cast = frame.varname()
-			bits = cast, origt, imeth[0], newt
+			bits = cast, cmt.ir, cmeth[0], tmt.ir
 			self.writeline('%s = bitcast %s @%s to %s' % bits)
-			self.store((newt, cast), self.gep(frame, (vtt + '*', vt), 0, i))
+			self.store((tmt, cast), self.gep(frame, (vtt + '*', vt), 0, i))
 		
 		vtslot = self.gep(frame, (trait.over.ir + '*', wrap), 0, 0)
 		self.store((vtt + '*', vt), vtslot)
@@ -541,8 +540,7 @@ class CodeGen(object):
 			args.append(self.load(frame, Value(types.get('&&byte'), vtp)))
 		
 		if atypes[-1] == types.VarArgs():
-			sig = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
-			name = '%s @%s' % (sig, node.fun.decl)
+			name = '%s @%s' % (node.fun.type.ir, node.fun.decl)
 		elif not node.virtual:
 			name = '%s @%s' % (rtype.ir, node.fun.decl)
 		else:
@@ -557,11 +555,10 @@ class CodeGen(object):
 			self.writeline('%s = load %s* %s' % (vt, vtt, vtp))
 			fp = self.gep(frame, (vtt, vt), 0, 0)
 			
-			atypes[0] = types.get('&byte')
-			ft = '%s (%s)*' % (rtype.ir, ', '.join(a.ir for a in atypes))
-			f = frame.varname()
-			self.writeline('%s = load %s* %s' % (f, ft, fp))
-			name = '%s %s' % (ft, f)
+			ft = copy.copy(node.fun.type)
+			ft.over = ft.over[0], [types.get('&byte')] + ft.over[1][1:]
+			fun = self.load(frame, Value(types.ref(ft), fp))
+			name = '%s %s' % (fun.type.ir, fun.var)
 		
 		argstr = ', '.join('%s %s' % (a.type.ir, a.var) for a in args)
 		if rtype == types.void():
@@ -677,12 +674,9 @@ class CodeGen(object):
 			
 			args = []
 			for an, at in atypes:
-				if an == 'self':
-					args.append('i8*')
-				else:
-					args.append(at.ir)
+				args.append(types.get('&byte') if an == 'self' else at)
 			
-			mtypes.append('%s (%s)*' % (rt.ir, ', '.join(args)))
+			mtypes.append(types.function(rt, args).ir)
 		
 		self.writeline('%%%s.vt = type { %s }' % (t.name, ', '.join(mtypes)))
 		self.writeline('%%%s.wrap = type { %%%s.vt*, i8* }' % (t.name, t.name))
