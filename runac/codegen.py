@@ -123,6 +123,8 @@ class CodeGen(object):
 	def store(self, val, dst):
 		if isinstance(val, Value):
 			bits = val.type.ir, val.var, val.type.ir, dst
+		elif isinstance(val, tuple) and isinstance(val[0], types.base):
+			bits = val[0].ir, val[1], val[0].ir, dst
 		elif isinstance(val, tuple):
 			bits = val[0], val[1], val[0], dst
 		else:
@@ -227,7 +229,7 @@ class CodeGen(object):
 		bits = cast, val.type.ir, val.var, ptrt.ir
 		self.writeline('%s = bitcast %s %s to %s' % bits)
 		objslot = self.gep(frame, (trait.over.ir + '*', wrap), 0, 1)
-		self.store((ptrt.ir, cast), objslot)
+		self.store((ptrt, cast), objslot)
 		return Value(trait, wrap)
 	
 	# Node visitation methods
@@ -257,9 +259,7 @@ class CodeGen(object):
 		t = types.unwrap(node.type)
 		full = self.alloca(frame, t)
 		lenvar = self.gep(frame, ('%str*', full), 0, 0)
-		
-		lentype = t.attribs['len'][1].ir
-		self.store((lentype, len(node.val)), lenvar)
+		self.store((t.attribs['len'][1], len(node.val)), lenvar)
 		
 		cast = frame.varname()
 		bits = cast, dtype, data
@@ -481,7 +481,7 @@ class CodeGen(object):
 		
 		w = lambda t: isinstance(t.type, types.WRAPPERS)
 		if w(val) and w(target) and val.type.over == target.type.over:
-			self.store((val.type.over.ir, self.load(frame, val)), target.var)
+			self.store((val.type.over, self.load(frame, val)), target.var)
 			return
 		
 		assert False
