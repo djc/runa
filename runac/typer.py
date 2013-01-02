@@ -164,8 +164,7 @@ class TypeChecker(object):
 		for i, b in sorted(self.flow.blocks.iteritems()):
 			
 			self.cur = b
-			preds = self.flow.redges.get(i, [None])
-			scope = Scope(self.scopes[preds[0]])
+			scope = Scope(self.scopes[b.preds[0] if b.preds else None])
 			for step in b.steps:
 				self.visit(step, scope)
 			

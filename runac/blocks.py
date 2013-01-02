@@ -26,6 +26,7 @@ class Block(object):
 		self.id = id
 		self.anno = anno
 		self.steps = []
+		self.preds = []
 		self.assigns = set()
 		self.uses = set()
 	
@@ -45,7 +46,6 @@ class FlowGraph(object):
 	def __init__(self):
 		self.blocks = {0: Block(0, 'entry')}
 		self.edges = None
-		self.redges = None
 		self.exits = None
 	
 	def __repr__(self):
@@ -253,9 +253,8 @@ def module(node):
 		for i in set(cfg.blocks) - reachable:
 			del cfg.blocks[i]
 		
-		cfg.redges = {}
 		for src, dsts in cfg.edges.iteritems():
 			for dst in dsts:
-				cfg.redges.setdefault(dst, []).append(src)
+				cfg.blocks[dst].preds.append(src)
 	
 	return mod
