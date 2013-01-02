@@ -1,4 +1,4 @@
-import ast, types, typer
+import ast, types, blocks, typer
 import sys, copy
 
 ESCAPES = {'\\n': '\\0a', '\\0': '\\00'}
@@ -637,14 +637,13 @@ class CodeGen(object):
 	
 	def declare(self, ref):
 		
-		if isinstance(ref, typer.Decl) and ref.decl.startswith('runa.'):
+		if isinstance(ref, typer.Function) and ref.decl.startswith('runa.'):
 			return
 		
-		if isinstance(ref, types.Type) and isinstance(ref, types.WRAPPERS):
+		if isinstance(ref, typer.Function) and isinstance(ref, types.WRAPPERS):
 			return
 		
-		if isinstance(ref, typer.Decl):
-			ref = ref.realize()
+		if isinstance(ref, typer.Function):
 			rtype = ref.type.over[0].ir
 			args = ', '.join(t.ir for t in ref.type.over[1])
 			self.writeline('declare %s @%s(%s)' % (rtype, ref.decl, args))
@@ -683,23 +682,26 @@ class CodeGen(object):
 	
 	def Module(self, mod):
 		
-		for k, v in mod.refs.iteritems():
-			self.declare(typer.resolve(mod, v))
+		for k, v in mod.names.iteritems():
+			if isinstance(v, typer.Function):
+				self.declare(v)
 		
 		self.newline()
-		for k, v in mod.types.iteritems():
-			if k in types.BASIC: continue
-			if isinstance(v, types.trait):
+		for k, v in mod.names.iteritems():
+			if k in types.BASIC:
+				continue
+			elif isinstance(v, types.trait):
 				self.trait(v)
-			else:
+			elif isinstance(v, types.base):
 				self.type(v)
 		
 		for var in mod.variants:
 			self.type(var)
 		
 		frame = Frame()
-		for k, v in mod.constants.iteritems():
-			self.const(k, v, frame)
+		for k, v in mod.names.iteritems():
+			if isinstance(v, blocks.Constant):
+				self.const(k, v.node, frame)
 		
 		self.newline()
 		for k, v in mod.code:

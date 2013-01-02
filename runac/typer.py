@@ -1,4 +1,4 @@
-import types, ast, util
+import types, ast, blocks, util
 
 class Object(object):
 	
@@ -101,8 +101,8 @@ def resolve(mod, n):
 		for p in parts:
 			obj = obj[p]
 		return obj
-	elif parts[0] in mod.types:
-		method = mod.types[parts[0]].methods[parts[1]]
+	elif parts[0] in mod.names:
+		method = mod.names[parts[0]].methods[parts[1]]
 		return Function(method[0], types.function(method[1], method[2]))
 	elif parts[0] in types.ALL:
 		method = types.get(parts[0]).methods[parts[1]]
@@ -464,31 +464,39 @@ def process(mod, base, fun):
 
 def typer(mod):
 	
-	for k, v in mod.types.iteritems():
-		types.add(v)
+	for k, v in mod.names.iteritems():
+		if isinstance(v, (ast.Class, ast.Trait)):
+			types.add(v)
 	
 	base = Scope()
-	for name, ref in mod.refs.iteritems():
+	for name, obj in mod.names.iteritems():
+		
+		if not isinstance(obj, basestring):
+			continue
 		
 		ns = ROOT
-		path = ref.split('.')
+		path = obj.split('.')
 		while len(path) > 1:
 			ns = ns.attribs[path.pop(0)]
 		
-		obj = ns.attribs[path[0]]
-		base[name] = obj.realize() if isinstance(obj, Decl) else obj
+		val = ns.attribs[path[0]]
+		base[name] = val.realize() if isinstance(val, Decl) else val
+		mod.names[name] = base[name]
 	
-	for k, v in mod.constants.iteritems():
-		if isinstance(v, ast.String):
-			v.type = types.get('&str')
-		elif isinstance(v, ast.Int):
-			v.type = types.get('&int')
+	for k, v in mod.names.iteritems():
+		if not isinstance(v, blocks.Constant):
+			continue
+		if isinstance(v.node, ast.String):
+			v.node.type = types.get('&str')
+		elif isinstance(v.node, ast.Int):
+			v.node.type = types.get('&int')
 		else:
-			assert False, v
-		base[k] = v
+			assert False, v.node
+		base[k] = v.node
 	
-	for k, v in mod.types.iteritems():
-		base[k] = mod.types[k] = types.fill(v)
+	for k, v in mod.names.iteritems():
+		if isinstance(v, (ast.Class, ast.Trait)):
+			base[k] = mod.names[k] = types.fill(v)
 	
 	for k, fun in mod.code:
 		

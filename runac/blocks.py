@@ -20,6 +20,10 @@ class CondBranch(object):
 		show = ('%s=%s' % (k, v) for (k, v) in contents)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
+class Constant(object):
+	def __init__(self, node):
+		self.node = node
+
 class Block(object):
 	
 	def __init__(self, id, anno=None):
@@ -153,9 +157,7 @@ class FlowFinder(object):
 class Module(object):
 	
 	def __init__(self):
-		self.refs = {}
-		self.constants = {}
-		self.types = {}
+		self.names = {}
 		self.code = []
 		self.variants = set() # populated by type inferencing pass
 		self.scope = None # populated by type inferencing pass
@@ -166,21 +168,11 @@ class Module(object):
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	
 	def merge(self, mod):
-		
-		for k, v in mod.refs.iteritems():
-			assert k not in self.refs, k
-			self.refs[k] = v
-		
-		for k, v in mod.constants.iteritems():
-			assert k not in self.constants, k
-			self.constants[k] = v
-		
-		for k, v in mod.types.iteritems():
-			assert k not in self.types, k
-			self.types[k] = v
-		
+		for k, v in mod.names.iteritems():
+			assert k not in self.names, k
+			self.names[k] = v
 		self.code += mod.code
-	
+
 def module(node):
 	
 	mod = Module()
@@ -199,11 +191,11 @@ def module(node):
 						start = start.obj
 					res.append(start.name)
 					base = '.'.join(reversed(res))
-					
-				mod.refs[name.name] = base + '.' + name.name
+				
+				mod.names[name.name] = base + '.' + name.name
 		
 		elif isinstance(n, ast.Class):
-			mod.types[n.name.name] = n
+			mod.names[n.name.name] = n
 			for m in n.methods:
 				mod.code.append(((n.name.name, m.name.name), m))
 		
@@ -211,11 +203,11 @@ def module(node):
 			mod.code.append((n.name.name, n))
 		
 		elif isinstance(n, ast.Trait):
-			mod.types[n.name.name] = n
+			mod.names[n.name.name] = n
 		
 		elif isinstance(n, ast.Assign):
 			assert isinstance(n.left, ast.Name), n.left
-			mod.constants[n.left.name] = n.right
+			mod.names[n.left.name] = Constant(n.right)
 		
 		else:
 			assert False, n
