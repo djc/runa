@@ -190,7 +190,6 @@ class TypeChecker(object):
 		if node.name not in scope:
 			raise util.Error(node, "undefined name '%s'" % node.name)
 		node.type = scope[node.name].type
-		self.cur.uses.add(node.name)
 	
 	def Bool(self, node, scope):
 		node.type = scope['bool']

@@ -7,7 +7,6 @@ class EscapeFinder(object):
 		self.fun = fun
 		self.cfg = fun.flow
 		self.track = set()
-		self.cur = None
 	
 	def visit(self, node, escape=None):
 		
@@ -28,7 +27,6 @@ class EscapeFinder(object):
 		node.escapes = True
 	
 	def Name(self, node, escape=None):
-		self.cur.uses.add(node.name)
 		if not escape: return
 		self.track.add(node.name)
 	
@@ -36,7 +34,6 @@ class EscapeFinder(object):
 		
 		if isinstance(node.left, ast.Name):
 			
-			self.cur.assigns.add(node.left.name)
 			if node.left.name not in self.track:
 				return
 			
@@ -85,7 +82,6 @@ class EscapeFinder(object):
 	
 	def find(self):
 		for i, bl in reversed(self.cfg.blocks.items()):
-			self.cur = bl
 			for step in reversed(bl.steps):
 				self.visit(step)
 

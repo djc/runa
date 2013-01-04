@@ -32,7 +32,6 @@ class Block(object):
 		self.steps = []
 		self.preds = []
 		self.assigns = None
-		self.uses = set()
 		self.needs = None
 	
 	def __repr__(self):
