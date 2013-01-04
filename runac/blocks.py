@@ -31,8 +31,9 @@ class Block(object):
 		self.anno = anno
 		self.steps = []
 		self.preds = []
-		self.assigns = set()
+		self.assigns = None
 		self.uses = set()
+		self.needs = None
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())

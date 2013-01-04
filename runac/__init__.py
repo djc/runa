@@ -4,6 +4,7 @@ import os, subprocess
 from .tokenizer import tokenize
 from .ast import parse
 from .blocks import module
+from .liveness import liveness
 from .typer import typer
 from .specialize import specialize
 from .escapes import escapes
@@ -22,6 +23,7 @@ def ir(fn):
 	with open(fn) as f:
 		mod = module(parse(tokenize(f)))
 		merge(mod)
+		liveness(mod)
 		typer(mod)
 		specialize(mod)
 		escapes(mod)
