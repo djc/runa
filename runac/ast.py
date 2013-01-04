@@ -367,7 +367,7 @@ class Pass(Statement):
 	
 	kw = 'pass'
 	lbp = 0
-	field = ()
+	fields = ()
 	
 	def nud(self, p):
 		return self
