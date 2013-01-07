@@ -192,7 +192,7 @@ class TypeChecker(object):
 		node.type = scope[node.name].type
 	
 	def Bool(self, node, scope):
-		node.type = scope['bool']
+		node.type = types.get('bool')
 	
 	def Int(self, node, scope):
 		node.type = types.anyint()
@@ -201,7 +201,7 @@ class TypeChecker(object):
 		node.type = types.anyfloat()
 	
 	def String(self, node, scope):
-		node.type = types.ref(scope['str'])
+		node.type = types.ref(types.get('str'))
 	
 	# Boolean operators
 	
@@ -211,7 +211,7 @@ class TypeChecker(object):
 		if node.left.type == node.right.type:
 			node.type = node.left.type
 		else:
-			node.type = scope['bool']
+			node.type = types.get('bool')
 	
 	def And(self, node, scope):
 		self.boolean('and', node, scope)
@@ -228,7 +228,7 @@ class TypeChecker(object):
 		
 		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
 		if node.left.type == node.right.type:
-			node.type = scope['bool']
+			node.type = types.get('bool')
 		elif lt in types.INTS and rt not in types.INTS:
 			msg = "value of type '%s' may only be compared to integer type"
 			raise util.Error(node, msg % node.left.type.name)
@@ -238,7 +238,7 @@ class TypeChecker(object):
 		elif lt not in types.INTS and lt not in types.FLOATS:
 			assert False, '%s sides different types (%s, %s)' % (op, lt, rt)
 		
-		node.type = scope['bool']
+		node.type = types.get('bool')
 	
 	def EQ(self, node, scope):
 		self.compare('eq', node, scope)
