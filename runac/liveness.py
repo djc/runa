@@ -36,6 +36,8 @@ class Analyzer(object):
 	def Assign(self, node):
 		if isinstance(node.left, ast.Name):
 			self.vars[1][node.left.name] = node
+		else:
+			self.visit(node.left)
 		self.visit(node.right)
 	
 	def analyze(self):
