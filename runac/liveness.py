@@ -42,31 +42,15 @@ class Analyzer(object):
 	
 	def analyze(self):
 		for id, bl in self.fun.flow.blocks.iteritems():
-			
-			used = []
-			defined = {}
+			bl.uses = {}
+			bl.assigns = {}
 			for i, step in enumerate(bl.steps):
-				
 				self.vars = {}, {}
 				self.visit(step)
-				used.append(self.vars[0])
-				
+				for name, node in self.vars[0].iteritems():
+					bl.uses.setdefault(name, set()).add(i)
 				for name, node in self.vars[1].iteritems():
-					defined.setdefault(name, []).append((i, node))
-			
-			bl.needs = set()
-			for i, step in enumerate(used):
-				for name, node in step.iteritems():
-					
-					if name not in defined:
-						bl.needs.add(name)
-						continue
-					
-					first = sorted(defined[name])[0][0]
-					if first >= i:
-						bl.needs.add(name)
-			
-			bl.assigns = set(defined)
+					bl.assigns.setdefault(name, set()).add(i)
 
 def liveness(mod):
 	for name, code in mod.code:

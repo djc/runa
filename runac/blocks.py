@@ -32,7 +32,7 @@ class Block(object):
 		self.steps = []
 		self.preds = []
 		self.assigns = None
-		self.needs = None
+		self.uses = None
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
