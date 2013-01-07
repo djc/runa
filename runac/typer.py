@@ -164,7 +164,7 @@ class TypeChecker(object):
 		for i, b in sorted(self.flow.blocks.iteritems()):
 			
 			self.cur = b
-			scope = Scope(self.scopes[b.preds[0] if b.preds else None])
+			scope = Scope(self.scopes[b.preds[0].id if b.preds else None])
 			for step in b.steps:
 				self.visit(step, scope)
 			

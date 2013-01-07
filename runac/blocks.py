@@ -247,6 +247,6 @@ def module(node):
 		
 		for src, dsts in cfg.edges.iteritems():
 			for dst in dsts:
-				cfg.blocks[dst].preds.append(src)
+				cfg.blocks[dst].preds.append(cfg.blocks[src])
 	
 	return mod
