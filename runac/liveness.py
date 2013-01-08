@@ -2,9 +2,7 @@ import ast
 
 class Analyzer(object):
 	
-	def __init__(self, fun):
-		self.fun = fun
-		self.flow = fun.flow
+	def __init__(self):
 		self.vars = None
 		
 	def visit(self, node):
@@ -40,18 +38,23 @@ class Analyzer(object):
 			self.visit(node.left)
 		self.visit(node.right)
 	
-	def analyze(self):
-		for id, bl in self.fun.flow.blocks.iteritems():
+def liveness(mod):
+	
+	analyzer = Analyzer()
+	for name, code in mod.code:
+		
+		for id, bl in code.flow.blocks.iteritems():
+			
 			bl.uses = {}
 			bl.assigns = {}
+			
 			for i, step in enumerate(bl.steps):
-				self.vars = {}, {}
-				self.visit(step)
-				for name, node in self.vars[0].iteritems():
+				
+				analyzer.vars = {}, {}
+				analyzer.visit(step)
+				
+				for name, node in analyzer.vars[0].iteritems():
 					bl.uses.setdefault(name, set()).add(i)
-				for name, node in self.vars[1].iteritems():
+				
+				for name, node in analyzer.vars[1].iteritems():
 					bl.assigns.setdefault(name, set()).add(i)
-
-def liveness(mod):
-	for name, code in mod.code:
-		Analyzer(code).analyze()
