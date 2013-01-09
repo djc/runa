@@ -38,6 +38,12 @@ class Analyzer(object):
 			self.visit(node.left)
 		self.visit(node.right)
 	
+	def Call(self, node):
+		if isinstance(node.name, ast.Attrib):
+			self.visit(node.name)
+		for arg in node.args:
+			self.visit(arg)
+
 def liveness(mod):
 	
 	analyzer = Analyzer()
