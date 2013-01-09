@@ -68,7 +68,7 @@ def liveness(mod):
 			for sid, name in refs.get(id, []):
 				
 				if name in bl.assigns and min(bl.assigns[name]) < sid:
-					bl.origin[name, sid] = [id]
+					bl.origin[name, sid] = {id}
 					continue
 				elif not bl.preds:
 					continue
@@ -84,7 +84,7 @@ def liveness(mod):
 					next = preds[new[0]]
 					seen.add(next.id)
 					if name in next.assigns:
-						bl.origin.setdefault((name, sid), []).append(next.id)
+						bl.origin.setdefault((name, sid), set()).add(next.id)
 					else:
 						for p in next.preds:
 							if p.id not in preds:
