@@ -44,6 +44,20 @@ class Analyzer(object):
 		for arg in node.args:
 			self.visit(arg)
 
+def defined(name, bl, seen):
+	
+	if name in bl.assigns:
+		return {bl.id}
+	elif not bl.preds:
+		return {None}
+	
+	all = set()
+	for p in bl.preds:
+		if p.id not in seen:
+			all.update(defined(name, p, seen | {bl.id}))
+	
+	return all
+
 def liveness(mod):
 	
 	analyzer = Analyzer()
@@ -77,21 +91,9 @@ def liveness(mod):
 					bl.origin[name, sid] = {id}
 					continue
 				elif not bl.preds:
+					bl.origin[name, sid] = {None}
 					continue
 				
-				seen = set()
-				preds = {p.id: p for p in bl.preds}
-				while preds:
-					
-					new = sorted(p for p in preds if p not in seen)
-					if not new:
-						break
-					
-					next = preds[new[0]]
-					seen.add(next.id)
-					if name in next.assigns:
-						bl.origin.setdefault((name, sid), set()).add(next.id)
-					else:
-						for p in next.preds:
-							if p.id not in preds:
-								preds[p.id] = p
+				origin = bl.origin[name, sid] = set()
+				for p in bl.preds:
+					origin.update(defined(name, p, set()))
