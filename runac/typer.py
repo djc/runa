@@ -135,6 +135,9 @@ class Scope(object):
 	def __setitem__(self, key, val):
 		self.vars[key] = val
 	
+	def get(self, key, default=None):
+		return self[key] if key in self else default
+	
 	def resolve(self, node):
 		if isinstance(node, ast.Name) and node.name not in self:
 			raise util.Error(node, "type '%s' not found" % node.name)
