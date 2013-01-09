@@ -1,0 +1,3 @@
+tests/half-defined.rns [4.8]: undefined name 'a'
+    print(a)
+          ^
