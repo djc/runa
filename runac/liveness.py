@@ -23,7 +23,7 @@ class Analyzer(object):
 				self.visit(attr)
 	
 	def Name(self, node):
-		self.vars[0][node.name] = node
+		self.vars[0].add(node.name)
 	
 	def Attrib(self, node):
 		self.visit(node.obj)
@@ -33,7 +33,7 @@ class Analyzer(object):
 	
 	def Assign(self, node):
 		if isinstance(node.left, ast.Name):
-			self.vars[1][node.left.name] = node
+			self.vars[1].add(node.left.name)
 		else:
 			self.visit(node.left)
 		self.visit(node.right)
@@ -50,11 +50,11 @@ def liveness(mod):
 			
 			for i, step in enumerate(bl.steps):
 				
-				analyzer.vars = {}, {}
+				analyzer.vars = set(), set()
 				analyzer.visit(step)
 				
-				for name, node in analyzer.vars[0].iteritems():
+				for name in analyzer.vars[0]:
 					bl.uses.setdefault(name, set()).add(i)
 				
-				for name, node in analyzer.vars[1].iteritems():
+				for name in analyzer.vars[1]:
 					bl.assigns.setdefault(name, set()).add(i)
