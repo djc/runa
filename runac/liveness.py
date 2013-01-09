@@ -41,8 +41,9 @@ class Analyzer(object):
 def liveness(mod):
 	
 	analyzer = Analyzer()
-	for name, code in mod.code:
+	for fname, code in mod.code:
 		
+		refs = {}
 		for id, bl in code.flow.blocks.iteritems():
 			
 			bl.uses = {}
@@ -55,6 +56,36 @@ def liveness(mod):
 				
 				for name in analyzer.vars[0]:
 					bl.uses.setdefault(name, set()).add(i)
+					refs.setdefault(id, []).append((i, name))
 				
 				for name in analyzer.vars[1]:
 					bl.assigns.setdefault(name, set()).add(i)
+					refs.setdefault(id, []).append((i, name))
+		
+		for id, bl in sorted(code.flow.blocks.iteritems()):
+			
+			bl.origin = {}
+			for sid, name in refs.get(id, []):
+				
+				if name in bl.assigns and min(bl.assigns[name]) < sid:
+					bl.origin[name, sid] = [id]
+					continue
+				elif not bl.preds:
+					continue
+				
+				seen = set()
+				preds = {p.id: p for p in bl.preds}
+				while preds:
+					
+					new = sorted(p for p in preds if p not in seen)
+					if not new:
+						break
+					
+					next = preds[new[0]]
+					seen.add(next.id)
+					if name in next.assigns:
+						bl.origin.setdefault((name, sid), []).append(next.id)
+					else:
+						for p in next.preds:
+							if p.id not in preds:
+								preds[p.id] = p
