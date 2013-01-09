@@ -160,18 +160,15 @@ class TypeChecker(object):
 		self.fun = fun
 		self.flow = fun.flow
 		self.scopes = {}
-		self.cur = None
+		self.cur = None, None
 	
 	def check(self, scope):
 		self.scopes[None] = scope
 		for i, b in sorted(self.flow.blocks.iteritems()):
-			
-			self.cur = b
-			scope = Scope(self.scopes[b.preds[0].id if b.preds else None])
-			for step in b.steps:
+			scope = self.scopes[i] = Scope()
+			for sid, step in enumerate(b.steps):
+				self.cur = b, sid
 				self.visit(step, scope)
-			
-			self.scopes[i] = scope
 	
 	def visit(self, node, scope):
 		
@@ -190,9 +187,28 @@ class TypeChecker(object):
 	# Constants
 	
 	def Name(self, node, scope):
-		if node.name not in scope:
+		
+		defined = set()
+		for id in self.cur[0].origin[node.name, self.cur[1]]:
+			
+			if id not in self.scopes:
+				continue
+			
+			if id == self.cur[0].id:
+				assigned = min(self.cur[0].assigns[node.name])
+				if self.cur[1] <= assigned:
+					continue
+			
+			defined.add(self.scopes[id].get(node.name))
+		
+		if not defined or not all(defined):
 			raise util.Error(node, "undefined name '%s'" % node.name)
-		node.type = scope[node.name].type
+		
+		first = defined.pop().type
+		while defined:
+			assert defined.pop().type == first
+		
+		node.type = first
 	
 	def Bool(self, node, scope):
 		node.type = types.get('bool')
