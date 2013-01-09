@@ -276,7 +276,7 @@ class TypeChecker(object):
 	
 	def As(self, node, scope):
 		self.visit(node.left, scope)
-		node.type = scope[node.right.name]
+		node.type = self.scopes[None][node.right.name]
 	
 	def Attrib(self, node, scope):
 		
@@ -325,11 +325,11 @@ class TypeChecker(object):
 			return
 		
 		assert isinstance(node.name, ast.Name), 'call non-{attrib,name,type}'
-		if node.name.name not in scope:
+		if node.name.name not in self.scopes[None]:
 			msg = "function '%s' not found"
 			raise util.Error(node.name, msg % node.name.name)
 		
-		obj = scope[node.name.name]
+		obj = self.scopes[None][node.name.name]
 		if not isinstance(obj, types.base):
 			
 			node.fun = obj
