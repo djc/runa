@@ -100,6 +100,10 @@ Mike Vanier
 Scalable computer programming languages
 http://users.cms.caltech.edu/~mvanier/hacking/rants/scalable_computer_programming_languages.html
 
+Damien Katz
+The Unreasonable Effectiveness of C
+http://damienkatz.net/2013/01/the_unreasonable_effectiveness_of_c.html
+
 
 Implementation notes
 ====================
