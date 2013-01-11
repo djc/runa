@@ -1,4 +1,4 @@
-import ast
+import ast, util
 
 class Type(object):
 	def __eq__(self, other):
@@ -14,6 +14,47 @@ class ReprId(object):
 	
 	def __ne__(self, other):
 		return not self.__eq__(other)
+	
+	def select(self, name, actual):
+		
+		rt = self.methods[name][0]
+		opts = [(rt, ir, formal) for (ir, formal) in self.methods[name][1]]
+		if name == '__init__' and '__new__' in self.methods:
+			alloc = self.methods['__new__']
+			opts += [(alloc[0], ir, formal) for (ir, formal) in alloc[1]]
+		
+		res = []
+		for rt, ir, formal in opts:
+			
+			tmp = actual
+			if '__init__' in ir:
+				tmp = [ref(self)] + actual
+			
+			fatypes = [a[1] for a in formal]
+			if len(fatypes) != len(tmp):
+				continue
+			
+			score = 0
+			for at, ft in zip(tmp, fatypes):
+				if not compat(at, ft):
+					score -= 1000
+					break
+				elif at == ft:
+					score += 10
+				else:
+					score += 1
+			
+			if score > 0:
+				res.append((ir, rt, fatypes))
+		
+		if not res:
+			astr = ', '.join(t.name for t in actual)
+			bits = astr, '), ('.join(formals)
+			msg = '(%s) does not fit any of (%s)'
+			raise util.Error(node, msg % bits)
+		
+		assert len(res) == 1, res
+		return res[0][0], function(res[0][1], res[0][2])
 
 class base(ReprId):
 	
@@ -201,16 +242,24 @@ def compat(a, f):
 		return a.bits < f.bits
 	elif isinstance(f, trait):
 		
-		for k, (x, rt, atypes) in f.methods.iteritems():
+		for k, (rt, malts) in f.methods.iteritems():
 			
 			if k not in a.methods:
 				return False
 			
-			rc = compat(a.methods[k][1], rt)
-			aargs = [i[1] for i in a.methods[k][2][1:]]
-			fargs = [i[1] for i in atypes[1:]]
-			ac = compat(aargs, fargs)
-			if not rc or not ac:
+			rc = compat(a.methods[k][0], rt)
+			if not rc:
+				return False
+			
+			tmalts = set()
+			for x, atypes in malts:
+				tmalts.add(tuple(a[1] for a in atypes[1:]))
+			
+			amalts = set()
+			for x, atypes in a.methods[k][1]:
+				amalts.add(tuple(a[1] for a in atypes[1:]))
+			
+			if tmalts != amalts:
 				return False
 		
 		return True
@@ -304,7 +353,6 @@ def fill(node):
 	for method in node.methods:
 		
 		name = method.name.name
-		irname = '%s.%s' % (node.name.name, name)
 		rtype = void() if method.rtype is None else get(method.rtype, stubs)
 		
 		args = []
@@ -315,7 +363,13 @@ def fill(node):
 			else:
 				args.append((arg.name.name, get(arg.type, stubs)))
 		
-		cls.methods[name] = irname, rtype, args
+		irname = '%s.%s' % (node.name.name, name)
+		if name in cls.methods:
+			wrangle = lambda x: x.replace('&', 'R').replace('$', 'O')
+			irname = irname + '$' + '.'.join(wrangle(a[1].name) for a in args)
+			assert rtype == cls.methods[name][0]
+		
+		cls.methods.setdefault(name, (rtype, []))[1].append((irname, args))
 		method.irname = irname
 	
 	obj = cls()

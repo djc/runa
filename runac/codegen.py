@@ -161,8 +161,8 @@ class CodeGen(object):
 				self.store(val, tmp)
 				val = Value(types.ref(vt[0]), tmp)
 			
-			method = vt[0].methods['__bool__']
-			bits = frame.varname(), method[0], val.type.ir, val.var
+			irname = vt[0].methods['__bool__'][1][0][0]
+			bits = frame.varname(), irname, val.type.ir, val.var
 			self.writeline('%s = call i1 @%s(%s %s)' % bits)
 			return Value(boolt, bits[0])
 		
@@ -205,9 +205,15 @@ class CodeGen(object):
 		vt = self.alloca(frame, vtt)
 		
 		t = types.unwrap(trait)
-		for i, (k, tmeth) in enumerate(sorted(t.methods.iteritems())):
+		for i, (k, (rt, tmalts)) in enumerate(sorted(t.methods.iteritems())):
 			
-			cmeth = types.unwrap(val.type).methods[k]
+			# trait methods overloading TODO
+			assert len(tmalts) == 1
+			tmeth = tmalts[0][0], rt, tmalts[0][1]
+			cmrt, cmalts = types.unwrap(val.type).methods[k]
+			assert len(cmalts) == 1
+			cmeth = cmalts[0][0], cmrt, cmalts[0][1]
+			
 			cmt = types.function(cmeth[1], [a[1] for a in cmeth[2]])
 			tmt = types.function(tmeth[1], [a[1] for a in tmeth[2]])
 			tmt.over[1][0] = ptrt
@@ -215,7 +221,8 @@ class CodeGen(object):
 			cast = frame.varname()
 			bits = cast, cmt.ir, cmeth[0], tmt.ir
 			self.writeline('%s = bitcast %s @%s to %s' % bits)
-			self.store((tmt, cast), self.gep(frame, (vtt + '*', vt), 0, i))
+			slot = self.gep(frame, (vtt + '*', vt), 0, i)
+			self.store((tmt, cast), slot)
 		
 		vtslot = self.gep(frame, (trait.over.ir + '*', wrap), 0, 0)
 		self.store((vtt + '*', vt), vtslot)
@@ -294,7 +301,9 @@ class CodeGen(object):
 			t = left.type.over
 		
 		bool = frame.varname()
-		method = t.methods['__bool__']
+		rt, malts = t.methods['__bool__']
+		method = malts[0][0], rt, malts[0][1]
+		
 		arg = self.coerce(left, method[2][0][1], frame)
 		argstr = '%s %s' % (arg.type.ir, arg.var)
 		bits = bool, method[1].ir, method[0], argstr
@@ -356,9 +365,10 @@ class CodeGen(object):
 			op = {'eq': 'ne', 'ne': 'eq'}[op]
 			inv = True
 		
-		m = left.type.over.methods['__' + op + '__']
+		t = types.unwrap(left.type)
+		irname, mt = t.select('__%s__' % op, (left.type, right.type))
 		args = ['%s %s' % (a.type.ir, a.var) for a in (left, right)]
-		bits = frame.varname(), m[1].ir, m[0], ', '.join(args)
+		bits = frame.varname(), mt.over[0].ir, irname, ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
 		
 		val = Value(types.get('bool'), bits[0])
@@ -403,11 +413,13 @@ class CodeGen(object):
 		
 		assert isinstance(left.type, types.WRAPPERS)
 		assert isinstance(right.type, types.WRAPPERS)
-		m = left.type.over.methods['__%s__' % op]
+		
+		t = types.unwrap(left.type)
+		irname, mt = t.select('__%s__' % op, (left.type, right.type))
 		args = ['%s %s' % (a.type.ir, a.var) for a in (left, right)]
-		bits = frame.varname(), m[1].ir, m[0], ', '.join(args)
+		bits = frame.varname(), mt.over[0].ir, irname, ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
-		return Value(m[1], bits[0])
+		return Value(mt.over[0], bits[0])
 	
 	def Add(self, node, frame):
 		return self.arith('add', node, frame)
@@ -668,13 +680,14 @@ class CodeGen(object):
 	def trait(self, t):
 		
 		mtypes = []
-		for name, (ir, rt, atypes) in sorted(t.methods.iteritems()):
-			
-			args = []
-			for an, at in atypes:
-				args.append(types.get('&byte') if an == 'self' else at)
-			
-			mtypes.append(types.function(rt, args).ir)
+		for name, (rt, malts) in sorted(t.methods.iteritems()):
+			for irname, formal in malts:
+				
+				args = []
+				for an, at in formal:
+					args.append(types.get('&byte') if an == 'self' else at)
+				
+				mtypes.append(types.function(rt, args).ir)
 		
 		self.writeline('%%%s.vt = type { %s }' % (t.name, ', '.join(mtypes)))
 		self.writeline('%%%s.wrap = type { %%%s.vt*, i8* }' % (t.name, t.name))

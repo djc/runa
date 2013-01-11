@@ -332,11 +332,10 @@ class TypeChecker(object):
 				if isinstance(t, types.trait):
 					node.virtual = True
 				
-				meth = t.methods[node.name.attrib.name]
 				node.args.insert(0, node.name.obj)
 				actual = [a.type for a in node.args]
-				mtype = types.function(meth[1], [i[1] for i in meth[2]])
-				node.fun = Function(meth[0], mtype)
+				irname, mtype = t.select(node.name.attrib.name, actual)
+				node.fun = Function(irname, mtype)
 				node.type = mtype.over[0]
 			
 			if not types.compat(actual, node.fun.type.over[1]):
@@ -362,42 +361,11 @@ class TypeChecker(object):
 		
 		else:
 			
-			methods = []
-			if '__init__' in obj.methods:
-				methods.append(obj.methods['__init__'])
-			if '__new__' in obj.methods:
-				methods.append(obj.methods['__new__'])
-			
-			res = []
-			for decl, rt, args in methods:
-				
-				tmp = actual
-				if '__init__' in decl:
-					tmp = [types.owner(obj)] + actual
-				
-				formal = [a[1] for a in args]
-				if types.compat(tmp, formal):
-					res.append((decl, rt, args))
-			
-			if not res:
-				
-				formals = []
-				for t in methods:
-					formals.append(', '.join(i[1].name for i in t[2]))
-				
-				astr = ', '.join(t.name for t in actual)
-				bits = astr, '), ('.join(formals)
-				msg = '(%s) does not fit any of (%s)'
-				raise util.Error(node, msg % bits)
-			
-			assert len(res) == 1, res
-			method = res[0]
-			node.name.name = method[0]
-			
-			mtype = types.function(method[1], [i[1] for i in method[2]])
-			node.fun = Function(method[0], mtype)
+			irname, mt = obj.select('__init__', actual)
+			node.name.name = irname
+			node.fun = Function(irname, mt)
 			node.type = types.owner(obj)
-			if '__init__' in method[0]:
+			if '__init__' in irname:
 				node.args.insert(0, Init(types.owner(obj)))
 		
 		if isinstance(obj, Function):
