@@ -85,6 +85,7 @@ ROOT = Module('', {
 		}),
 		'string': Module('libc.string', {
 			'strncmp': Decl('strncmp', 'i32', ('&byte', '&byte', 'uint')),
+			'strlen': Decl('strlen', 'uint', ('&byte',)),
 		}),
 		'unistd': Module('libc.unistd', {
 			'write': Decl('write', 'int', ('i32', '&byte', 'uint')),

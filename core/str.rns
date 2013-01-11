@@ -1,5 +1,5 @@
 from __internal__ import __malloc__, __free__, __memcpy__, __offset__
-from libc.string import strncmp
+from libc.string import strncmp, strlen
 
 class str:
 	
