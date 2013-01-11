@@ -632,7 +632,7 @@ class CodeGen(object):
 		bits = name, dtype, literal
 		self.writeline('@%s.data = constant %s c"%s"' % bits)
 		bits = name, slen, 'i8* bitcast (%s* @%s.data to i8*)' % (dtype, name)
-		self.writeline('@%s = constant %%str { i32 %s, %s }' % bits)
+		self.writeline('@%s = constant %%str { i64 %s, %s }' % bits)
 		frame[name] = Value(val.type, '@%s' % name)
 	
 	def declare(self, ref):

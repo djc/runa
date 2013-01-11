@@ -74,7 +74,7 @@ ROOT = Module('', {
 	'__internal__': Module('__internal__', {
 		'__malloc__': Decl('runa.malloc', '$byte', ('uint',)),
 		'__free__': Decl('runa.free', 'void', ('$byte',)),
-		'__memcpy__': Decl('runa.memcpy', 'void', ('&byte', '&byte', 'u32')),
+		'__memcpy__': Decl('runa.memcpy', 'void', ('&byte', '&byte', 'uint')),
 		'__offset__': Decl('runa.offset', '&byte', ('&byte', 'uint')),
 	}),
 	'libc': Module('libc', {

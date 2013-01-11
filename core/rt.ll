@@ -1,7 +1,7 @@
 declare i8* @malloc(i64)
 declare void @free(i8*)
 declare i32 @printf(i8*, ...)
-declare void @llvm.memcpy.p0i8.p0i8.i32(i8*, i8*, i32, i32, i1)
+declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 
 @fmt_MALLOC = constant [15 x i8] c"malloc(%ld) %p\0a"
 @fmt_FREE = constant [9 x i8] c"free(%p)\0a"
@@ -27,7 +27,7 @@ define i8* @runa.offset(i8* %base, i64 %offset) alwaysinline {
 	ret i8* %res
 }
 
-define void @runa.memcpy(i8* %dst, i8* %src, i32 %len) alwaysinline {
-	call void @llvm.memcpy.p0i8.p0i8.i32(i8* %dst, i8* %src, i32 %len, i32 1, i1 0)
+define void @runa.memcpy(i8* %dst, i8* %src, i64 %len) alwaysinline {
+	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %dst, i8* %src, i64 %len, i32 1, i1 0)
 	ret void
 }

@@ -3,13 +3,13 @@ from libc.string import strncmp
 
 class str:
 	
-	len: u32
+	len: uint
 	data: $byte
 	
 	def __new__(src: &ToStr) -> $str:
 		return src.__str__()
 	
-	def __init__(self, len: u32, data: $byte):
+	def __init__(self, len: uint, data: $byte):
 		self.len = len
 		self.data = data
 	
