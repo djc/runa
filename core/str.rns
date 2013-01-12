@@ -13,6 +13,10 @@ class str:
 		self.len = len
 		self.data = data
 	
+	def __init__(self, data: $byte):
+		self.len = strlen(data)
+		self.data = data
+	
 	def __copy__(self) -> $str:
 		data = __malloc__(self.len)
 		__memcpy__(data, self.data, self.len)
