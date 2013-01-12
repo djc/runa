@@ -1,8 +1,8 @@
 # test: {"args": ["cold"]}
-def main(name: str, args: array[str]):
+def main(name: &str, args: &array[str]):
 	x = 29
 	print(str(x))
 	y = 'birthday'
 	print(y)
 	print(name)
-	print(args[0])
+	#print(args[0])
