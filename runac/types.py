@@ -110,7 +110,6 @@ BASIC = {
 }
 
 INTEGERS = {
-	'byte': (False, 8),
 	'i32': (True, 32),
 	'u32': (False, 32),
 	'int': (True, 64),
