@@ -594,14 +594,28 @@ class CodeGen(object):
 			rt = 'i32'
 		
 		args = ['%s %%%s' % (a.type.ir, a.name.name) for a in node.args]
+		if irname == 'main' and node.args:
+			args = ['i32 %argc', 'i8** %argv']
 		self.writeline('define %s @%s(%s) {' % (rt, irname, ', '.join(args)))
 		self.indent()
 		
 		self.label('L0', 'entry')
-		for arg in node.args:
-			addr = self.alloca(frame, arg.type)
-			frame[arg.name.name] = Value(types.ref(arg.type), addr)
-			self.store((arg.type, '%' + arg.name.name), addr)
+		if irname == 'main' and node.args:
+			
+			strt = types.get('&str')
+			addrp = self.gep(frame, ('i8**', '%argv'), 0)
+			addr = self.load(frame, Value(types.get('&&byte'), addrp))
+			namevar = self.alloca(frame, strt.over)
+			wrapfun = '@str.__init__$Rstr.Obyte'
+			bits = wrapfun, strt.ir, namevar, addr.var
+			self.writeline('call void %s(%s %s, i8* %s)' % bits)
+			frame['name'] = Value(strt, namevar)
+			
+		elif node.args:
+			for arg in node.args:
+				addr = self.alloca(frame, arg.type)
+				frame[arg.name.name] = Value(types.ref(arg.type), addr)
+				self.store((arg.type, '%' + arg.name.name), addr)
 		
 		self.main = irname == 'main' and node.rtype.ir == 'void'
 		for i, block in sorted(node.flow.blocks.iteritems()):
