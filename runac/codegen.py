@@ -593,18 +593,8 @@ class CodeGen(object):
 		if irname == 'main' and rt == 'void':
 			rt = 'i32'
 		
-		self.write('define %s @%s(' % (rt, irname))
-		first = True
-		for arg in node.args:
-			
-			if not first:
-				self.write(', ')
-			
-			self.write(arg.type.ir + ' %' + arg.name.name)
-			first = False
-		
-		self.write(') {')
-		self.newline()
+		args = ['%s %%%s' % (a.type.ir, a.name.name) for a in node.args]
+		self.writeline('define %s @%s(%s) {' % (rt, irname, ', '.join(args)))
 		self.indent()
 		
 		self.label('L0', 'entry')
