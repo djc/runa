@@ -104,6 +104,10 @@ Damien Katz
 The Unreasonable Effectiveness of C
 http://damienkatz.net/2013/01/the_unreasonable_effectiveness_of_c.html
 
+Job Vranish
+Exceptions and Stack Traces for C on Windows, Linux & Mac
+http://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/
+
 
 Implementation notes
 ====================
