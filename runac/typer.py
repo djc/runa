@@ -308,6 +308,12 @@ class TypeChecker(object):
 		node.type = t.attribs[node.attrib.name][1]
 		assert node.type is not None, 'FAIL'
 	
+	def Elem(self, node, scope):
+		self.visit(node.obj, scope)
+		objt = types.unwrap(node.obj.type)
+		assert objt.name.startswith('array['), objt
+		node.type = objt.attribs['data'][1].over
+	
 	def Call(self, node, scope):
 		
 		actual = []
