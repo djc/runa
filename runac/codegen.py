@@ -723,8 +723,6 @@ class CodeGen(object):
 		self.newline()
 		for k, v in mod.code:
 			self.visit(v, frame)
-		
-		return ''.join(self.buf)
 
 TRIPLES = {
 	'darwin': 'x86_64-apple-darwin11.0.0',
@@ -732,8 +730,14 @@ TRIPLES = {
 }
 
 def generate(mod):
-	src = CodeGen().Module(mod)
-	triple = 'target triple = "%s"\n\n' % TRIPLES[sys.platform]
+	
+	gen = CodeGen()
+	gen.Module(mod)
+	
+	code = ['target triple = "%s"\n\n' % TRIPLES[sys.platform]]
 	with open('core/rt.ll') as f:
-		rt = f.read()
-	return triple + rt + '\n' + src
+		code.append(f.read())
+		code.append('\n')
+	
+	code += gen.buf
+	return ''.join(code)
