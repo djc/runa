@@ -108,6 +108,14 @@ Job Vranish
 Exceptions and Stack Traces for C on Windows, Linux & Mac
 http://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/
 
+Chris Lattner
+Macroscopic Data Structure Analysis and Optimization
+http://llvm.org/pubs/2005-05-04-LattnerPHDThesis.html
+
+Chris Lattner et al.
+Making Context-Sensitivie Points-to Analysis with Heap Closing Practical For The Real World
+http://llvm.org/pubs/2007-06-10-PLDI-DSA.html
+
 
 Implementation notes
 ====================
