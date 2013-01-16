@@ -496,6 +496,18 @@ class CodeGen(object):
 		name = self.gep(frame, obj, 0, idx)
 		return Value(types.ref(type), name)
 	
+	def Elem(self, node, frame):
+		
+		obj = self.visit(node.obj, frame)
+		t = types.unwrap(obj.type)
+		assert t.name.startswith('array[')
+		et = t.attribs['data'][1].over
+		
+		data = self.gep(frame, obj, 0, 1)
+		obj = '[0 x %s]*' % et.ir, data
+		elm = self.gep(frame, obj, 0, int(node.key.val))
+		return Value(types.ref(et), elm)
+	
 	def Ternary(self, node, frame):
 		
 		cond = self.visit(node.cond, frame)
