@@ -672,6 +672,11 @@ class CodeGen(object):
 		if isinstance(type, ignore):
 			return
 		
+		if type.name.startswith('array['):
+			s = 'i64, [0 x %s]' % type.attribs['data'][1].over.ir
+			self.writeline('%s = type { %s }' % (type.ir, s))
+			return
+		
 		fields = sorted(type.attribs.itervalues())
 		s = ', '.join([i[1].ir for i in fields])
 		self.writeline('%s = type { %s }' % (type.ir, s))
