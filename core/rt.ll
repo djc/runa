@@ -31,3 +31,45 @@ define void @runa.memcpy(i8* %dst, i8* %src, i64 %len) alwaysinline {
 	call void @llvm.memcpy.p0i8.p0i8.i64(i8* %dst, i8* %src, i64 %len, i32 1, i1 0)
 	ret void
 }
+
+%array$str = type { i64, [0 x %str] }
+
+define %array$str* @args(i32 %argc, i8** %argv) {
+	
+	%c64 = sext i32 %argc to i64
+	%num = sub i64 %c64, 1
+	
+	%str.size = load i64* @str.size
+	%arsz = mul i64 %num, %str.size
+	%objsz = add i64 8, %arsz
+	%array.raw = call i8* @runa.malloc(i64 %objsz)
+	%array = bitcast i8* %array.raw to %array$str*
+	
+	%array.data = getelementptr %array$str* %array, i32 0, i32 1
+	%array.len = getelementptr %array$str* %array, i32 0, i32 0
+	store i64 %num, i64* %array.len
+	
+	%itervar = alloca i64
+	store i64 0, i64* %itervar
+	%first = icmp sgt i64 %num, 0
+	br i1 %first, label %Body, label %Done
+	
+Body:
+	
+	%idx = load i64* %itervar
+	%orig.idx = add i64 %idx, 1
+	%arg.ptr = getelementptr inbounds i8** %argv, i64 %orig.idx
+	%arg = load i8** %arg.ptr
+	
+	%obj = getelementptr [0 x %str]* %array.data, i32 0, i64 %idx
+	call void @str.__init__$Rstr.Obyte(%str* %obj, i8* %arg)
+	
+	%next = add i64 %idx, 1
+	store i64 %next, i64* %itervar
+	%more = icmp slt i64 %next, %num
+	br i1 %more, label %Body, label %Done
+	
+Done:
+	ret %array$str* %array
+	
+}

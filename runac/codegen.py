@@ -607,10 +607,19 @@ class CodeGen(object):
 			addrp = self.gep(frame, ('i8**', '%argv'), 0)
 			addr = self.load(frame, Value(types.get('&&byte'), addrp))
 			namevar = self.alloca(frame, strt.over)
+			
 			wrapfun = '@str.__init__$Rstr.Obyte'
 			bits = wrapfun, strt.ir, namevar, addr.var
 			self.writeline('call void %s(%s %s, i8* %s)' % bits)
 			frame['name'] = Value(strt, namevar)
+			
+			argsvar = self.alloca(frame, types.get('&array[str]'))
+			args = Value(types.get('&$array[str]'), argsvar)
+			direct = frame.varname()
+			call = '%s = call %%array$str* @args(i32 %%argc, i8** %%argv)'
+			self.writeline(call % direct)
+			self.store(('%array$str*', direct), args.var)
+			frame['args'] = args
 			
 		elif node.args:
 			for arg in node.args:
@@ -670,6 +679,10 @@ class CodeGen(object):
 		
 		ignore = types.WRAPPERS + (types.template,)
 		if isinstance(type, ignore):
+			return
+		
+		if type.name == 'array[str]':
+			# predefined for args creation function
 			return
 		
 		if type.name.startswith('array['):
