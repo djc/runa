@@ -289,6 +289,10 @@ def get(t, stubs={}):
 		return owner(get(t[1:], stubs))
 	elif isinstance(t, basestring) and t[0] == '&':
 		return ref(get(t[1:], stubs))
+	elif isinstance(t, basestring) and '[' in t:
+		ext = t.partition('[')
+		assert ext[2][-1] == ']'
+		return get(ext[0])[get(ext[2][:-1])]
 	elif isinstance(t, basestring):
 		return stubs[t] if t in stubs else ALL[t]()
 	elif isinstance(t, ast.Name):
