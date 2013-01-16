@@ -39,11 +39,12 @@ class Frame(object):
 class CodeGen(object):
 	
 	def __init__(self):
-		self.buf = []
 		self.level = 0
 		self.start = True
 		self.main = False
 		self.labels = {}
+		self.typedecls = None
+		self.buf = []
 	
 	def visit(self, node, frame):
 		
@@ -720,6 +721,9 @@ class CodeGen(object):
 			if isinstance(v, blocks.Constant):
 				self.const(k, v.node, frame)
 		
+		self.typedecls = self.buf
+		self.buf = []
+		
 		self.newline()
 		for k, v in mod.code:
 			self.visit(v, frame)
@@ -735,9 +739,10 @@ def generate(mod):
 	gen.Module(mod)
 	
 	code = ['target triple = "%s"\n\n' % TRIPLES[sys.platform]]
+	code += gen.typedecls
+	
 	with open('core/rt.ll') as f:
 		code.append(f.read())
-		code.append('\n')
 	
 	code += gen.buf
 	return ''.join(code)
