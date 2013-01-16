@@ -349,10 +349,11 @@ class TypeChecker(object):
 			
 			return
 		
-		assert isinstance(node.name, ast.Name), 'call non-{attrib,name,type}'
-		if node.name.name not in self.scopes[None]:
-			msg = "function '%s' not found"
-			raise util.Error(node.name, msg % node.name.name)
+		self.visit(node.name, scope)
+		allowed = types.function, types.Type
+		if not isinstance(node.name.type, allowed):
+			msg = 'object is not a function'
+			raise util.Error(node.name, msg)
 		
 		obj = self.scopes[None][node.name.name]
 		if not isinstance(obj, types.base):
