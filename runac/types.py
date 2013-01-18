@@ -309,7 +309,7 @@ def get(t, stubs={}):
 ALL = {}
 for k in globals().keys():
 	obj = globals()[k]
-	if type(obj) == type and base in obj.__bases__:
+	if type(obj) == type and issubclass(obj, base):
 		ALL[k] = globals()[k]
 
 for k, cls in ALL.iteritems():
