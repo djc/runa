@@ -336,10 +336,11 @@ class Function(Node):
 			self.args.append(cur)
 			cur	= Argument(self.pos)
 			next = p.expr()
-			cur.pos = next.pos
 			
 			if isinstance(next, Comma):
 				next = p.expr()
+			
+			cur.pos = next.pos
 		
 		self.rtype = None
 		if isinstance(p.token, RType):
