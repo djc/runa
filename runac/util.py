@@ -1,9 +1,15 @@
 
 class Error(Exception):
+	
 	def __init__(self, node, msg):
 		self.node = node
 		self.msg = msg
+	
 	def show(self, fn):
+		
+		if self.node.pos is None:
+			return '%s: %s\n' % (fn, self.msg)
+		
 		pos = self.node.pos
 		a = '%s [%s.%s]: %s' % (fn, pos[0][0] + 1, pos[0][1] + 1, self.msg)
 		b = pos[2].replace('\t', ' ' * 4).rstrip()
