@@ -1,0 +1,3 @@
+tests/no-type.rns [1.9]: missing type for argument 'x'
+def foo(x):
+        ^
