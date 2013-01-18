@@ -448,8 +448,14 @@ def process(mod, base, fun):
 		variant(mod, fun.rtype)
 	
 	for arg in fun.args:
+		
+		if arg.type is None:
+			msg = "missing type for argument '%s'"
+			raise util.Error(arg, msg % arg.name.name)
+		
 		if not isinstance(arg.type, types.base):
 			arg.type = start.resolve(arg.type)
+		
 		start[arg.name.name] = Object(arg.type)
 		variant(mod, arg.type)
 	
@@ -497,8 +503,14 @@ def typer(mod):
 		if not isinstance(k, basestring):
 			continue
 		
+		atypes = []
+		for arg in fun.args:
+			if arg.type is None:
+				msg = "missing type for argument '%s'"
+				raise util.Error(arg, msg % arg.name.name)
+			atypes.append(base.resolve(arg.type))
+		
 		rtype = types.void() if fun.rtype is None else base.resolve(fun.rtype)
-		atypes = [base.resolve(a.type) for a in fun.args]
 		type = types.function(rtype, atypes)
 		base[fun.name.name] = Function(fun.name.name, type)
 		
