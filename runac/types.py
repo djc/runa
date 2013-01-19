@@ -111,6 +111,7 @@ class template(base):
 		cls = ALL[(self.name, params)] = type(internal, (concrete,), {
 			'ir': '%' + self.name + '$' + '.'.join(t.name for t in params),
 			'name': name,
+			'params': params,
 			'methods': {},
 			'attribs': {},
 		})
