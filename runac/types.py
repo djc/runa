@@ -298,7 +298,7 @@ def get(t, stubs={}):
 	elif isinstance(t, ast.Name):
 		return stubs[t.name] if t.name in stubs else ALL[t.name]()
 	elif isinstance(t, ast.Elem):
-		return ALL[t.obj.name](get(t.key, stubs))
+		return ALL[t.obj.name]()[get(t.key, stubs)]
 	elif isinstance(t, ast.Owner):
 		return owner(get(t.value, stubs))
 	elif isinstance(t, ast.Ref):
