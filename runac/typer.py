@@ -275,9 +275,15 @@ class TypeChecker(object):
 	# Arithmetic operators
 	
 	def arith(self, op, node, scope):
+		
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
+		
+		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
 		if node.left.type == node.right.type:
+			node.type = node.left.type
+		elif lt in types.INTS:
+			assert rt in types.INTS
 			node.type = node.left.type
 		else:
 			assert False, op + ' sides different types'
