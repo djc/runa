@@ -31,6 +31,12 @@ class Analyzer(object):
 	def As(self, node):
 		self.visit(node.left)
 	
+	def LoopSetup(self, node):
+		self.visit(node.loop.source)
+	
+	def LoopHeader(self, node):
+		self.vars[1].add(node.lvar.name)
+	
 	def Assign(self, node):
 		if isinstance(node.left, ast.Name):
 			self.vars[1].add(node.left.name)
