@@ -107,6 +107,12 @@ class Specializer(object):
 	
 	# Miscellaneous
 	
+	def LoopSetup(self, node, type=None):
+		self.visit(node.loop.source, type)
+	
+	def LoopHeader(self, node, type=None):
+		self.visit(node.lvar, self.track.get(node.lvar.name))
+	
 	def CondBranch(self, node, type=None):
 		self.visit(node.cond, types.get('ToBool'))
 	
