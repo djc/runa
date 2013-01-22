@@ -129,6 +129,11 @@ class template(base):
 		
 		return cls()
 
+class iter(template):
+	params = 'T',
+	attribs = {}
+	methods = {}
+
 class void(base):
 	ir = 'void'
 	byval = True

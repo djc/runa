@@ -476,6 +476,7 @@ def typer(mod):
 			types.add(v)
 	
 	base = Scope()
+	base['iter'] = types.iter()
 	for name, obj in mod.names.iteritems():
 		
 		if not isinstance(obj, basestring):
