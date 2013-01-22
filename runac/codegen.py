@@ -44,6 +44,7 @@ class CodeGen(object):
 		self.main = False
 		self.labels = {}
 		self.typedecls = None
+		self.intercept = None
 		self.buf = []
 	
 	def visit(self, node, frame):
@@ -239,7 +240,13 @@ class CodeGen(object):
 	# Node visitation methods
 	
 	def Name(self, node, frame):
-		return self.load(frame, frame[node.name])
+		
+		if self.intercept is None:
+			return self.load(frame, frame[node.name])
+		
+		attr = types.unwrap(self.intercept.type).attribs[node.name]
+		addr = self.gep(frame, self.intercept, 0, attr[0])
+		return self.load(frame, Value(types.ref(attr[1]), addr))
 	
 	def Bool(self, node, frame):
 		return Value(node.type, 'true' if node.val else 'false')
@@ -436,6 +443,63 @@ class CodeGen(object):
 	def Div(self, node, frame):
 		return self.arith('div', node, frame)
 	
+	# Iteration
+	
+	def Yield(self, node, frame):
+		
+		ctxt = types.unwrap(self.intercept.type)
+		jump = 'blockaddress(@%s, %%L%s)' % (ctxt.function.decl, node.target)
+		slot = self.gep(frame, self.intercept, 0, 0)
+		self.store(('i8*', jump), slot)
+		
+		rt = ctxt.function.type.over[0]
+		bits = frame.varname(), rt.ir, 'undef', 'i1 1'
+		self.writeline('%s = insertvalue %s %s, %s, 0' % bits)
+		
+		val = self.visit(node.value, frame)
+		bits = frame.varname(), rt.ir, bits[0], val.type.ir, val.var
+		self.writeline('%s = insertvalue %s %s, %s %s, 1' % bits)
+		self.writeline('ret %s %s' % (rt.ir, bits[0]))
+	
+	def LoopSetup(self, node, frame):
+		
+		loop = self.visit(node.loop.source.args[0], frame)
+		ctx = self.alloca(frame, node.type)
+		
+		labelslot = self.gep(frame, ctx, 0, 0)
+		labeladdr = 'blockaddress(@%s, %s)' % (ctx.type.name[1:-4], '%L0')
+		self.store(('i8*', labeladdr), labelslot)
+		
+		ctxt = types.unwrap(ctx.type)
+		for i, name in enumerate(node.loop.source.fun.type.args):
+			at = node.loop.source.fun.type.over[1][i]
+			idx = ctxt.attribs[name][0]
+			slot = self.gep(frame, ctx, 0, idx)
+			self.store(loop, slot)
+		
+		return ctx
+	
+	def LoopHeader(self, node, frame):
+		
+		ctx = frame[node.ctx.name]
+		ctxt = types.unwrap(ctx.type)
+		
+		res = frame.varname()
+		rt = ctxt.function.type.over[0].ir
+		bits = res, rt, ctxt.function.decl, ctx.type.ir, ctx.var
+		self.writeline('%s = call %s @%s(%s %s)' % bits)
+		
+		more, iterval = frame.varname(), frame.varname()
+		self.writeline('%s = extractvalue %s %s, 0' % (more, rt, res))
+		self.writeline('%s = extractvalue %s %s, 1' % (iterval, rt, res))
+		
+		itervar = self.alloca(frame, node.lvar.type)
+		self.store((node.lvar.type, iterval), itervar.var)
+		frame[node.lvar.name] = itervar
+		
+		bits = more, node.tg1, node.tg2
+		self.writeline('br i1 %s, label %%L%s, label %%L%s' % bits)
+	
 	# Miscellaneous
 	
 	def As(self, node, frame):
@@ -444,7 +508,7 @@ class CodeGen(object):
 		assert left.type.bits <= node.type.bits
 		assert left.type in types.SINTS and node.type in types.UINTS
 		return Value(node.type, left.var)
-		
+	
 	def CondBranch(self, node, frame):
 		
 		cond = self.visit(node.cond, frame)
@@ -459,10 +523,22 @@ class CodeGen(object):
 	
 	def Assign(self, node, frame):
 		
+		if isinstance(node.right, blocks.LoopSetup):
+			frame[node.left.name] = self.visit(node.right, frame)
+			return
+		
 		val = self.visit(node.right, frame)
+		if isinstance(node.right, ast.Attrib):
+			val = self.load(frame, val)
+		
 		if isinstance(node.left, ast.Name):
 			
-			if node.left.name not in frame:
+			if self.intercept:
+				ctxt = types.unwrap(self.intercept.type)
+				attr = ctxt.attribs[node.left.name]
+				slot = self.gep(frame, self.intercept, 0, attr[0])
+				wrap = Value(types.ref(attr[1]), slot)
+			elif node.left.name not in frame:
 				wrap = self.alloca(frame, val.type)
 			else:
 				wrap = frame[node.left.name]
@@ -540,8 +616,16 @@ class CodeGen(object):
 		if node.value is None and self.main:
 			self.writeline('ret i32 0')
 			return
-		if node.value is None:
+		if node.value is None and self.intercept is None:
 			self.writeline('ret void')
+			return
+		
+		if self.intercept is not None:
+			ctxt = types.unwrap(self.intercept.type)
+			rt = ctxt.function.type.over[0]
+			assert rt.params[0].name in types.INTEGERS
+			bits = rt.ir, rt.params[0].ir
+			self.writeline('ret %s { i1 0, %s 0 }' % bits)
 			return
 		
 		value = self.visit(node.value, frame)
@@ -598,6 +682,11 @@ class CodeGen(object):
 	
 	def Function(self, node, frame):
 		
+		ctxt, self.intercept = None, None
+		if node.flow.yields:
+			ctxt = types.ALL[node.irname + '$ctx']
+			self.intercept = Value(types.ref(ctxt), '%ctx')
+		
 		self.labels.clear()
 		frame = Frame(frame)
 		irname = node.name.name
@@ -611,8 +700,22 @@ class CodeGen(object):
 		args = ['%s %%%s' % (a.type.ir, a.name.name) for a in node.args]
 		if irname == 'main' and node.args:
 			args = ['i32 %argc', 'i8** %argv']
+		elif ctxt is not None:
+			args = ['%s %%ctx' % (types.ref(ctxt).ir)]
+		
 		self.writeline('define %s @%s(%s) {' % (rt, irname, ', '.join(args)))
 		self.indent()
+		
+		if self.intercept is not None:
+			
+			self.label('Prologue')
+			slot = self.gep(frame, self.intercept, 0, 0)
+			addr = self.load(frame, Value(types.get('&&byte'), slot))
+			
+			targets = [0] + node.flow.yields.values()
+			labels = ', '.join('label %%L%s' % v for v in targets)
+			bits = addr.type.ir, addr.var, labels
+			self.writeline('indirectbr %s %s, [ %s ]' % bits)
 		
 		self.label('L0', 'entry')
 		if irname == 'main' and node.args:
@@ -633,8 +736,8 @@ class CodeGen(object):
 			self.writeline(call % direct)
 			self.store(('%array$str*', direct), args.var)
 			frame['args'] = args
-			
-		elif node.args:
+		
+		elif node.args and ctxt is None:
 			for arg in node.args:
 				addr = self.alloca(frame, arg.type)
 				frame[arg.name.name] = addr
@@ -703,6 +806,11 @@ class CodeGen(object):
 			self.writeline('%s = type { %s }' % (type.ir, s))
 			return
 		
+		if type.name.startswith('iter['):
+			bits = type.ir, type.params[0].ir
+			self.writeline('%s = type { i1, %s }' % bits)
+			return
+		
 		fields = sorted(type.attribs.itervalues())
 		s = ', '.join([i[1].ir for i in fields])
 		self.writeline('%s = type { %s }' % (type.ir, s))
@@ -729,6 +837,44 @@ class CodeGen(object):
 		self.writeline('%%%s.wrap = type { %%%s.vt*, i8* }' % (t.name, t.name))
 		self.newline()
 	
+	def ctx(self, mod, t):
+		
+		name = t.name[:-4].split('.')
+		key = name[0] if len(name) == 1 else tuple(name)
+		fun = None
+		for k, v in mod.code:
+			if k == key:
+				fun = v
+				break
+		
+		assert fun is not None
+		vars = {}
+		for i, bl in fun.flow.blocks.iteritems():
+			for step in bl.steps:
+				nodes = [step]
+				node = nodes.pop(0)
+				while node:
+					
+					if isinstance(node, ast.Name):
+						vars[node.name] = node.type
+					
+					if not node.fields:
+						node = None if not nodes else nodes.pop(0)
+						continue
+					
+					fields = list(node.fields)
+					if isinstance(node, ast.Attrib):
+						fields.remove('attrib')
+					
+					nodes += [getattr(node, k) for k in fields]
+					node = None if not nodes else nodes.pop(0)
+		
+		t.attribs['$label'] = 0, types.get('&byte')
+		for i, (name, type) in enumerate(vars.iteritems()):
+			t.attribs[name] = i + 1, type
+		
+		self.type(t)
+	
 	def Module(self, mod):
 		
 		for k, v in mod.names.iteritems():
@@ -745,7 +891,10 @@ class CodeGen(object):
 				self.type(v)
 		
 		for var in mod.variants:
-			self.type(var)
+			if var.name.endswith('$ctx'):
+				self.ctx(mod, var)
+			else:
+				self.type(var)
 		
 		frame = Frame()
 		for k, v in mod.names.iteritems():
