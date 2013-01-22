@@ -286,6 +286,7 @@ class Yield(Statement):
 	
 	def nud(self, p):
 		self.value = p.expr()
+		self.target = None # for use in blocks
 		return self
 
 class Suite(Statement):

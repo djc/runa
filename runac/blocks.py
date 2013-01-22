@@ -24,6 +24,28 @@ class Constant(object):
 	def __init__(self, node):
 		self.node = node
 
+class LoopSetup(object):
+	fields = 'loop',
+	def __init__(self, loop):
+		self.loop = loop
+		self.type = None
+	def __repr__(self):
+		contents = sorted(self.__dict__.iteritems())
+		show = ('%s=%s' % (k, v) for (k, v) in contents)
+		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
+
+class LoopHeader(object):
+	fields = 'ctx', 'lvar'
+	def __init__(self, ctx, lvar, tg1, tg2):
+		self.ctx = ctx
+		self.lvar = lvar
+		self.tg1 = tg1
+		self.tg2 = tg2
+	def __repr__(self):
+		contents = sorted(self.__dict__.iteritems())
+		show = ('%s=%s' % (k, v) for (k, v) in contents)
+		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
+
 class Block(object):
 	
 	def __init__(self, id, anno=None):
@@ -51,6 +73,7 @@ class FlowGraph(object):
 		self.blocks = {0: Block(0, 'entry')}
 		self.edges = None
 		self.exits = None
+		self.yields = {}
 	
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
@@ -85,6 +108,10 @@ class FlowFinder(object):
 		self.cur = self.flow.blocks[0]
 		self.tmp = 0
 	
+	def name(self):
+		self.tmp += 1
+		return '$%s' % (self.tmp - 1)
+	
 	def build(self, node):
 		self.visit(node)
 		return self.flow
@@ -98,6 +125,13 @@ class FlowFinder(object):
 	def Suite(self, node):
 		for stmt in node.stmts:
 			self.visit(stmt)
+	
+	def Yield(self, node):
+		self.cur.push(node)
+		next = self.flow.block('yield-to')
+		self.flow.yields[self.cur.id] = next.id
+		node.target = next.id
+		self.cur = next
 	
 	def If(self, node):
 		
@@ -155,7 +189,25 @@ class FlowFinder(object):
 		head.steps[-1].tg2 = exit.id
 	
 	def For(self, node):
-		assert False
+		
+		head = self.flow.block('for-head')
+		body = self.flow.block('for-body')
+		
+		asgt = ast.Assign(None)
+		asgt.left = ast.Name(self.name(), None)
+		asgt.right = LoopSetup(node)
+		self.cur.push(asgt)
+		self.cur.push(Branch(head.id))
+		head.push(LoopHeader(asgt.left, node.lvar, body.id, None))
+		
+		self.cur = body
+		self.visit(node.suite)
+		self.cur.push(Branch(head.id))
+		
+		exit = self.flow.block('for-exit')
+		self.cur = exit
+		assert isinstance(head.steps[-1], LoopHeader)
+		head.steps[-1].tg2 = exit.id
 
 class Module(object):
 	
@@ -231,6 +283,11 @@ def module(node):
 			if isinstance(bl.steps[-1], Branch):
 				cfg.edges.setdefault(i, []).append(bl.steps[-1].label)
 			elif isinstance(bl.steps[-1], CondBranch):
+				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
+				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
+			elif isinstance(bl.steps[-1], ast.Yield):
+				cfg.edges.setdefault(i, []).append(bl.steps[-1].target)
+			elif isinstance(bl.steps[-1], LoopHeader):
 				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
 				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
 			elif not isinstance(bl.steps[-1], ast.Return):
