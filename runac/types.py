@@ -45,7 +45,7 @@ class ReprId(object):
 					score += 1
 			
 			if score > 0:
-				res.append((ir, rt, fatypes))
+				res.append((ir, rt, fatypes, [a[0] for a in formal]))
 		
 		if not res:
 			astr = ', '.join(t.name for t in actual)
@@ -54,7 +54,9 @@ class ReprId(object):
 			raise util.Error(node, msg % bits)
 		
 		assert len(res) == 1, res
-		return res[0][0], function(res[0][1], res[0][2])
+		mtype = function(res[0][1], res[0][2])
+		mtype.args = res[0][3]
+		return res[0][0], mtype
 
 class base(ReprId):
 	
@@ -201,6 +203,7 @@ class function(base):
 	
 	def __init__(self, rtype, formal):
 		self.over = rtype, formal
+		self.args = None
 	
 	def __repr__(self):
 		if not self.over[1] or isinstance(self.over[1][0], tuple):
