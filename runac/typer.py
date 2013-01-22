@@ -157,7 +157,8 @@ class Scope(object):
 
 class TypeChecker(object):
 	
-	def __init__(self, fun):
+	def __init__(self, mod, fun):
+		self.mod = mod
 		self.fun = fun
 		self.flow = fun.flow
 		self.scopes = {}
@@ -465,7 +466,7 @@ def process(mod, base, fun):
 		start[arg.name.name] = Object(arg.type)
 		variant(mod, arg.type)
 	
-	checker = TypeChecker(fun)
+	checker = TypeChecker(mod, fun)
 	checker.check(start)
 
 def typer(mod):
