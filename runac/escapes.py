@@ -30,6 +30,9 @@ class EscapeFinder(object):
 		if not escape: return
 		self.track.add(node.name)
 	
+	def Yield(self, node, escape=None):
+		self.visit(node.value, True)
+	
 	def Assign(self, node, escape=None):
 		
 		if isinstance(node.left, ast.Name):
