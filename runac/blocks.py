@@ -142,14 +142,17 @@ class FlowFinder(object):
 		
 		head = self.flow.block('while-head')
 		body = self.flow.block('while-body')
-		exit = self.flow.block('while-exit')
 		self.cur.push(Branch(head.id))
-		head.push(CondBranch(node.cond, body.id, exit.id))
+		head.push(CondBranch(node.cond, body.id, None))
 		
 		self.cur = body
 		self.visit(node.suite)
 		self.cur.push(Branch(head.id))
+		
+		exit = self.flow.block('while-exit')
 		self.cur = exit
+		assert isinstance(head.steps[-1], CondBranch)
+		head.steps[-1].tg2 = exit.id
 	
 	def For(self, node):
 		assert False
