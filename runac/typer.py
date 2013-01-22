@@ -301,6 +301,51 @@ class TypeChecker(object):
 	def Div(self, node, scope):
 		self.arith('div', node, scope)
 	
+	# Iteration-related nodes
+	
+	def Yield(self, node, scope):
+		self.visit(node.value, scope)
+		assert self.fun.rtype.params[0] == node.value.type
+	
+	def LoopSetup(self, node, scope):
+		
+		self.visit(node.loop.source, scope)
+		t = types.unwrap(node.loop.source.type)
+		if not t.name.startswith('iter['):
+			call = ast.Call(None)
+			call.name = ast.Attrib(None)
+			call.name.obj = node.loop.source
+			call.name.attrib = ast.Name('__iter__', None)
+			call.args = []
+			call.fun = None
+			call.virtual = None
+			self.visit(call, scope)
+			node.loop.source = call
+		
+		name = node.loop.source.fun.name + '$ctx'
+		cls = types.ALL[name] = type(name, (types.concrete,), {
+			'name': name,
+			'ir': '%' + name,
+			'yields': t.methods['__iter__'][0].params[0],
+			'function': node.loop.source.fun,
+			'attribs': {}
+		})
+		
+		node.type = cls()
+		self.mod.variants.add(node.type)
+	
+	def LoopHeader(self, node, scope):
+		
+		name = node.lvar.name
+		vart = node.ctx.type.yields
+		if name in scope and scope[name].type != vart:
+			assert False, 'reassignment'
+		
+		scope[name] = Object(vart)
+		node.lvar.type = vart
+	
+	# Miscellaneous
+	
 	def As(self, node, scope):
 		self.visit(node.left, scope)
 		node.type = self.scopes[None][node.right.name]
@@ -330,7 +375,9 @@ class TypeChecker(object):
 		
 		if isinstance(node.name, ast.Attrib):
 			
-			self.visit(node.name.obj, scope)
+			if node.name.obj.type is None:
+				self.visit(node.name.obj, scope)
+			
 			if node.name.obj.type == types.module():
 				
 				mod = scope[node.name.obj.name]
@@ -417,6 +464,10 @@ class TypeChecker(object):
 			raise util.Error(node, "unmatched types '%s', '%s'" % bits)
 	
 	def Return(self, node, scope):
+		
+		if self.flow.yields:
+			assert node.value is None
+			return
 		
 		if node.value is None and self.fun.rtype != types.void():
 			msg = "function may not return value of type 'void'"
