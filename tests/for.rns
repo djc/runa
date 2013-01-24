@@ -1,17 +1,8 @@
-class range:
-	
-	start: int
-	stop: int
-	
-	def __init__(self, start: int, stop: int):
-		self.start = start
-		self.stop = stop
-	
-	def __iter__(self) -> iter[int]:
-		i = self.start
-		while i < self.stop:
-			yield i
-			i = i + 1
+def range(start: int, stop: int) -> iter[int]:
+	i = start
+	while i < stop:
+		yield i
+		i = i + 1
 
 def main():
 	for i in range(0, 5):
