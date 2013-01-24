@@ -682,7 +682,6 @@ class CodeGen(object):
 	def Function(self, node, frame):
 		
 		self.labels.clear()
-		frame = Frame(frame)
 		irname = node.name.name
 		if hasattr(node, 'irname'):
 			irname = node.irname
@@ -705,6 +704,7 @@ class CodeGen(object):
 		self.writeline('define %s @%s(%s) {' % (rt, irname, ', '.join(args)))
 		self.indent()
 		
+		frame = Frame(frame)
 		if self.intercept is not None:
 			
 			self.label('Prologue')
