@@ -463,9 +463,7 @@ class CodeGen(object):
 	
 	def LoopSetup(self, node, frame):
 		
-		loop = self.visit(node.loop.source.args[0], frame)
 		ctx = self.alloca(frame, node.type)
-		
 		labelslot = self.gep(frame, ctx, 0, 0)
 		labeladdr = 'blockaddress(@%s, %s)' % (ctx.type.name[1:-4], '%L0')
 		self.store(('i8*', labeladdr), labelslot)
@@ -474,8 +472,9 @@ class CodeGen(object):
 		for i, name in enumerate(node.loop.source.fun.type.args):
 			at = node.loop.source.fun.type.over[1][i]
 			idx = ctxt.attribs[name][0]
+			var = self.visit(node.loop.source.args[i], frame)
 			slot = self.gep(frame, ctx, 0, idx)
-			self.store(loop, slot)
+			self.store(var, slot)
 		
 		return ctx
 	
