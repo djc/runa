@@ -323,10 +323,11 @@ class TypeChecker(object):
 			node.loop.source = call
 		
 		name = node.loop.source.fun.name + '$ctx'
+		rt = node.loop.source.fun.type.over[0]
 		cls = types.ALL[name] = type(name, (types.concrete,), {
 			'name': name,
 			'ir': '%' + name,
-			'yields': t.methods['__iter__'][0].params[0],
+			'yields': rt.params[0],
 			'function': node.loop.source.fun,
 			'attribs': {}
 		})
