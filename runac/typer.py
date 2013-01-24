@@ -563,14 +563,17 @@ def typer(mod):
 			continue
 		
 		atypes = []
+		anames = []
 		for arg in fun.args:
 			if arg.type is None:
 				msg = "missing type for argument '%s'"
 				raise util.Error(arg, msg % arg.name.name)
 			atypes.append(base.resolve(arg.type))
+			anames.append(arg.name.name)
 		
 		rtype = types.void() if fun.rtype is None else base.resolve(fun.rtype)
 		type = types.function(rtype, atypes)
+		type.args = anames
 		base[fun.name.name] = Function(fun.name.name, type)
 		
 		if k == 'main' and atypes and atypes[0] != types.ref(base['str']):
