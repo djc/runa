@@ -682,16 +682,16 @@ class CodeGen(object):
 	
 	def Function(self, node, frame):
 		
-		ctxt, self.intercept = None, None
-		if node.flow.yields:
-			ctxt = types.ALL[node.irname + '$ctx']
-			self.intercept = Value(types.ref(ctxt), '%ctx')
-		
 		self.labels.clear()
 		frame = Frame(frame)
 		irname = node.name.name
 		if hasattr(node, 'irname'):
 			irname = node.irname
+		
+		ctxt, self.intercept = None, None
+		if node.flow.yields:
+			ctxt = types.ALL[irname + '$ctx']
+			self.intercept = Value(types.ref(ctxt), '%ctx')
 		
 		rt = node.rtype.ir
 		if irname == 'main' and rt == 'void':
