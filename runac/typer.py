@@ -222,7 +222,7 @@ class TypeChecker(object):
 		node.type = types.anyfloat()
 	
 	def String(self, node, scope):
-		node.type = types.ref(types.get('str'))
+		node.type = types.owner(types.get('str'))
 	
 	# Boolean operators
 	
