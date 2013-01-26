@@ -259,24 +259,48 @@ class CodeGen(object):
 	
 	def String(self, node, frame):
 		
-		dtype = '[%i x i8]' % len(node.val.decode('string_escape'))
-		data = frame.varname()
-		self.writeline('%s = alloca %s' % (data, dtype))
-		
+		t = types.unwrap(node.type)
 		literal = node.val
 		for c, sub in sorted(ESCAPES.iteritems()):
 			literal = literal.replace(c, sub)
 		
-		self.store((dtype, 'c"%s"' % literal), data)
-		t = types.unwrap(node.type)
-		full = self.alloca(frame, t)
+		length = len(node.val.decode('string_escape'))
+		dtype = '[%i x i8]' % length
+		if not node.escapes:
+			
+			tmp = frame.varname()
+			self.writeline('%s = alloca %s' % (tmp, dtype))
+			
+			data = frame.varname()
+			self.store((dtype, 'c"%s"' % literal), tmp)
+			
+			bits = data, dtype, tmp
+			self.writeline('%s = bitcast %s* %s to i8*' % bits)
+			full = self.alloca(frame, t)
+			
+		else:
+			
+			size = self.load(frame, Value(types.get('&uint'), '@str.size'))
+			tmp = frame.varname()
+			bits = tmp, size.var
+			self.writeline('%s = call i8* @runa.malloc(i64 %s)' % bits)
+			
+			full = frame.varname()
+			self.writeline('%s = bitcast i8* %s to %%str*' % (full, tmp))
+			full = Value(types.owner(t), full)
+			
+			data = frame.varname()
+			bits = data, length
+			self.writeline('%s = call i8* @runa.malloc(i64 %s)' % bits)
+			
+			tmp = frame.varname()
+			bits = tmp, data, dtype
+			self.writeline('%s = bitcast i8* %s to %s*' % bits)
+			self.store((dtype, 'c"%s"' % literal), tmp)
+		
 		lenvar = self.gep(frame, full, 0, 0)
 		self.store((t.attribs['len'][1], len(node.val)), lenvar)
-		
-		cast = frame.varname()
-		bits = cast, dtype, data
-		self.writeline('%s = bitcast %s* %s to i8*' % bits)
-		self.store(('i8*', cast), self.gep(frame, full, 0, 1))
+		self.store(('i8*', data), self.gep(frame, full, 0, 1))
 		return full
 	
 	def Init(self, node, frame):
