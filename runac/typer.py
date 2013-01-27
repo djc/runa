@@ -136,6 +136,9 @@ class Scope(object):
 	def __setitem__(self, key, val):
 		self.vars[key] = val
 	
+	def __delitem__(self, key):
+		del self.vars[key]
+	
 	def get(self, key, default=None):
 		return self[key] if key in self else default
 	
@@ -402,6 +405,11 @@ class TypeChecker(object):
 			if not types.compat(actual, node.fun.type.over[1]):
 				assert False
 			
+			for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
+				if isinstance(f, types.owner):
+					if isinstance(node.args[i], ast.Name):
+						del scope[node.args[i].name]
+			
 			return
 		
 		self.visit(node.name, scope)
@@ -420,6 +428,11 @@ class TypeChecker(object):
 				fstr = ', '.join(t.name for t in node.fun.type.over[1])
 				msg = 'arguments (%s) cannot be passed as (%s)'
 				raise util.Error(node, msg % (astr, fstr))
+			
+			for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
+				if isinstance(f, types.owner):
+					if isinstance(node.args[i], ast.Name):
+						del scope[node.args[i].name]
 		
 		else:
 			
@@ -429,6 +442,11 @@ class TypeChecker(object):
 			node.type = types.owner(obj)
 			if '__init__' in irname:
 				node.args.insert(0, Init(types.owner(obj)))
+			
+			for i, (a, f) in enumerate(zip(actual, mt.over[1])):
+				if isinstance(f, types.owner):
+					if isinstance(node.args[i], ast.Name):
+						del scope[node.args[i].name]
 		
 		if isinstance(obj, Function):
 			node.name.name = obj.name

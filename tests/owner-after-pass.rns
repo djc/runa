@@ -1,0 +1,7 @@
+def foo(s: $str):
+	pass
+
+def main():
+	s = 'bar'
+	foo(s)
+	print(s)

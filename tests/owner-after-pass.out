@@ -1,0 +1,3 @@
+tests/owner-after-pass.rns [7.8]: undefined name 's'
+    print(s)
+          ^
