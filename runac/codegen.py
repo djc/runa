@@ -140,7 +140,7 @@ class CodeGen(object):
 	
 	# Some type system helper methods
 	
-	def coerce(self, val, dst, frame):
+	def coerce(self, val, dst):
 		
 		vt = val.type, 0
 		while isinstance(vt[0], types.WRAPPERS):
@@ -184,14 +184,14 @@ class CodeGen(object):
 			return Value(dt[0], res)
 		
 		if isinstance(dt[0], types.trait) and types.compat(vt[0], dt[0]):
-			return self.traitwrap(val, dst, frame)
+			return self.traitwrap(val, dst)
 		
 		if isinstance(dst, types.VarArgs):
 			return val
 		
 		assert False, '%s -> %s' % (val.type, dst)
 	
-	def traitwrap(self, val, trait, frame):
+	def traitwrap(self, val, trait):
 		
 		if not isinstance(val.type, types.WRAPPERS):
 			tmp = self.alloca(val.type)
@@ -338,7 +338,7 @@ class CodeGen(object):
 		rt, malts = t.methods['__bool__']
 		method = malts[0][0], rt, malts[0][1]
 		
-		arg = self.coerce(left, method[2][0][1], frame)
+		arg = self.coerce(left, method[2][0][1])
 		argstr = '%s %s' % (arg.type.ir, arg.var)
 		bits = bool, method[1].ir, method[0], argstr
 		self.writeline('%s = call %s @%s(%s)' % bits)
@@ -356,7 +356,7 @@ class CodeGen(object):
 		
 		val = self.visit(node.value, frame)
 		if types.unwrap(val.type) != types.get('bool'):
-			val = self.coerce(val, types.get('bool'), frame)
+			val = self.coerce(val, types.get('bool'))
 		
 		bits = self.varname(), val.var
 		self.writeline('%s = select i1 %s, i1 false, i1 true' % bits)
@@ -536,7 +536,7 @@ class CodeGen(object):
 		
 		cond = self.visit(node.cond, frame)
 		if cond.type != types.get('bool'):
-			cond = self.coerce(cond, types.get('bool'), frame)
+			cond = self.coerce(cond, types.get('bool'))
 		
 		bits = cond.var, node.tg1, node.tg2
 		self.writeline('br i1 %s, label %%L%s, label %%L%s' % bits)
@@ -613,7 +613,7 @@ class CodeGen(object):
 		
 		cond = self.visit(node.cond, frame)
 		if cond.type != types.get('bool'):
-			cond = self.coerce(cond, types.get('bool'), frame)
+			cond = self.coerce(cond, types.get('bool'))
 		
 		llabel = self.getlabel('T')
 		rlabel = self.getlabel('T')
@@ -666,7 +666,7 @@ class CodeGen(object):
 			
 			if not node.virtual or i:
 				val = self.visit(arg, frame)
-				args.append(self.coerce(val, atypes[i], frame))
+				args.append(self.coerce(val, atypes[i]))
 				continue
 			
 			val = wrapped = self.visit(arg, frame)
