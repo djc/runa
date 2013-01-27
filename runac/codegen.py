@@ -101,13 +101,13 @@ class CodeGen(object):
 	
 	# Some IR writing helpers
 	
-	def alloca(self, frame, t):
+	def alloca(self, t):
 		res = self.varname()
 		assert isinstance(t, (types.base, types.trait))
 		self.writeline('%s = alloca %s' % (res, t.ir))
 		return Value(types.ref(t), res)
 	
-	def load(self, frame, val):
+	def load(self, val):
 		assert isinstance(val, Value)
 		bits = self.varname(), val.type.ir, val.var
 		self.writeline('%s = load %s %s' % bits)
@@ -124,7 +124,7 @@ class CodeGen(object):
 			assert False
 		self.writeline('store %s %s, %s* %s' % bits)
 	
-	def gep(self, frame, val, *args):
+	def gep(self, val, *args):
 		
 		res = self.varname()
 		idx = ', '.join('i32 %i' % a for a in args)
@@ -155,11 +155,11 @@ class CodeGen(object):
 			
 			if vt[0] == boolt:
 				while val.type != boolt:
-					val = self.load(frame, val)
+					val = self.load(val)
 				return val
 			
 			if not vt[1]:
-				tmp = self.alloca(frame, vt[0])
+				tmp = self.alloca(vt[0])
 				self.store(val, tmp.var)
 				val = tmp
 			
@@ -169,7 +169,7 @@ class CodeGen(object):
 			return Value(boolt, bits[0])
 		
 		while vt[1] > dt[1]:
-			val = self.load(frame, val)
+			val = self.load(val)
 			vt = vt[0], vt[1] - 1
 		
 		if vt == dt:
@@ -194,7 +194,7 @@ class CodeGen(object):
 	def traitwrap(self, val, trait, frame):
 		
 		if not isinstance(val.type, types.WRAPPERS):
-			tmp = self.alloca(frame, val.type)
+			tmp = self.alloca(val.type)
 			self.store(val, tmp.var)
 			val = tmp
 		
@@ -202,7 +202,7 @@ class CodeGen(object):
 		assert isinstance(trait, types.WRAPPERS)
 		
 		ptrt = types.get('&byte')
-		wrap = self.alloca(frame, types.unwrap(trait))
+		wrap = self.alloca(types.unwrap(trait))
 		vtt = '%' + trait.over.name + '.vt'
 		vt = self.varname()
 		self.writeline('%s = alloca %s' % (vt, vtt))
@@ -224,16 +224,16 @@ class CodeGen(object):
 			cast = self.varname()
 			bits = cast, cmt.ir, cmeth[0], tmt.ir
 			self.writeline('%s = bitcast %s @%s to %s' % bits)
-			slot = self.gep(frame, (vtt + '*', vt), 0, i)
+			slot = self.gep((vtt + '*', vt), 0, i)
 			self.store((tmt, cast), slot)
 		
-		vtslot = self.gep(frame, wrap, 0, 0)
+		vtslot = self.gep(wrap, 0, 0)
 		self.store((vtt + '*', vt), vtslot)
 		
 		cast = self.varname()
 		bits = cast, val.type.ir, val.var, ptrt.ir
 		self.writeline('%s = bitcast %s %s to %s' % bits)
-		objslot = self.gep(frame, wrap, 0, 1)
+		objslot = self.gep(wrap, 0, 1)
 		self.store((ptrt, cast), objslot)
 		return wrap
 	
@@ -242,11 +242,11 @@ class CodeGen(object):
 	def Name(self, node, frame):
 		
 		if self.intercept is None:
-			return self.load(frame, frame[node.name])
+			return self.load(frame[node.name])
 		
 		attr = types.unwrap(self.intercept.type).attribs[node.name]
-		addr = self.gep(frame, self.intercept, 0, attr[0])
-		return self.load(frame, Value(types.ref(attr[1]), addr))
+		addr = self.gep(self.intercept, 0, attr[0])
+		return self.load(Value(types.ref(attr[1]), addr))
 	
 	def Bool(self, node, frame):
 		return Value(node.type, 'true' if node.val else 'false')
@@ -276,11 +276,11 @@ class CodeGen(object):
 			
 			bits = data, dtype, tmp
 			self.writeline('%s = bitcast %s* %s to i8*' % bits)
-			full = self.alloca(frame, t)
+			full = self.alloca(t)
 			
 		else:
 			
-			size = self.load(frame, Value(types.get('&uint'), '@str.size'))
+			size = self.load(Value(types.get('&uint'), '@str.size'))
 			tmp = self.varname()
 			bits = tmp, size.var
 			self.writeline('%s = call i8* @runa.malloc(i64 %s)' % bits)
@@ -298,21 +298,21 @@ class CodeGen(object):
 			self.writeline('%s = bitcast i8* %s to %s*' % bits)
 			self.store((dtype, 'c"%s"' % literal), tmp)
 		
-		lenvar = self.gep(frame, full, 0, 0)
+		lenvar = self.gep(full, 0, 0)
 		self.store((t.attribs['len'][1], len(node.val)), lenvar)
-		self.store(('i8*', data), self.gep(frame, full, 0, 1))
+		self.store(('i8*', data), self.gep(full, 0, 1))
 		return full
 	
 	def Init(self, node, frame):
 		
 		if not node.escapes and node.type.byval:
-			return self.alloca(frame, node.type)
+			return self.alloca(node.type)
 		elif not node.escapes:
-			return self.alloca(frame, node.type.over)
+			return self.alloca(node.type.over)
 		
 		assert isinstance(node.type, types.owner), 'escaping %s' % node.type
 		sizevar = '@%s.size' % node.type.over.ir[1:]
-		size = self.load(frame, Value(types.get('&int'), sizevar))
+		size = self.load(Value(types.get('&int'), sizevar))
 		
 		bits = self.varname(), size.var
 		self.writeline('%s = call i8* @runa.malloc(i64 %s)' % bits)
@@ -379,9 +379,9 @@ class CodeGen(object):
 		if types.unwrap(left.type) in vtypes:
 			
 			if isinstance(left.type, types.WRAPPERS):
-				left = self.load(frame, left)
+				left = self.load(left)
 			if isinstance(right.type, types.WRAPPERS):
-				right = self.load(frame, right)
+				right = self.load(right)
 			
 			assert left.type == right.type, (left.type, right.type)
 			if op not in {'eq', 'ne'}:
@@ -434,9 +434,9 @@ class CodeGen(object):
 		if types.unwrap(left.type) in types.INTS:
 			
 			if isinstance(left.type, types.WRAPPERS):
-				left = self.load(frame, left)
+				left = self.load(left)
 			if isinstance(right.type, types.WRAPPERS):
-				right = self.load(frame, right)
+				right = self.load(right)
 			
 			assert left.type == right.type
 			op = {'div': 'sdiv'}.get(op, op)
@@ -473,7 +473,7 @@ class CodeGen(object):
 		
 		ctxt = types.unwrap(self.intercept.type)
 		jump = 'blockaddress(@%s, %%L%s)' % (ctxt.function.decl, node.target)
-		slot = self.gep(frame, self.intercept, 0, 0)
+		slot = self.gep(self.intercept, 0, 0)
 		self.store(('i8*', jump), slot)
 		
 		rt = ctxt.function.type.over[0]
@@ -487,8 +487,8 @@ class CodeGen(object):
 	
 	def LoopSetup(self, node, frame):
 		
-		ctx = self.alloca(frame, node.type)
-		labelslot = self.gep(frame, ctx, 0, 0)
+		ctx = self.alloca(node.type)
+		labelslot = self.gep(ctx, 0, 0)
 		labeladdr = 'blockaddress(@%s, %s)' % (ctx.type.name[1:-4], '%L0')
 		self.store(('i8*', labeladdr), labelslot)
 		
@@ -497,7 +497,7 @@ class CodeGen(object):
 			at = node.loop.source.fun.type.over[1][i]
 			idx = ctxt.attribs[name][0]
 			var = self.visit(node.loop.source.args[i], frame)
-			slot = self.gep(frame, ctx, 0, idx)
+			slot = self.gep(ctx, 0, idx)
 			self.store(var, slot)
 		
 		return ctx
@@ -516,7 +516,7 @@ class CodeGen(object):
 		self.writeline('%s = extractvalue %s %s, 0' % (more, rt, res))
 		self.writeline('%s = extractvalue %s %s, 1' % (iterval, rt, res))
 		
-		itervar = self.alloca(frame, node.lvar.type)
+		itervar = self.alloca(node.lvar.type)
 		self.store((node.lvar.type, iterval), itervar.var)
 		frame[node.lvar.name] = itervar
 		
@@ -552,17 +552,17 @@ class CodeGen(object):
 		
 		val = self.visit(node.right, frame)
 		if isinstance(node.right, ast.Attrib):
-			val = self.load(frame, val)
+			val = self.load(val)
 		
 		if isinstance(node.left, ast.Name):
 			
 			if self.intercept:
 				ctxt = types.unwrap(self.intercept.type)
 				attr = ctxt.attribs[node.left.name]
-				slot = self.gep(frame, self.intercept, 0, attr[0])
+				slot = self.gep(self.intercept, 0, attr[0])
 				wrap = Value(types.ref(attr[1]), slot)
 			elif node.left.name not in frame:
-				wrap = self.alloca(frame, val.type)
+				wrap = self.alloca(val.type)
 			else:
 				wrap = frame[node.left.name]
 			
@@ -585,7 +585,7 @@ class CodeGen(object):
 		
 		w = lambda t: isinstance(t.type, types.WRAPPERS)
 		if w(val) and w(target) and val.type.over == target.type.over:
-			self.store(self.load(frame, val), target.var)
+			self.store(self.load(val), target.var)
 			return
 		
 		assert False
@@ -594,7 +594,7 @@ class CodeGen(object):
 		obj = self.visit(node.obj, frame)
 		t = types.unwrap(obj.type)
 		idx, type = t.attribs[node.attrib.name]
-		name = self.gep(frame, obj, 0, idx)
+		name = self.gep(obj, 0, idx)
 		return Value(types.ref(type), name)
 	
 	def Elem(self, node, frame):
@@ -604,9 +604,9 @@ class CodeGen(object):
 		assert t.name.startswith('array[')
 		et = t.attribs['data'][1].over
 		
-		data = self.gep(frame, obj, 0, 1)
+		data = self.gep(obj, 0, 1)
 		obj = '[0 x %s]*' % et.ir, data
-		elm = self.gep(frame, obj, 0, int(node.key.val))
+		elm = self.gep(obj, 0, int(node.key.val))
 		return Value(types.ref(et), elm)
 	
 	def Ternary(self, node, frame):
@@ -654,7 +654,7 @@ class CodeGen(object):
 		value = self.visit(node.value, frame)
 		if isinstance(value.type, types.WRAPPERS):
 			if value.type.over.byval:
-				value = self.load(frame, value)
+				value = self.load(value)
 		self.writeline('ret %s %s' % (value.type.ir, value.var))
 	
 	def Call(self, node, frame):
@@ -670,8 +670,8 @@ class CodeGen(object):
 				continue
 			
 			val = wrapped = self.visit(arg, frame)
-			vtp = self.gep(frame, val, 0, 1)
-			args.append(self.load(frame, Value(types.get('&&byte'), vtp)))
+			vtp = self.gep(val, 0, 1)
+			args.append(self.load(Value(types.get('&&byte'), vtp)))
 		
 		type, name = rtype, '@' + node.fun.decl
 		if atypes[-1] == types.VarArgs():
@@ -682,15 +682,15 @@ class CodeGen(object):
 			t = types.unwrap(node.fun.type.over[1][0])
 			idx = sorted(t.methods).index(mname)
 			
-			vtp = self.gep(frame, wrapped, 0, 0)
+			vtp = self.gep(wrapped, 0, 0)
 			vtt = '%%%s.vt*' % t.name
 			vt = self.varname()
 			self.writeline('%s = load %s* %s' % (vt, vtt, vtp))
-			fp = self.gep(frame, (vtt, vt), 0, 0)
+			fp = self.gep((vtt, vt), 0, 0)
 			
 			ft = copy.copy(node.fun.type)
 			ft.over = ft.over[0], [types.get('&byte')] + ft.over[1][1:]
-			fun = self.load(frame, Value(types.ref(ft), fp))
+			fun = self.load(Value(types.ref(ft), fp))
 			type, name = fun.type, fun.var
 		
 		argstr = ', '.join('%s %s' % (a.type.ir, a.var) for a in args)
@@ -733,8 +733,8 @@ class CodeGen(object):
 		if self.intercept is not None:
 			
 			self.label('Prologue')
-			slot = self.gep(frame, self.intercept, 0, 0)
-			addr = self.load(frame, Value(types.get('&&byte'), slot))
+			slot = self.gep(self.intercept, 0, 0)
+			addr = self.load(Value(types.get('&&byte'), slot))
 			
 			targets = [0] + node.flow.yields.values()
 			labels = ', '.join('label %%L%s' % v for v in targets)
@@ -745,16 +745,16 @@ class CodeGen(object):
 		if irname == 'main' and node.args:
 			
 			strt = types.get('&str')
-			addrp = self.gep(frame, ('i8**', '%argv'), 0)
-			addr = self.load(frame, Value(types.get('&&byte'), addrp))
-			name = self.alloca(frame, strt.over)
+			addrp = self.gep(('i8**', '%argv'), 0)
+			addr = self.load(Value(types.get('&&byte'), addrp))
+			name = self.alloca(strt.over)
 			
 			wrapfun = '@str.__init__$Rstr.Obyte'
 			bits = wrapfun, strt.ir, name.var, addr.var
 			self.writeline('call void %s(%s %s, i8* %s)' % bits)
 			frame['name'] = name
 			
-			args = self.alloca(frame, types.get('&array[str]'))
+			args = self.alloca(types.get('&array[str]'))
 			direct = self.varname()
 			call = '%s = call %%array$str* @args(i32 %%argc, i8** %%argv)'
 			self.writeline(call % direct)
@@ -763,7 +763,7 @@ class CodeGen(object):
 		
 		elif node.args and ctxt is None:
 			for arg in node.args:
-				addr = self.alloca(frame, arg.type)
+				addr = self.alloca(arg.type)
 				frame[arg.name.name] = addr
 				self.store((arg.type, '%' + arg.name.name), addr.var)
 		
