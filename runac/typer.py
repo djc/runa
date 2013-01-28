@@ -384,6 +384,7 @@ class TypeChecker(object):
 			
 			if node.name.obj.type == types.module():
 				
+				# calling a module attribute
 				mod = scope[node.name.obj.name]
 				fun = mod.type.functions[node.name.attrib.name]
 				qual = mod.name + '.' + node.name.attrib.name
@@ -392,6 +393,7 @@ class TypeChecker(object):
 				
 			else:
 				
+				# calling an object attribute (method)
 				t = types.unwrap(node.name.obj.type)
 				if isinstance(t, types.trait):
 					node.virtual = True
@@ -421,6 +423,7 @@ class TypeChecker(object):
 		obj = self.scopes[None][node.name.name]
 		if not isinstance(obj, types.base):
 			
+			# calling a function
 			node.fun = obj
 			node.type = node.fun.type.over[0]
 			if not types.compat(actual, node.fun.type.over[1]):
@@ -436,6 +439,7 @@ class TypeChecker(object):
 		
 		else:
 			
+			# initializing a type
 			irname, mt = obj.select('__init__', actual)
 			node.name.name = irname
 			node.fun = Function(irname, mt)
