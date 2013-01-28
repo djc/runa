@@ -586,6 +586,7 @@ def typer(mod):
 		type = types.function(rtype, atypes)
 		type.args = anames
 		base[fun.name.name] = types.FunctionDef(fun.name.name, type)
+		fun.irname = fun.name.name
 		
 		if k == 'main' and atypes and atypes[0] != types.ref(base['str']):
 			msg = '1st argument to main() must be of type &str'
