@@ -1,4 +1,5 @@
 import ast, util
+import copy
 
 class Type(object):
 	def __eq__(self, other):
@@ -29,25 +30,22 @@ class ReprId(object):
 	
 	def select(self, name, actual):
 		
-		rt = self.methods[name][0]
-		opts = [(rt, ir, formal) for (ir, formal) in self.methods[name][1]]
+		opts = copy.copy(self.methods[name])
 		if name == '__init__' and '__new__' in self.methods:
-			alloc = self.methods['__new__']
-			opts += [(alloc[0], ir, formal) for (ir, formal) in alloc[1]]
+			opts += self.methods['__new__']
 		
 		res = []
-		for rt, ir, formal in opts:
+		for fun in opts:
 			
 			tmp = actual
-			if '__init__' in ir:
+			if '__init__' in fun.decl:
 				tmp = [ref(self)] + actual
 			
-			fatypes = [a[1] for a in formal]
-			if len(fatypes) != len(tmp):
+			if len(fun.type.over[1]) != len(tmp):
 				continue
 			
 			score = 0
-			for at, ft in zip(tmp, fatypes):
+			for at, ft in zip(tmp, fun.type.over[1]):
 				if not compat(at, ft):
 					score -= 1000
 					break
@@ -57,7 +55,7 @@ class ReprId(object):
 					score += 1
 			
 			if score > 0:
-				res.append((ir, rt, fatypes, [a[0] for a in formal]))
+				res.append(fun)
 		
 		if not res:
 			astr = ', '.join(t.name for t in actual)
@@ -66,9 +64,7 @@ class ReprId(object):
 			raise util.Error(node, msg % bits)
 		
 		assert len(res) == 1, res
-		mtype = function(res[0][1], res[0][2])
-		mtype.args = res[0][3]
-		return FunctionDef(res[0][0], mtype)
+		return res[0]
 
 class base(ReprId):
 	
@@ -263,22 +259,24 @@ def compat(a, f):
 		return a.bits < f.bits
 	elif isinstance(f, trait):
 		
-		for k, (rt, malts) in f.methods.iteritems():
+		for k, malts in f.methods.iteritems():
 			
 			if k not in a.methods:
 				return False
 			
-			rc = compat(a.methods[k][0], rt)
+			art = a.methods[k][0].type.over[0]
+			frt = malts[0].type.over[0]
+			rc = compat(art, frt)
 			if not rc:
 				return False
 			
 			tmalts = set()
-			for x, atypes in malts:
-				tmalts.add(tuple(a[1] for a in atypes[1:]))
+			for fun in malts:
+				tmalts.add(tuple(at for at in fun.type.over[1][1:]))
 			
 			amalts = set()
-			for x, atypes in a.methods[k][1]:
-				amalts.add(tuple(a[1] for a in atypes[1:]))
+			for fun in a.methods[k]:
+				amalts.add(tuple(at for at in fun.type.over[1][1:]))
 			
 			if tmalts != amalts:
 				return False
@@ -392,9 +390,11 @@ def fill(node):
 		if name in cls.methods:
 			wrangle = lambda x: x.replace('&', 'R').replace('$', 'O')
 			irname = irname + '$' + '.'.join(wrangle(a[1].name) for a in args)
-			assert rtype == cls.methods[name][0]
+			assert rtype == cls.methods[name][0].type.over[0]
 		
-		cls.methods.setdefault(name, (rtype, []))[1].append((irname, args))
+		fun = FunctionDef(irname, function(rtype, tuple(a[1] for a in args)))
+		fun.type.args = [a[0] for a in args]
+		cls.methods.setdefault(name, []).append(fun)
 		method.irname = irname
 	
 	obj = cls()

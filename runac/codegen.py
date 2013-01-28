@@ -163,7 +163,7 @@ class CodeGen(object):
 				self.store(val, tmp.var)
 				val = tmp
 			
-			irname = vt[0].methods['__bool__'][1][0][0]
+			irname = vt[0].methods['__bool__'][0].decl
 			bits = self.varname(), irname, val.type.ir, val.var
 			self.writeline('%s = call i1 @%s(%s %s)' % bits)
 			return Value(boolt, bits[0])
@@ -208,24 +208,25 @@ class CodeGen(object):
 		self.writeline('%s = alloca %s' % (vt, vtt))
 		
 		t = types.unwrap(trait)
-		for i, (k, (rt, tmalts)) in enumerate(sorted(t.methods.iteritems())):
+		for i, (k, tmalts) in enumerate(sorted(t.methods.iteritems())):
 			
 			# trait methods overloading TODO
 			assert len(tmalts) == 1
-			tmeth = tmalts[0][0], rt, tmalts[0][1]
-			cmrt, cmalts = types.unwrap(val.type).methods[k]
-			assert len(cmalts) == 1
-			cmeth = cmalts[0][0], cmrt, cmalts[0][1]
+			tfun = tmalts[0]
 			
-			cmt = types.function(cmeth[1], [a[1] for a in cmeth[2]])
-			tmt = types.function(tmeth[1], [a[1] for a in tmeth[2]])
-			tmt.over[1][0] = ptrt
+			cmalts = types.unwrap(val.type).methods[k]
+			assert len(cmalts) == 1
+			cfun = cmalts[0]
+			
+			tft = copy.copy(tfun.type)
+			tft.over = tft.over[0], list(tft.over[1])
+			tft.over[1][0] = ptrt
 			
 			cast = self.varname()
-			bits = cast, cmt.ir, cmeth[0], tmt.ir
+			bits = cast, cfun.type.ir, cfun.decl, tft.ir
 			self.writeline('%s = bitcast %s @%s to %s' % bits)
 			slot = self.gep((vtt + '*', vt), 0, i)
-			self.store((tmt, cast), slot)
+			self.store((tft, cast), slot)
 		
 		vtslot = self.gep(wrap, 0, 0)
 		self.store((vtt + '*', vt), vtslot)
@@ -335,12 +336,10 @@ class CodeGen(object):
 			t = left.type.over
 		
 		bool = self.varname()
-		rt, malts = t.methods['__bool__']
-		method = malts[0][0], rt, malts[0][1]
-		
-		arg = self.coerce(left, method[2][0][1])
+		fun = t.methods['__bool__'][0]
+		arg = self.coerce(left, fun.type.over[1][0])
 		argstr = '%s %s' % (arg.type.ir, arg.var)
-		bits = bool, method[1].ir, method[0], argstr
+		bits = bool, fun.type.over[0].ir, fun.decl, argstr
 		self.writeline('%s = call %s @%s(%s)' % bits)
 		
 		res = self.varname()
@@ -689,7 +688,7 @@ class CodeGen(object):
 			fp = self.gep((vtt, vt), 0, 0)
 			
 			ft = copy.copy(node.fun.type)
-			ft.over = ft.over[0], [types.get('&byte')] + ft.over[1][1:]
+			ft.over = ft.over[0], (types.get('&byte'),) + ft.over[1][1:]
 			fun = self.load(Value(types.ref(ft), fp))
 			type, name = fun.type, fun.var
 		
@@ -846,14 +845,14 @@ class CodeGen(object):
 	def trait(self, t):
 		
 		mtypes = []
-		for name, (rt, malts) in sorted(t.methods.iteritems()):
-			for irname, formal in malts:
+		for name, malts in sorted(t.methods.iteritems()):
+			for fun in malts:
 				
 				args = []
-				for an, at in formal:
+				for an, at in zip(fun.type.args, fun.type.over[1]):
 					args.append(types.get('&byte') if an == 'self' else at)
 				
-				mtypes.append(types.function(rt, args).ir)
+				mtypes.append(types.function(fun.type.over[0], args).ir)
 		
 		self.writeline('%%%s.vt = type { %s }' % (t.name, ', '.join(mtypes)))
 		self.writeline('%%%s.wrap = type { %%%s.vt*, i8* }' % (t.name, t.name))
