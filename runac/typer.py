@@ -316,16 +316,7 @@ class TypeChecker(object):
 			node.loop.source = call
 		
 		name = node.loop.source.fun.name + '$ctx'
-		rt = node.loop.source.fun.type.over[0]
-		cls = types.ALL[name] = type(name, (types.concrete,), {
-			'name': name,
-			'ir': '%' + name,
-			'yields': rt.params[0],
-			'function': node.loop.source.fun,
-			'attribs': {}
-		})
-		
-		node.type = cls()
+		node.type = types.get(name)
 		self.mod.variants.add(node.type)
 	
 	def LoopHeader(self, node, scope):
@@ -527,6 +518,23 @@ def process(mod, base, fun):
 		
 		start[arg.name.name] = Object(arg.type)
 		variant(mod, arg.type)
+	
+	if fun.flow.yields:
+		
+		if '.' in fun.irname:
+			mcls = types.unwrap(fun.args[0].type)
+			defn = mcls.methods[fun.name.name][0]
+		else:
+			defn = base[fun.name.name]
+		
+		name = fun.irname + '$ctx'
+		cls = types.ALL[name] = type(name, (types.concrete,), {
+			'name': name,
+			'ir': '%' + name,
+			'yields': fun.rtype.params[0],
+			'function': defn,
+			'attribs': {}
+		})
 	
 	checker = TypeChecker(mod, fun)
 	checker.check(start)
