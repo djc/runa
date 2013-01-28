@@ -400,9 +400,9 @@ class CodeGen(object):
 			inv = True
 		
 		t = types.unwrap(left.type)
-		irname, mt = t.select('__%s__' % op, (left.type, right.type))
+		fun = t.select('__%s__' % op, (left.type, right.type))
 		args = ['%s %s' % (a.type.ir, a.var) for a in (left, right)]
-		bits = self.varname(), mt.over[0].ir, irname, ', '.join(args)
+		bits = self.varname(), fun.type.over[0].ir, fun.decl, ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
 		
 		val = Value(types.get('bool'), bits[0])
@@ -449,11 +449,11 @@ class CodeGen(object):
 		assert isinstance(right.type, types.WRAPPERS)
 		
 		t = types.unwrap(left.type)
-		irname, mt = t.select('__%s__' % op, (left.type, right.type))
+		fun = t.select('__%s__' % op, (left.type, right.type))
 		args = ['%s %s' % (a.type.ir, a.var) for a in (left, right)]
-		bits = self.varname(), mt.over[0].ir, irname, ', '.join(args)
+		bits = self.varname(), fun.type.over[0].ir, fun.decl, ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
-		return Value(mt.over[0], bits[0])
+		return Value(fun.type.over[0], bits[0])
 	
 	def Add(self, node, frame):
 		return self.arith('add', node, frame)

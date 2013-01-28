@@ -390,9 +390,8 @@ class TypeChecker(object):
 				
 				node.args.insert(0, node.name.obj)
 				actual = [a.type for a in node.args]
-				irname, mtype = t.select(node.name.attrib.name, actual)
-				node.fun = types.FunctionDef(irname, mtype)
-				node.type = mtype.over[0]
+				node.fun = t.select(node.name.attrib.name, actual)
+				node.type = node.fun.type.over[0]
 			
 			if not types.compat(actual, node.fun.type.over[1]):
 				assert False
@@ -430,14 +429,13 @@ class TypeChecker(object):
 		else:
 			
 			# initializing a type
-			irname, mt = obj.select('__init__', actual)
-			node.name.name = irname
-			node.fun = types.FunctionDef(irname, mt)
+			node.fun = obj.select('__init__', actual)
+			node.name.name = node.fun.decl
 			node.type = types.owner(obj)
-			if '__init__' in irname:
+			if '__init__' in node.fun.decl:
 				node.args.insert(0, Init(types.owner(obj)))
 			
-			for i, (a, f) in enumerate(zip(actual, mt.over[1])):
+			for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
 				if isinstance(f, types.owner):
 					if isinstance(node.args[i], ast.Name):
 						del scope[node.args[i].name]

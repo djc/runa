@@ -68,7 +68,7 @@ class ReprId(object):
 		assert len(res) == 1, res
 		mtype = function(res[0][1], res[0][2])
 		mtype.args = res[0][3]
-		return res[0][0], mtype
+		return FunctionDef(res[0][0], mtype)
 
 class base(ReprId):
 	
