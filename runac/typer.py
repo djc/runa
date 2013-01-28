@@ -23,7 +23,7 @@ class Module(object):
 		self.attribs = init
 		self.type = types.module(name)
 		for k, val in init.iteritems():
-			if isinstance(val, Function):
+			if isinstance(val, FunctionDef):
 				self.type.functions[k] = val.type
 				val.name = '%s.%s' % (name, k)
 	
@@ -41,7 +41,7 @@ class Module(object):
 	def iteritems(self):
 		return self.attribs.iteritems()
 
-class Function(object):
+class FunctionDef(object):
 	
 	def __init__(self, decl, type):
 		self.decl = decl
@@ -68,7 +68,7 @@ class Decl(object):
 	def realize(self):
 		rtype = types.get(self.rtype)
 		atypes = [types.get(t) for t in self.atypes]
-		return Function(self.decl, types.function(rtype, atypes))
+		return FunctionDef(self.decl, types.function(rtype, atypes))
 
 ROOT = Module('', {
 	'__internal__': Module('__internal__', {
@@ -104,10 +104,10 @@ def resolve(mod, n):
 		return obj
 	elif parts[0] in mod.names:
 		method = mod.names[parts[0]].methods[parts[1]]
-		return Function(method[0], types.function(method[1], method[2]))
+		return FunctionDef(method[0], types.function(method[1], method[2]))
 	elif parts[0] in types.ALL:
 		method = types.get(parts[0]).methods[parts[1]]
-		return Function(method[0], types.function(method[1], method[2]))
+		return FunctionDef(method[0], types.function(method[1], method[2]))
 	else:
 		assert False, 'cannot resolve %s' % (tuple(parts),)
 
@@ -388,7 +388,7 @@ class TypeChecker(object):
 				mod = scope[node.name.obj.name]
 				fun = mod.type.functions[node.name.attrib.name]
 				qual = mod.name + '.' + node.name.attrib.name
-				node.fun = Function(qual, fun)
+				node.fun = FunctionDef(qual, fun)
 				node.type = fun.over[0]
 				
 			else:
@@ -401,7 +401,7 @@ class TypeChecker(object):
 				node.args.insert(0, node.name.obj)
 				actual = [a.type for a in node.args]
 				irname, mtype = t.select(node.name.attrib.name, actual)
-				node.fun = Function(irname, mtype)
+				node.fun = FunctionDef(irname, mtype)
 				node.type = mtype.over[0]
 			
 			if not types.compat(actual, node.fun.type.over[1]):
@@ -442,7 +442,7 @@ class TypeChecker(object):
 			# initializing a type
 			irname, mt = obj.select('__init__', actual)
 			node.name.name = irname
-			node.fun = Function(irname, mt)
+			node.fun = FunctionDef(irname, mt)
 			node.type = types.owner(obj)
 			if '__init__' in irname:
 				node.args.insert(0, Init(types.owner(obj)))
@@ -452,7 +452,7 @@ class TypeChecker(object):
 					if isinstance(node.args[i], ast.Name):
 						del scope[node.args[i].name]
 		
-		if isinstance(obj, Function):
+		if isinstance(obj, FunctionDef):
 			node.name.name = obj.name
 	
 	def CondBranch(self, node, scope):
@@ -597,7 +597,7 @@ def typer(mod):
 		rtype = types.void() if fun.rtype is None else base.resolve(fun.rtype)
 		type = types.function(rtype, atypes)
 		type.args = anames
-		base[fun.name.name] = Function(fun.name.name, type)
+		base[fun.name.name] = FunctionDef(fun.name.name, type)
 		
 		if k == 'main' and atypes and atypes[0] != types.ref(base['str']):
 			msg = '1st argument to main() must be of type &str'
