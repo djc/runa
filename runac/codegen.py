@@ -900,7 +900,7 @@ class CodeGen(object):
 	def Module(self, mod):
 		
 		for k, v in mod.names.iteritems():
-			if isinstance(v, typer.FunctionDef):
+			if isinstance(v, types.FunctionDef):
 				self.declare(v)
 		
 		self.newline()

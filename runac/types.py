@@ -4,6 +4,18 @@ class Type(object):
 	def __eq__(self, other):
 		return self.__class__ == other.__class__
 
+class FunctionDef(object):
+	
+	def __init__(self, decl, type):
+		self.decl = decl
+		self.type = type
+		self.name = decl # might be overridden by the Module
+	
+	def __repr__(self):
+		contents = sorted(self.__dict__.iteritems())
+		show = ('%s=%r' % (k, v) for (k, v) in contents)
+		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
+
 class ReprId(object):
 	
 	def __hash__(self):
