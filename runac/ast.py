@@ -2,7 +2,7 @@ from util import Error
 
 # Base class
 
-IGNORE = {'p', 'pos'}
+IGNORE = {'pos'}
 
 class Registry(type):
 	types = []
@@ -296,7 +296,6 @@ class Suite(Statement):
 	def __init__(self, p, pos):
 		
 		Node.__init__(self, pos)
-		self.p = p
 		self.stmts = []
 		
 		p.eat(NL)
@@ -520,7 +519,6 @@ class Class(Statement):
 	def nud(self, p):
 		
 		self.decor = set()
-		self.p = p
 		self.name = p.advance(Name)
 		self.params = []
 		
@@ -567,7 +565,6 @@ class Trait(Statement):
 	def nud(self, p):
 		
 		self.decor = set()
-		self.p = p
 		self.name = p.advance(Name)
 		self.params = []
 		
