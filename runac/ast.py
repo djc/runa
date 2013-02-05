@@ -95,11 +95,11 @@ class Attrib(BinaryOp):
 	
 	op = '.'
 	lbp = 100
-	fields = 'obj', 'attrib'
+	fields = 'obj',
 	
 	def led(self, p, left):
 		self.obj = left
-		self.attrib = p.advance(Name)
+		self.attrib = p.advance(Name).name
 		return self
 
 class Slice(Expr):

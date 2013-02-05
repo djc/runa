@@ -589,7 +589,7 @@ class CodeGen(object):
 	def Attrib(self, node, frame):
 		obj = self.visit(node.obj, frame)
 		t = types.unwrap(obj.type)
-		idx, type = t.attribs[node.attrib.name]
+		idx, type = t.attribs[node.attrib]
 		name = self.gep(obj, 0, idx)
 		return Value(types.ref(type), name)
 	
@@ -881,9 +881,6 @@ class CodeGen(object):
 						continue
 					
 					fields = list(node.fields)
-					if isinstance(node, ast.Attrib):
-						fields.remove('attrib')
-					
 					nodes += [getattr(node, k) for k in fields]
 					node = None if not nodes else nodes.pop(0)
 		

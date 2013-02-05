@@ -297,7 +297,7 @@ class TypeChecker(object):
 			call = ast.Call(None)
 			call.name = ast.Attrib(None)
 			call.name.obj = node.loop.source
-			call.name.attrib = ast.Name('__iter__', None)
+			call.name.attrib = '__iter__'
 			call.args = []
 			call.fun = None
 			call.virtual = None
@@ -331,7 +331,7 @@ class TypeChecker(object):
 		if isinstance(t, types.WRAPPERS):
 			t = t.over
 		
-		node.type = t.attribs[node.attrib.name][1]
+		node.type = t.attribs[node.attrib][1]
 		assert node.type is not None, 'FAIL'
 	
 	def Elem(self, node, scope):
@@ -370,7 +370,7 @@ class TypeChecker(object):
 				
 				node.args.insert(0, node.name.obj)
 				actual = [a.type for a in node.args]
-				node.fun = t.select(node.name.attrib.name, actual)
+				node.fun = t.select(node.name.attrib, actual)
 				node.type = node.fun.type.over[0]
 			
 			if not types.compat(actual, node.fun.type.over[1]):

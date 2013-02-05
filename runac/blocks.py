@@ -216,7 +216,7 @@ def module(node):
 					start = n.base
 					res = []
 					while isinstance(start, ast.Attrib):
-						res.append(start.attrib.name)
+						res.append(start.attrib)
 						start = start.obj
 					res.append(start.name)
 					base = '.'.join(reversed(res))
