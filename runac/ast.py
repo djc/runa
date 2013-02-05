@@ -1,4 +1,4 @@
-from util import Error
+import util
 
 # Base class
 
@@ -361,7 +361,7 @@ class Function(Node):
 			
 			p.advance(NL)
 			if isinstance(p.token, Indent):
-				raise Error(p.token, "no ':' after function header")
+				raise util.Error(p.token, "no ':' after function header")
 			
 			decl = Decl(self.pos)
 			decl.decor = self.decor
@@ -635,7 +635,7 @@ class Pratt(object):
 	def advance(self, id):
 		if not isinstance(self.token, id):
 			bits = self.token.__class__.__name__, id.__name__
-			raise Error(self.token, 'expected %r, got %r' % bits)
+			raise util.Error(self.token, 'expected %r, got %r' % bits)
 		t = self.token
 		self.token = self.next()
 		return t
