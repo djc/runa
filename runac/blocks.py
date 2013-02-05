@@ -1,52 +1,36 @@
-import ast
+import ast, util
 
-class Branch(object):
+class Branch(util.AttribRepr):
 	fields = ()
 	def __init__(self, target):
 		self.label = target
-	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%s' % (k, v) for (k, v) in contents)
-		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
-class CondBranch(object):
+class CondBranch(util.AttribRepr):
 	fields = ('cond',)
 	def __init__(self, cond, tg1, tg2):
 		self.cond = cond
 		self.tg1 = tg1
 		self.tg2 = tg2
-	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%s' % (k, v) for (k, v) in contents)
-		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
 class Constant(object):
 	def __init__(self, node):
 		self.node = node
 
-class LoopSetup(object):
+class LoopSetup(util.AttribRepr):
 	fields = 'loop',
 	def __init__(self, loop):
 		self.loop = loop
 		self.type = None
-	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%s' % (k, v) for (k, v) in contents)
-		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
-class LoopHeader(object):
+class LoopHeader(util.AttribRepr):
 	fields = 'ctx', 'lvar'
 	def __init__(self, ctx, lvar, tg1, tg2):
 		self.ctx = ctx
 		self.lvar = lvar
 		self.tg1 = tg1
 		self.tg2 = tg2
-	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%s' % (k, v) for (k, v) in contents)
-		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
-class Block(object):
+class Block(util.AttribRepr):
 	
 	def __init__(self, id, anno=None):
 		self.id = id
@@ -56,29 +40,19 @@ class Block(object):
 		self.assigns = None
 		self.uses = None
 	
-	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%s' % (k, v) for (k, v) in contents)
-		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
-	
 	def push(self, inst):
 		self.steps.append(inst)
 	
 	def needbranch(self):
 		return not isinstance(self.steps[-1], ast.Return)
 
-class FlowGraph(object):
+class FlowGraph(util.AttribRepr):
 	
 	def __init__(self):
 		self.blocks = {0: Block(0, 'entry')}
 		self.edges = None
 		self.exits = None
 		self.yields = {}
-	
-	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%s' % (k, v) for (k, v) in contents)
-		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	
 	def block(self, anno=None):
 		id = len(self.blocks)

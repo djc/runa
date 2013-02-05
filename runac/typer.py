@@ -1,22 +1,16 @@
 import types, ast, blocks, util
 
-class Object(object):
-	
+class Object(util.AttribRepr):
 	def __init__(self, type, val=None):
 		self.type = type
 		self.val = val
-	
-	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%r' % (k, v) for (k, v) in contents)
-		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
 class Init(ast.Expr):
 	def __init__(self, type):
 		ast.Expr.__init__(self, None)
 		self.type = type
 
-class Module(object):
+class Module(util.AttribRepr):
 	
 	def __init__(self, name, init):
 		self.name = name
@@ -26,11 +20,6 @@ class Module(object):
 			if isinstance(val, types.FunctionDef):
 				self.type.functions[k] = val.type
 				val.name = '%s.%s' % (name, k)
-	
-	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%r' % (k, v) for (k, v) in contents)
-		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	
 	def __getitem__(self, key):
 		return self.attribs[key]

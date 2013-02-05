@@ -1,15 +1,12 @@
-import ast, types, blocks, typer
+import ast, types, blocks, typer, util
 import sys, copy
 
 ESCAPES = {'\\n': '\\0a', '\\0': '\\00'}
 
-class Value(object):
+class Value(util.AttribRepr):
 	def __init__(self, type, var):
 		self.type = type
 		self.var = var
-	def __repr__(self):
-		attrs = ['%s=%r' % p for p in self.__dict__.iteritems()]
-		return '<Value(%s)>' % ', '.join(attrs)
 
 class Frame(object):
 	

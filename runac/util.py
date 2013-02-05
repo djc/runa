@@ -1,3 +1,10 @@
+IGNORE = {'pos'}
+
+class AttribRepr(object):
+	def __repr__(self):
+		contents = sorted(self.__dict__.iteritems())
+		show = ('%s=%r' % (k, v) for (k, v) in contents if k not in IGNORE)
+		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
 class Error(Exception):
 	

@@ -9,14 +9,10 @@ class Registry(type):
 	def __init__(cls, name, bases, dict):
 		Registry.types.append(cls)
 
-class Node(object):
+class Node(util.AttribRepr):
 	__metaclass__ = Registry
 	def __init__(self, pos):
 		self.pos = pos
-	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
-		show = ('%s=%r' % (k, v) for (k, v) in contents if k not in IGNORE)
-		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	def __hash__(self):
 		values = tuple(sorted((k, v) for (k, v) in self.__dict__.iteritems()))
 		return hash((self.__class__.__name__,) + values)
