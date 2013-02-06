@@ -1,3 +1,3 @@
-tests/self-type.rns [2.21]: first method argument must be of type 'test'
+tests/self-type.rns [2.24]: first method argument must be of type 'test'
     def __init__(self: int):
                        ^

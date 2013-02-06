@@ -18,8 +18,8 @@ class Error(Exception):
 			return '%s: %s\n' % (fn, self.msg)
 		
 		pos = self.node.pos
-		a = '%s [%s.%s]: %s' % (fn, pos[0][0] + 1, pos[0][1] + 1, self.msg)
+		col = len(pos[2][:pos[0][1]].replace('\t', ' ' * 4)) + 1
+		a = '%s [%s.%s]: %s' % (fn, pos[0][0] + 1, col, self.msg)
 		b = pos[2].replace('\t', ' ' * 4).rstrip()
-		mv = -1 if '\t' in pos[2] else 0
-		c = ' ' * (mv + pos[0][1] + 4 * pos[2].count('\t')) + '^'
+		c = ' ' * (pos[0][1] + 3 * pos[2].count('\t')) + '^'
 		return '\n'.join((a, b, c)) + '\n'
