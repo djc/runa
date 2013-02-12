@@ -116,6 +116,9 @@ Chris Lattner et al.
 Making Context-Sensitivie Points-to Analysis with Heap Closing Practical For The Real World
 http://llvm.org/pubs/2007-06-10-PLDI-DSA.html
 
+Rust wiki: Bikeshed Numeric Traits
+https://github.com/mozilla/rust/wiki/Bikeshed-Numeric-Traits
+
 
 Implementation notes
 ====================
