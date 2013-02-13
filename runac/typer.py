@@ -338,6 +338,7 @@ class TypeChecker(object):
 		assert node.type is not None, 'FAIL'
 	
 	def Elem(self, node, scope):
+		self.visit(node.key, scope)
 		self.visit(node.obj, scope)
 		objt = types.unwrap(node.obj.type)
 		assert objt.name.startswith('array['), objt

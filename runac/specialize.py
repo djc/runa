@@ -120,6 +120,11 @@ class Specializer(object):
 		if isinstance(node.left, ast.Name):
 			self.visit(node.right, self.track.get(node.left.name))
 	
+	def Elem(self, node, type=None):
+		self.visit(node.obj)
+		self.visit(node.key)
+		assert not types.generic(node.type)
+	
 	def Attrib(self, node, type=None):
 		self.visit(node.obj)
 		assert not types.generic(node.type)
