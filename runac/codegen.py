@@ -606,9 +606,12 @@ class CodeGen(object):
 		assert t.name.startswith('array[')
 		et = t.attribs['data'][1].over
 		
+		key = self.visit(node.key, frame)
+		assert key.type == types.get('int'), key.type
+		
 		data = self.gep(obj, 0, 1)
 		obj = '[0 x %s]*' % et.ir, data
-		elm = self.gep(obj, 0, int(node.key.val))
+		elm = self.gep(obj, 0, key)
 		return Value(types.ref(et), elm)
 	
 	def Ternary(self, node, frame):
