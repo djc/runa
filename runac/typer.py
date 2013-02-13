@@ -476,7 +476,7 @@ class TypeChecker(object):
 			assert self.fun.rtype in types.INTS
 		else:
 			msg = "return value does not match declared return type '%s'"
-			raise util.Error(node.value, msg % self.fun.rtype.name)
+			raise util.Error(node, msg % self.fun.rtype.name)
 
 def variant(mod, t):
 	if isinstance(t, types.WRAPPERS):
