@@ -91,14 +91,110 @@ class FlowFinder(object):
 		return self.flow
 	
 	def visit(self, node):
-		if hasattr(self, node.__class__.__name__):
-			getattr(self, node.__class__.__name__)(node)
-		else:
+		return getattr(self, node.__class__.__name__)(node)
+	
+	def append(self, node):
+		node = self.visit(node)
+		if node is not None:
 			self.cur.push(node)
 	
 	def Suite(self, node):
 		for stmt in node.stmts:
-			self.visit(stmt)
+			self.append(stmt)
+	
+	# Expressions
+	
+	def Bool(self, node):
+		return node
+	
+	def Int(self, node):
+		return node
+	
+	def Float(self, node):
+		return node
+	
+	def String(self, node):
+		return node
+	
+	def Name(self, node):
+		return node
+	
+	def As(self, node):
+		node.left = self.visit(node.left)
+		return node
+	
+	def Not(self, node):
+		node.value = self.visit(node.value)
+		return node
+	
+	def binary(self, node):
+		node.left = self.visit(node.left)
+		node.right = self.visit(node.right)
+		return node
+	
+	def And(self, node):
+		return self.binary(node)
+	
+	def Or(self, node):
+		return self.binary(node)
+	
+	def EQ(self, node):
+		return self.binary(node)
+	
+	def NE(self, node):
+		return self.binary(node)
+	
+	def LT(self, node):
+		return self.binary(node)
+	
+	def GT(self, node):
+		return self.binary(node)
+	
+	def Add(self, node):
+		return self.binary(node)
+	
+	def Sub(self, node):
+		return self.binary(node)
+	
+	def Mul(self, node):
+		return self.binary(node)
+	
+	def Div(self, node):
+		return self.binary(node)
+	
+	def Attrib(self, node):
+		node.obj = self.visit(node.obj)
+		return node
+	
+	def Elem(self, node):
+		node.obj = self.visit(node.obj)
+		node.key = self.visit(node.key)
+		return node
+	
+	def Call(self, node):
+		for i, arg in enumerate(node.args):
+			node.args[i] = self.visit(arg)
+		return node
+	
+	def Ternary(self, node):
+		node.cond = self.visit(node.cond)
+		for i, val in enumerate(node.values):
+			node.values[i] = self.visit(val)
+		return node
+	
+	# Statements
+	
+	def Pass(self, node):
+		self.cur.push(node)
+	
+	def Return(self, node):
+		if node.value is not None:
+			node.value = self.visit(node.value)
+		self.cur.push(node)
+	
+	def Assign(self, node):
+		node.right = self.visit(node.right)
+		self.cur.push(node)
 	
 	def Yield(self, node):
 		self.cur.push(node)
