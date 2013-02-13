@@ -123,12 +123,18 @@ class CodeGen(object):
 	
 	def gep(self, val, *args):
 		
+		indexes = []
+		for a in args:
+			if isinstance(a, int):
+				indexes.append('i32 %i' % a)
+			else:
+				indexes.append('%s %s' % (a.type.ir, a.var))
+		
 		res = self.varname()
-		idx = ', '.join('i32 %i' % a for a in args)
 		if isinstance(val, Value):
-			bits = res, val.type.ir, val.var, idx
+			bits = res, val.type.ir, val.var, ', '.join(indexes)
 		elif isinstance(val, tuple):
-			bits = (res,) + val + (idx,)
+			bits = (res,) + val + (', '.join(indexes),)
 		else:
 			assert False, val
 		
