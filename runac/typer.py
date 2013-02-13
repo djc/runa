@@ -405,11 +405,6 @@ class TypeChecker(object):
 				msg = 'arguments (%s) cannot be passed as (%s)'
 				raise util.Error(node, msg % (astr, fstr))
 			
-			for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
-				if isinstance(f, types.owner):
-					if isinstance(node.args[i], ast.Name):
-						del scope[node.args[i].name]
-		
 		else:
 			
 			# initializing a type
@@ -418,11 +413,11 @@ class TypeChecker(object):
 			node.type = types.owner(obj)
 			if '__init__' in node.fun.decl:
 				node.args.insert(0, Init(types.owner(obj)))
-			
-			for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
-				if isinstance(f, types.owner):
-					if isinstance(node.args[i], ast.Name):
-						del scope[node.args[i].name]
+		
+		for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
+			if isinstance(f, types.owner):
+				if isinstance(node.args[i], ast.Name):
+					del scope[node.args[i].name]
 		
 		if isinstance(obj, types.FunctionDef):
 			node.name.name = obj.name
