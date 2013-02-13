@@ -171,7 +171,7 @@ class TypeChecker(object):
 	
 	def Name(self, node, scope):
 		
-		defined = set()
+		defined = []
 		for id in self.cur[0].origin[node.name, self.cur[1]]:
 			
 			if id not in self.scopes:
@@ -182,14 +182,14 @@ class TypeChecker(object):
 				if self.cur[1] <= assigned:
 					continue
 			
-			defined.add(self.scopes[id].get(node.name))
+			defined.append(self.scopes[id].get(node.name))
 		
 		if not defined or not all(defined):
 			raise util.Error(node, "undefined name '%s'" % node.name)
 		
-		first = defined.pop().type
-		while defined:
-			assert defined.pop().type == first
+		first = defined[0].type
+		for n in defined:
+			assert n.type == first
 		
 		node.type = first
 	
@@ -444,7 +444,7 @@ class TypeChecker(object):
 			assert False, 'reassignment'
 		
 		assert node.right.type is not None
-		scope[node.left.name] = Object(node.right.type)
+		scope[node.left.name] = node.right
 		node.left.type = node.right.type
 	
 	def Ternary(self, node, scope):
@@ -508,7 +508,7 @@ def process(mod, base, fun):
 		if not isinstance(arg.type, types.base):
 			arg.type = start.resolve(arg.type)
 		
-		start[arg.name.name] = Object(arg.type)
+		start[arg.name.name] = arg
 		variant(mod, arg.type)
 	
 	if fun.flow.yields:
