@@ -102,6 +102,15 @@ class FlowFinder(object):
 		for stmt in node.stmts:
 			self.append(stmt)
 	
+	def inter(self, node):
+		if isinstance(node, ast.Name):
+			return node
+		asgt = ast.Assign(None)
+		asgt.left = ast.Name(self.name(), None)
+		asgt.right = self.visit(node)
+		self.cur.push(asgt)
+		return asgt.left
+	
 	# Expressions
 	
 	def Bool(self, node):
@@ -120,16 +129,16 @@ class FlowFinder(object):
 		return node
 	
 	def As(self, node):
-		node.left = self.visit(node.left)
+		node.left = self.inter(node.left)
 		return node
 	
 	def Not(self, node):
-		node.value = self.visit(node.value)
+		node.value = self.inter(node.value)
 		return node
 	
 	def binary(self, node):
-		node.left = self.visit(node.left)
-		node.right = self.visit(node.right)
+		node.left = self.inter(node.left)
+		node.right = self.inter(node.right)
 		return node
 	
 	def And(self, node):
@@ -163,23 +172,23 @@ class FlowFinder(object):
 		return self.binary(node)
 	
 	def Attrib(self, node):
-		node.obj = self.visit(node.obj)
+		node.obj = self.inter(node.obj)
 		return node
 	
 	def Elem(self, node):
-		node.obj = self.visit(node.obj)
-		node.key = self.visit(node.key)
+		node.obj = self.inter(node.obj)
+		node.key = self.inter(node.key)
 		return node
 	
 	def Call(self, node):
 		for i, arg in enumerate(node.args):
-			node.args[i] = self.visit(arg)
+			node.args[i] = self.inter(arg)
 		return node
 	
 	def Ternary(self, node):
-		node.cond = self.visit(node.cond)
+		node.cond = self.inter(node.cond)
 		for i, val in enumerate(node.values):
-			node.values[i] = self.visit(val)
+			node.values[i] = self.inter(val)
 		return node
 	
 	# Statements
@@ -189,7 +198,7 @@ class FlowFinder(object):
 	
 	def Return(self, node):
 		if node.value is not None:
-			node.value = self.visit(node.value)
+			node.value = self.inter(node.value)
 		self.cur.push(node)
 	
 	def Assign(self, node):
