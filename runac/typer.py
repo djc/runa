@@ -1,9 +1,8 @@
 import types, ast, blocks, util
 
 class Object(util.AttribRepr):
-	def __init__(self, type, val=None):
+	def __init__(self, type):
 		self.type = type
-		self.val = val
 
 class Init(ast.Expr):
 	def __init__(self, type):
