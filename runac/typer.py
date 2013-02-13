@@ -207,6 +207,10 @@ class TypeChecker(object):
 	
 	# Boolean operators
 	
+	def Not(self, node, scope):
+		self.visit(node.value, scope)
+		node.type = types.get('bool')
+	
 	def boolean(self, op, node, scope):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
