@@ -23,8 +23,10 @@ class EscapeFinder(object):
 		#		self.visit(attr, escape)
 	
 	def String(self, node, escape=None):
-		if not escape: return
-		node.escapes = True
+		if not escape:
+			node.type = types.get('&str')
+		else:
+			node.escapes = True
 	
 	def Name(self, node, escape=None):
 		if not escape: return
