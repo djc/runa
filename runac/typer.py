@@ -154,18 +154,7 @@ class TypeChecker(object):
 				self.visit(step, scope)
 	
 	def visit(self, node, scope):
-		
-		if hasattr(self, node.__class__.__name__):
-			getattr(self, node.__class__.__name__)(node, scope)
-			return
-		
-		for k in node.fields:
-			attr = getattr(node, k)
-			if isinstance(attr, list):
-				for v in attr:
-					self.visit(v, scope)
-			else:
-				self.visit(attr, scope)
+		getattr(self, node.__class__.__name__)(node, scope)
 	
 	# Constants
 	
@@ -452,6 +441,12 @@ class TypeChecker(object):
 		else:
 			bits = tuple(i.type.name for i in node.values)
 			raise util.Error(node, "unmatched types '%s', '%s'" % bits)
+	
+	def Branch(self, node, scope):
+		return
+	
+	def Pass(self, node, scope):
+		return
 	
 	def Return(self, node, scope):
 		
