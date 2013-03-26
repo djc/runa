@@ -119,6 +119,9 @@ http://llvm.org/pubs/2007-06-10-PLDI-DSA.html
 Rust wiki: Bikeshed Numeric Traits
 https://github.com/mozilla/rust/wiki/Bikeshed-Numeric-Traits
 
+Introduction to Go 1.1
+https://go.googlecode.com/hg/doc/go1.1.html
+
 
 Implementation notes
 ====================
