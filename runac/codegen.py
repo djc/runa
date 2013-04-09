@@ -547,6 +547,17 @@ class CodeGen(object):
 	def Branch(self, node, frame):
 		self.writeline('br label %%L%s' % node.label)
 	
+	def Phi(self, node, frame):
+		
+		left = self.visit(node.left[1], frame)
+		right = self.visit(node.right[1], frame)
+		sides = left.var, node.left[0], right.var, node.right[0]
+		
+		tmp = self.varname()
+		bits = (tmp, left.type.ir) + sides
+		self.writeline('%s = phi %s [ %s, %%L%s ], [ %s, %%L%s ]' % bits)
+		return Value(left.type, tmp)
+	
 	def Assign(self, node, frame):
 		
 		if isinstance(node.right, blocks.LoopSetup):

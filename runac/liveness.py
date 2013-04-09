@@ -48,6 +48,10 @@ class Analyzer(object):
 		self.visit(node.name)
 		for arg in node.args:
 			self.visit(arg)
+	
+	def Phi(self, node):
+		self.visit(node.left[1])
+		self.visit(node.right[1])
 
 def defined(name, bl, seen):
 	

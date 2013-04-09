@@ -12,6 +12,14 @@ class CondBranch(util.AttribRepr):
 		self.tg1 = tg1
 		self.tg2 = tg2
 
+class Phi(util.AttribRepr):
+	fields = ()
+	def __init__(self, pos, left, right):
+		self.pos = pos
+		self.left = left
+		self.right = right
+		self.type = None
+
 class Constant(object):
 	def __init__(self, node):
 		self.node = node
@@ -186,10 +194,23 @@ class FlowFinder(object):
 		return node
 	
 	def Ternary(self, node):
-		node.cond = self.inter(node.cond)
-		for i, val in enumerate(node.values):
-			node.values[i] = self.inter(val)
-		return node
+		
+		entry = self.cur
+		cond = self.inter(node.cond)
+		left = self.flow.block('ternary-left')
+		self.cur = left
+		lvar = self.inter(node.values[0])
+		
+		right = self.flow.block('ternary-right')
+		self.cur = right
+		rvar = self.inter(node.values[1])
+		
+		entry.push(CondBranch(cond, left.id, right.id))
+		exit = self.flow.block('ternary-exit')
+		left.push(Branch(exit.id))
+		right.push(Branch(exit.id))
+		self.cur = exit
+		return Phi(node.pos, (left.id, lvar), (right.id, rvar))
 	
 	# Statements
 	

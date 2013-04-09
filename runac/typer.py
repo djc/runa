@@ -158,7 +158,7 @@ class TypeChecker(object):
 	
 	# Constants
 	
-	def Name(self, node, scope):
+	def Name(self, node, scope, strict=True):
 		
 		defined = []
 		for id in self.cur[0].origin[node.name, self.cur[1]]:
@@ -173,6 +173,8 @@ class TypeChecker(object):
 			
 			defined.append(self.scopes[id].get(node.name))
 		
+		if not strict:
+			defined = [i for i in defined if i is not None]
 		if not defined or not all(defined):
 			raise util.Error(node, "undefined name '%s'" % node.name)
 		
@@ -432,14 +434,17 @@ class TypeChecker(object):
 		scope[node.left.name] = node.right
 		node.left.type = node.right.type
 	
-	def Ternary(self, node, scope):
-		self.visit(node.cond, scope)
-		self.visit(node.values[0], scope)
-		self.visit(node.values[1], scope)
-		if node.values[0].type == node.values[1].type:
-			node.type = node.values[0].type
+	def Phi(self, node, scope):
+		
+		assert isinstance(node.left[1], ast.Name)
+		self.Name(node.left[1], scope, strict=False)
+		assert isinstance(node.right[1], ast.Name)
+		self.Name(node.right[1], scope, strict=False)
+		
+		if node.left[1].type == node.right[1].type:
+			node.type = node.left[1].type
 		else:
-			bits = tuple(i.type.name for i in node.values)
+			bits = tuple(i.type.name for i in (node.left[1], node.right[1]))
 			raise util.Error(node, "unmatched types '%s', '%s'" % bits)
 	
 	def Branch(self, node, scope):
