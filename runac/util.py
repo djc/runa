@@ -14,7 +14,7 @@ class Error(Exception):
 	
 	def show(self, fn):
 		
-		if self.node.pos is None:
+		if getattr(self.node, 'pos', None) is None:
 			return '%s: %s\n' % (fn, self.msg)
 		
 		pos = self.node.pos
