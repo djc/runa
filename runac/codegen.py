@@ -246,7 +246,8 @@ class CodeGen(object):
 	def Name(self, node, frame):
 		
 		if self.intercept is None:
-			return self.load(frame[node.name])
+			var = frame[node.name]
+			return var if node.name.startswith('$') else self.load(var)
 		
 		attr = types.unwrap(self.intercept.type).attribs[node.name]
 		addr = self.gep(self.intercept, 0, attr[0])
@@ -563,10 +564,13 @@ class CodeGen(object):
 				attr = ctxt.attribs[node.left.name]
 				slot = self.gep(self.intercept, 0, attr[0])
 				wrap = Value(types.ref(attr[1]), slot)
-			elif node.left.name not in frame:
-				wrap = self.alloca(val.type)
-			else:
+			elif node.left.name in frame:
 				wrap = frame[node.left.name]
+			elif node.left.name.startswith('$'):
+				frame[node.left.name] = val
+				return
+			else:
+				wrap = self.alloca(val.type)
 			
 			self.store(val, wrap.var)
 			frame[node.left.name] = wrap
