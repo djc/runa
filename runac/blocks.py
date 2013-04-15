@@ -240,10 +240,10 @@ class FlowFinder(object):
 			
 			if i and cond is not None:
 				assert isinstance(prevcond.steps[-1], CondBranch)
-				condblock = self.flow.block('if-cond')
-				prevcond.steps[-1].tg2 = condblock.id
-				condblock.push(CondBranch(cond, None, None))
-				prevcond = condblock
+				tmp, self.cur = self.cur, self.flow.block('if-cond')
+				prevcond.steps[-1].tg2 = self.cur.id
+				self.cur.push(CondBranch(self.inter(cond), None, None))
+				self.cur, prevcond = tmp, self.cur
 			
 			block = self.flow.block('if-suite')
 			if i and cond is not None:
@@ -251,7 +251,7 @@ class FlowFinder(object):
 				prevcond.steps[-1].tg1 = block.id
 			
 			if not i:
-				self.cur.push(CondBranch(cond, block.id, None))
+				self.cur.push(CondBranch(self.inter(cond), block.id, None))
 				prevcond = self.cur
 			elif cond is None:
 				assert isinstance(prevcond.steps[-1], CondBranch)
