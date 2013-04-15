@@ -277,7 +277,9 @@ class FlowFinder(object):
 		head = self.flow.block('while-head')
 		body = self.flow.block('while-body')
 		self.cur.push(Branch(head.id))
-		head.push(CondBranch(node.cond, body.id, None))
+		
+		self.cur = head
+		head.push(CondBranch(self.inter(node.cond), body.id, None))
 		
 		self.cur = body
 		self.visit(node.suite)
