@@ -52,6 +52,3 @@ class str:
 		rest = __offset__(data, self.len)
 		__memcpy__(rest, other.data, other.len)
 		return str(sum, data)
-	
-	def __del__(self):
-		__free__(self.data)
