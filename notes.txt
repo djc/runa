@@ -122,6 +122,10 @@ https://github.com/mozilla/rust/wiki/Bikeshed-Numeric-Traits
 Introduction to Go 1.1
 https://go.googlecode.com/hg/doc/go1.1.html
 
+Peter Cooper and Robert Nyman
+How to Spread The Word About Your Code
+https://hacks.mozilla.org/2013/05/how-to-spread-the-word-about-your-code/
+
 
 Implementation notes
 ====================
