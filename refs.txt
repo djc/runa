@@ -1,0 +1,106 @@
+Inspiration
+===========
+
+Avery Pennarun
+Three bad things: threads, garbage collection, and nondeterministic destructors
+http://apenwarr.ca/log/?m=201008#10
+
+Avery Pennarun
+How to design a replacement for C++
+http://apenwarr.ca/log/?m=201007#21
+
+Collin Winter e.a.
+Function annotations
+http://www.python.org/dev/peps/pep-3107/
+
+Shawn O. Pearce
+Why Git is so fast (Java vs C)
+http://marc.info/?l=git&m=124111702609723&w=2
+
+Is Fortran faster than C?
+http://stackoverflow.com/questions/146159/is-fortran-faster-than-c
+
+Languages faster than C++
+http://stackoverflow.com/questions/610396/languages-faster-than-c
+
+Paul McGuire
+A sample of a pyparsing grammar using indentation for grouping
+http://pyparsing.wikispaces.com/file/view/indentedGrammarExample.py
+
+Phil Hassey
+tinypy: parse.py (Python Pratt parser, in Python)
+http://code.google.com/p/tinypy/source/browse/trunk/tinypy/parse.py
+
+Andreas Zwinkau
+Faster than C
+http://beza1e1.tuxen.de/articles/faster_than_C.html
+
+Russ Cox
+Go Data Structures: Interfaces
+http://research.swtch.com/interfaces
+
+Ulrich Drepper
+What Every Programmer Should Know About Memory
+http://ftp.linux.org.ua/pub/docs/developer/general/cpumemory.pdf
+
+Leo Meyerov
+Socio-PLT: Principles for Programming Language Adoption
+http://www.eecs.berkeley.edu/~lmeyerov/projects/socioplt/paper0413.pdf
+
+Periklis Akritidis et al.
+Baggy Bounds Checking
+http://research.microsoft.com/pubs/101450/baggy-usenix2009.pdf
+
+John Graham-Cunning
+Things I like about programming in Go
+http://blog.jgc.org/2012/07/things-i-like-about-programming-in-go.html
+
+Niko Matsakis
+Borrowed Pointer Tutorial
+http://smallcultfollowing.com/babysteps/blog/2012/07/17/borrowed-pointer-tutorial/
+
+Martin Sustrik
+Why I should have written ZeroMQ in C, not C++ (part II)
+http://www.250bpm.com/blog:8
+
+Yossi Kreinin
+Error codes vs exceptions: critical code vs typical code
+http://www.yosefk.com/blog/error-codes-vs-exceptions-critical-code-vs-typical-code.html
+
+Walter Bright
+C's Biggest Mistake
+http://www.drdobbs.com/architecture-and-design/cs-biggest-mistake/228701625
+
+Mike Vanier
+Scalable computer programming languages
+http://users.cms.caltech.edu/~mvanier/hacking/rants/scalable_computer_programming_languages.html
+
+Damien Katz
+The Unreasonable Effectiveness of C
+http://damienkatz.net/2013/01/the_unreasonable_effectiveness_of_c.html
+
+Job Vranish
+Exceptions and Stack Traces for C on Windows, Linux & Mac
+http://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/
+
+Chris Lattner
+Macroscopic Data Structure Analysis and Optimization
+http://llvm.org/pubs/2005-05-04-LattnerPHDThesis.html
+
+Chris Lattner et al.
+Making Context-Sensitivie Points-to Analysis with Heap Closing Practical For The Real World
+http://llvm.org/pubs/2007-06-10-PLDI-DSA.html
+
+Rust wiki: Bikeshed Numeric Traits
+https://github.com/mozilla/rust/wiki/Bikeshed-Numeric-Traits
+
+Introduction to Go 1.1
+https://go.googlecode.com/hg/doc/go1.1.html
+
+Peter Cooper and Robert Nyman
+How to Spread The Word About Your Code
+https://hacks.mozilla.org/2013/05/how-to-spread-the-word-about-your-code/
+
+Neil Brown
+Little things that matter in language design
+https://lwn.net/Articles/553131/
