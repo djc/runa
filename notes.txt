@@ -126,6 +126,10 @@ Peter Cooper and Robert Nyman
 How to Spread The Word About Your Code
 https://hacks.mozilla.org/2013/05/how-to-spread-the-word-about-your-code/
 
+Neil Brown
+Little things that matter in language design
+https://lwn.net/Articles/553131/
+
 
 Implementation notes
 ====================
