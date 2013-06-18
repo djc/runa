@@ -587,10 +587,10 @@ class CodeGen(object):
 			frame[node.left.name] = wrap
 			return
 			
-		elif isinstance(node.left, ast.Attrib):
+		elif isinstance(node.left, blocks.SetAttr):
 			target = self.visit(node.left, frame)
 		else:
-			assert False
+			assert False, node.left.type
 		
 		if types.ref(val.type) == target.type:
 			self.store(val, target.var)
@@ -613,6 +613,9 @@ class CodeGen(object):
 		idx, type = t.attribs[node.attrib]
 		name = self.gep(obj, 0, idx)
 		return Value(types.ref(type), name)
+	
+	def SetAttr(self, node, frame):
+		return self.Attrib(node, frame)
 	
 	def Elem(self, node, frame):
 		

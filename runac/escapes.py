@@ -1,4 +1,4 @@
-import ast, types
+import ast, blocks, types
 
 class EscapeFinder(object):
 	
@@ -44,7 +44,7 @@ class EscapeFinder(object):
 			
 			self.visit(node.right, True)
 		
-		elif isinstance(node.left, ast.Attrib):
+		elif isinstance(node.left, blocks.SetAttr):
 			
 			self.visit(node.left.obj)
 			if not node.left.obj.escapes:

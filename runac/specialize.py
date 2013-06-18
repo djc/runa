@@ -129,6 +129,9 @@ class Specializer(object):
 		self.visit(node.obj)
 		assert not types.generic(node.type)
 	
+	def SetAttr(self, node, type=None):
+		self.Attrib(node, type)
+	
 	def Return(self, node, type=None):
 		if node.value is not None:
 			self.visit(node.value, self.fun.rtype)

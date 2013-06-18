@@ -28,6 +28,9 @@ class Analyzer(object):
 	def Attrib(self, node):
 		self.visit(node.obj)
 	
+	def SetAttr(self, node):
+		self.visit(node.obj)
+	
 	def As(self, node):
 		self.visit(node.left)
 	

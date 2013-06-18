@@ -318,7 +318,7 @@ class TypeChecker(object):
 		self.visit(node.left, scope)
 		node.type = self.scopes[None][node.right.name]
 	
-	def Attrib(self, node, scope, asgt=False):
+	def Attrib(self, node, scope):
 		
 		self.visit(node.obj, scope)
 		t = node.obj.type
@@ -327,8 +327,18 @@ class TypeChecker(object):
 		
 		node.type = t.attribs[node.attrib][1]
 		assert node.type is not None, 'FAIL'
-		if not asgt and isinstance(node.type, types.owner):
+		if isinstance(node.type, types.owner):
 			node.type = types.ref(node.type.over)
+	
+	def SetAttr(self, node, scope):
+		
+		self.visit(node.obj, scope)
+		t = node.obj.type
+		if isinstance(t, types.WRAPPERS):
+			t = t.over
+		
+		node.type = t.attribs[node.attrib][1]
+		assert node.type is not None, 'FAIL'
 	
 	def Elem(self, node, scope):
 		self.visit(node.key, scope)
@@ -422,11 +432,7 @@ class TypeChecker(object):
 		
 		if not isinstance(node.left, ast.Name):
 			
-			if isinstance(node.left, ast.Attrib):
-				self.Attrib(node.left, scope, asgt=True)
-			else:
-				self.visit(node.left, scope)
-			
+			self.visit(node.left, scope)
 			self.visit(node.right, scope)
 			if node.left.type != node.right.type:
 				bits = node.left.type.name, node.right.type.name

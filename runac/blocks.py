@@ -1,5 +1,8 @@
 import ast, util
 
+class SetAttr(ast.Attrib):
+	pass
+
 class Branch(util.AttribRepr):
 	fields = ()
 	def __init__(self, target):
@@ -224,6 +227,11 @@ class FlowFinder(object):
 	
 	def Assign(self, node):
 		node.right = self.visit(node.right)
+		if not isinstance(node.left, ast.Name):
+			new = SetAttr(node.left.pos)
+			new.obj = node.left.obj
+			new.attrib = node.left.attrib
+			node.left = new
 		self.cur.push(node)
 	
 	def Yield(self, node):

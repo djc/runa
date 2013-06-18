@@ -195,6 +195,9 @@ class PrettyPrinter(object):
 		self.write(node.attrib)
 		self.anno(node)
 	
+	def SetAttr(self, node):
+		self.Attrib(node)
+	
 	def Elem(self, node):
 		self.write('Elem(')
 		self.visit(node.obj)
