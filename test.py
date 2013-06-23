@@ -64,6 +64,8 @@ LangTests = type('LangTests', (unittest.TestCase,), attrs)
 def suite():
     return unittest.makeSuite(LangTests, 'test')
 
+IGNORE = 'Memcheck WARNING: HEAP SUMMARY: LEAK SUMMARY: For counts'.split()
+
 def valgrind(bin, spec):
 	
 	cmd = ['valgrind', '--leak-check=full', bin] + spec.get('args', [])
@@ -72,13 +74,27 @@ def valgrind(bin, spec):
 	ret = proc.wait()
 	err = proc.stderr.read()
 	
-	if 'LEAK SUMMARY:' not in err:
-		return 0
+	blocks, cur = [], []
+	for ln in err.splitlines():
+		
+		if not ln.startswith('=='):
+			continue
+		
+		ln = ln.split(' ', 1)[1]
+		if not ln.strip():
+			if cur:
+				blocks.append(cur)
+				cur = []
+			continue
+		
+		cur.append(ln)
 	
-	lines = [i.split(' ', 1)[1] for i in err.splitlines()]
-	start = lines.index('HEAP SUMMARY:')
-	end = lines.index('LEAK SUMMARY:')
-	return sum(1 for ln in lines[start:end] if not ln.strip()) - 1
+	errors = []
+	for bl in blocks:
+		if not any(flag for flag in IGNORE if bl[0].startswith(flag)):
+			errors.append(bl)
+	
+	return len(errors)
 
 def leaks():
 	
