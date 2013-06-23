@@ -66,7 +66,7 @@ def suite():
 
 def leaks():
 	
-	for fn in os.listdir('tests'):
+	for fn in sorted(os.listdir('tests')):
 		
 		if not fn.endswith('.rns'):
 			continue
