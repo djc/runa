@@ -9,18 +9,7 @@ class EscapeFinder(object):
 		self.track = set()
 	
 	def visit(self, node, escape=None):
-		
-		if hasattr(self, node.__class__.__name__):
-			getattr(self, node.__class__.__name__)(node, escape)
-			return
-		
-		#for k in node.fields:
-		#	attr = getattr(node, k)
-		#	if isinstance(attr, list):
-		#		for v in attr:
-		#			self.visit(v, escape)
-		#	else:
-		#		self.visit(attr, escape)
+		getattr(self, node.__class__.__name__)(node, escape)
 	
 	def String(self, node, escape=None):
 		if not escape:
@@ -59,6 +48,22 @@ class EscapeFinder(object):
 		for val in node.values:
 			self.visit(val, escape)
 	
+	def CondBranch(self, node, escape=None):
+		pass
+	
+	def Branch(self, node, escape=None):
+		pass
+	
+	def Attrib(self, node, escape=None):
+		assert not escape or not isinstance(node.type, types.WRAPPERS)
+	
+	def LoopHeader(self, node, escape=None):
+		pass
+	
+	def Phi(self, node, escape=None):
+		self.visit(node.left[1], escape)
+		self.visit(node.right[1], escape)
+	
 	def Call(self, node, escape=None):
 		
 		if node.fun.name == 'runa.free' and self.fun.name.name == '__del__':
@@ -77,6 +82,9 @@ class EscapeFinder(object):
 		
 		if node.fun.name.endswith('.__init__'):
 			node.args[0].escapes = True
+	
+	def Yield(self, node, escape=None):
+		self.Return(node, escape)
 	
 	def Return(self, node, escape=None):
 		if node.value is None:
