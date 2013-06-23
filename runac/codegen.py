@@ -241,6 +241,11 @@ class CodeGen(object):
 		self.store((ptrt, cast), objslot)
 		return wrap
 	
+	def free(self, val):
+		bits = self.varname(), val.type.ir, val.var
+		self.writeline('%s = bitcast %s %s to i8*' % bits)
+		self.writeline('call void @runa.free(i8* %s)' % bits[0])
+	
 	# Node visitation methods
 	
 	def Name(self, node, frame):
@@ -679,6 +684,26 @@ class CodeGen(object):
 			if value.type.over.byval:
 				value = self.load(value)
 		self.writeline('ret %s %s' % (value.type.ir, value.var))
+	
+	def Free(self, node, frame):
+		
+		val = self.visit(node.value, frame)
+		if not isinstance(val.type, types.owner):
+			return
+		
+		t = types.unwrap(val.type)
+		for name, (idx, atype) in t.attribs.iteritems():
+			
+			if not isinstance(atype, types.owner):
+				continue
+			
+			if t.name.startswith('array[') and idx == 1:
+				continue
+			
+			slot = Value(types.ref(atype), self.gep(val, 0, idx))
+			self.free(self.load(slot))
+		
+		self.free(val)
 	
 	def Call(self, node, frame):
 		
