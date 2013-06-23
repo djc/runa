@@ -11,6 +11,17 @@ class EscapeFinder(object):
 	def visit(self, node, escape=None):
 		getattr(self, node.__class__.__name__)(node, escape)
 	
+	# Constants
+	
+	def Bool(self, node, escape=None):
+		pass
+	
+	def Int(self, node, escape=None):
+		pass
+	
+	def Float(self, node, escape=None):
+		pass
+	
 	def String(self, node, escape=None):
 		if not escape:
 			node.type = types.get('&str')
@@ -21,18 +32,59 @@ class EscapeFinder(object):
 		if not escape: return
 		self.track.add(node.name)
 	
+	# Boolean operators
+	
+	def Not(self, node, escape=None):
+		pass
+	
+	def And(self, node, escape=None):
+		pass
+	
+	def Or(self, node, escape=None):
+		pass
+	
+	# Comparison operators
+	
+	def EQ(self, node, escape=None):
+		pass
+	
+	def NE(self, node, escape=None):
+		pass
+	
+	def LT(self, node, escape=None):
+		pass
+	
+	def GT(self, node, escape=None):
+		pass
+	
+	# Arithmetic operators
+	
+	def Add(self, node, escape=None):
+		pass
+		
+	def Sub(self, node, escape=None):
+		pass
+	
+	def Mul(self, node, escape=None):
+		pass
+	
+	def Div(self, node, escape=None):
+		pass
+	
 	def Yield(self, node, escape=None):
 		self.visit(node.value, True)
+	
+	def Init(self, node, escape=None):
+		if escape:
+			node.escapes = True
+	
+	def As(self, node, escape=None):
+		self.visit(node.left, escape)
 	
 	def Assign(self, node, escape=None):
 		
 		if isinstance(node.left, ast.Name):
-			
-			if node.left.name not in self.track:
-				return
-			
-			self.visit(node.right, True)
-		
+			self.visit(node.right, node.left.name in self.track)
 		elif isinstance(node.left, blocks.SetAttr):
 			
 			self.visit(node.left.obj)
@@ -57,6 +109,12 @@ class EscapeFinder(object):
 	def Attrib(self, node, escape=None):
 		assert not escape or not isinstance(node.type, types.WRAPPERS)
 	
+	def Elem(self, node, escape=None):
+		self.Attrib(node, escape)
+	
+	def LoopSetup(self, node, escape=None):
+		pass
+	
 	def LoopHeader(self, node, escape=None):
 		pass
 	
@@ -70,8 +128,10 @@ class EscapeFinder(object):
 			return
 		
 		for i, arg in enumerate(node.fun.type.over[1]):
-			if not isinstance(arg, types.owner): continue
-			self.visit(node.args[i], True)
+			if isinstance(arg, types.owner):
+				self.visit(node.args[i], True)
+			else:
+				self.visit(node.args[i])
 		
 		if not escape:
 			return
