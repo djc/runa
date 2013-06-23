@@ -777,7 +777,7 @@ class CodeGen(object):
 			self.writeline('call void %s(%s %s, i8* %s)' % bits)
 			frame['name'] = name
 			
-			args = self.alloca(types.get('&array[str]'))
+			args = self.alloca(types.get('$array[str]'))
 			direct = self.varname()
 			call = '%s = call %%array$str* @args(i32 %%argc, i8** %%argv)'
 			self.writeline(call % direct)
