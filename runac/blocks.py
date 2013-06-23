@@ -46,6 +46,7 @@ class Block(util.AttribRepr):
 	def __init__(self, id, anno=None):
 		self.id = id
 		self.anno = anno
+		self.returns = False
 		self.steps = []
 		self.preds = []
 		self.assigns = None
@@ -225,6 +226,7 @@ class FlowFinder(object):
 		if node.value is not None:
 			node.value = self.inter(node.value)
 		self.cur.push(node)
+		self.cur.returns = True
 	
 	def Assign(self, node):
 		node.right = self.visit(node.right)
@@ -240,6 +242,7 @@ class FlowFinder(object):
 		next = self.flow.block('yield-to')
 		self.flow.yields[self.cur.id] = next.id
 		node.target = next.id
+		self.cur.returns = True
 		self.cur = next
 	
 	def If(self, node):
@@ -406,6 +409,7 @@ def module(node):
 				auto.value = None
 				auto.pos = v.pos
 				bl.steps.append(auto)
+				bl.returns = True
 		
 		cfg.exits = set()
 		reachable = set()
