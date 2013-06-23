@@ -50,6 +50,7 @@ class Block(util.AttribRepr):
 		self.preds = []
 		self.assigns = None
 		self.uses = None
+		self.escapes = {}
 	
 	def push(self, inst):
 		self.steps.append(inst)

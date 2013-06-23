@@ -7,6 +7,7 @@ class EscapeFinder(object):
 		self.fun = fun
 		self.cfg = fun.flow
 		self.track = set()
+		self.cur = None
 	
 	def visit(self, node, escape=None):
 		getattr(self, node.__class__.__name__)(node, escape)
@@ -130,6 +131,7 @@ class EscapeFinder(object):
 		for i, arg in enumerate(node.fun.type.over[1]):
 			if isinstance(arg, types.owner):
 				self.visit(node.args[i], True)
+				self.note(node.args[i])
 			else:
 				self.visit(node.args[i])
 		
@@ -147,15 +149,25 @@ class EscapeFinder(object):
 		self.Return(node, escape)
 	
 	def Return(self, node, escape=None):
+		
 		if node.value is None:
 			return
+		
 		if not isinstance(node.value.type, types.owner):
 			return
+		
 		self.visit(node.value, True)
+		self.note(node.value)
+	
+	def note(self, val):
+		assert isinstance(val, ast.Name)
+		ls = self.cur[0].escapes.setdefault(val.name, [])
+		ls.append((self.cur[1], val.type))
 	
 	def find(self):
-		for i, bl in reversed(self.cfg.blocks.items()):
-			for step in reversed(bl.steps):
+		for bl in reversed(self.cfg.blocks.values()):
+			for i, step in reversed(list(enumerate(bl.steps))):
+				self.cur = bl, i
 				self.visit(step)
 
 def escapes(mod):
