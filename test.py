@@ -13,25 +13,28 @@ def getspec(src):
 		else:
 			return {}
 
+def compile(src, bin):
+	try:
+		runac.compile(runac.ir(src), bin)
+		return None
+	except runac.Error as e:
+		return e.show(src)
+
 def run(self, key):
 	
 	fullname = os.path.join(TEST_DIR, key + '.rns')
 	base = fullname.rsplit('.rns', 1)[0]
 	bin = base + '.test'
 	
-	out = None
-	try:
-		runac.compile(runac.ir(fullname), bin)
-	except runac.Error as e:
-		ret = 0
-		out = e.show(fullname)
-	
 	spec = getspec(fullname)
+	out = compile(fullname, bin)
 	if not out:
 		cmd = [bin] + spec.get('args', [])
 		proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 		ret = proc.wait()
 		out = proc.stdout.read()
+	else:
+		ret = 0
 	
 	if os.path.exists(base + '.out'):
 		expected = open(base + '.out').read()
