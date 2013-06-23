@@ -229,6 +229,11 @@ class PrettyPrinter(object):
 		self.write(' lvar:')
 		self.visit(node.lvar)
 		self.write(' %s:%s' % (node.tg1, node.tg2))
+	
+	def Free(self, node):
+		self.write('Free(')
+		self.visit(node.value)
+		self.write(')')
 
 def prettify(name, flow):
 	pp = PrettyPrinter()

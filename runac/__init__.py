@@ -8,6 +8,7 @@ from .liveness import liveness
 from .typer import typer
 from .specialize import specialize
 from .escapes import escapes
+from .destructor import destruct
 from .codegen import generate
 
 BASE = os.path.dirname(__path__[0])
@@ -27,6 +28,7 @@ def ir(fn):
 		typer(mod)
 		specialize(mod)
 		escapes(mod)
+		destruct(mod)
 		return generate(mod)
 
 def compile(ir, outfn):
