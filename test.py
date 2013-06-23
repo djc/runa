@@ -64,8 +64,39 @@ LangTests = type('LangTests', (unittest.TestCase,), attrs)
 def suite():
     return unittest.makeSuite(LangTests, 'test')
 
+def leaks():
+	
+	for fn in os.listdir('tests'):
+		
+		if not fn.endswith('.rns'):
+			continue
+		
+		test = os.path.join('tests', fn)
+		bin = test[:-4] + '.test'
+		compiled = os.path.exists(bin)
+		if not compiled or os.stat(test).st_mtime >= os.stat(bin).st_mtime:
+			out = compile(test, bin)
+			if out is not None:
+				continue
+		
+		spec = getspec(test)
+		print 'Running %s...' % bin,
+		cmd = ['valgrind', '--leak-check=full', bin] + spec.get('args', [])
+		streams = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+		proc = subprocess.Popen(cmd, **streams)
+		ret = proc.wait()
+		err = proc.stderr.read()
+		
+		lines = [i.split(' ', 1)[1] for i in err.splitlines()]
+		start = lines.index('HEAP SUMMARY:')
+		end = lines.index('LEAK SUMMARY:')
+		count = sum(1 for ln in lines[start:end] if not ln.strip()) - 1
+		print ' ' * (40 - len(bin)), '%3i' % count
+
 if __name__ == '__main__':
-	if len(sys.argv) > 1:
+	if len(sys.argv) > 1 and sys.argv[1] == '--leaks':
+		leaks()
+	elif len(sys.argv) > 1:
 		print run(None, sys.argv[1])
 	else:
 	    unittest.main(defaultTest='suite')
