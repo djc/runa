@@ -87,10 +87,14 @@ def leaks():
 		ret = proc.wait()
 		err = proc.stderr.read()
 		
-		lines = [i.split(' ', 1)[1] for i in err.splitlines()]
-		start = lines.index('HEAP SUMMARY:')
-		end = lines.index('LEAK SUMMARY:')
-		count = sum(1 for ln in lines[start:end] if not ln.strip()) - 1
+		if 'LEAK SUMMARY:' in err:
+			lines = [i.split(' ', 1)[1] for i in err.splitlines()]
+			start = lines.index('HEAP SUMMARY:')
+			end = lines.index('LEAK SUMMARY:')
+			count = sum(1 for ln in lines[start:end] if not ln.strip()) - 1
+		else:
+			count = 0
+		
 		print ' ' * (40 - len(bin)), '%3i' % count
 
 if __name__ == '__main__':
