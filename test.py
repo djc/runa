@@ -5,17 +5,19 @@ DIR = os.path.dirname(__file__)
 TEST_DIR = os.path.join(DIR, 'tests')
 TESTS = [i[:-4] for i in os.listdir(TEST_DIR) if i.endswith('.rns')]
 
+def getspec(src):
+	with open(src) as f:
+		h = f.readline()
+		if h.startswith('# test: '):
+			return json.loads(h[8:])
+		else:
+			return {}
+
 def run(self, key):
 	
 	fullname = os.path.join(TEST_DIR, key + '.rns')
 	base = fullname.rsplit('.rns', 1)[0]
 	bin = base + '.test'
-	
-	spec = {}
-	with open(fullname) as f:
-		h = f.readline()
-		if h.startswith('# test: '):
-			spec.update(json.loads(h[8:]))
 	
 	out = None
 	try:
@@ -24,6 +26,7 @@ def run(self, key):
 		ret = 0
 		out = e.show(fullname)
 	
+	spec = getspec(fullname)
 	if not out:
 		cmd = [bin] + spec.get('args', [])
 		proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
