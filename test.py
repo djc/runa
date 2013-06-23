@@ -64,6 +64,22 @@ LangTests = type('LangTests', (unittest.TestCase,), attrs)
 def suite():
     return unittest.makeSuite(LangTests, 'test')
 
+def valgrind(bin, spec):
+	
+	cmd = ['valgrind', '--leak-check=full', bin] + spec.get('args', [])
+	streams = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+	proc = subprocess.Popen(cmd, **streams)
+	ret = proc.wait()
+	err = proc.stderr.read()
+	
+	if 'LEAK SUMMARY:' not in err:
+		return 0
+	
+	lines = [i.split(' ', 1)[1] for i in err.splitlines()]
+	start = lines.index('HEAP SUMMARY:')
+	end = lines.index('LEAK SUMMARY:')
+	return sum(1 for ln in lines[start:end] if not ln.strip()) - 1
+
 def leaks():
 	
 	for fn in sorted(os.listdir('tests')):
@@ -79,22 +95,8 @@ def leaks():
 			if out is not None:
 				continue
 		
-		spec = getspec(test)
 		print 'Running %s...' % bin,
-		cmd = ['valgrind', '--leak-check=full', bin] + spec.get('args', [])
-		streams = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
-		proc = subprocess.Popen(cmd, **streams)
-		ret = proc.wait()
-		err = proc.stderr.read()
-		
-		if 'LEAK SUMMARY:' in err:
-			lines = [i.split(' ', 1)[1] for i in err.splitlines()]
-			start = lines.index('HEAP SUMMARY:')
-			end = lines.index('LEAK SUMMARY:')
-			count = sum(1 for ln in lines[start:end] if not ln.strip()) - 1
-		else:
-			count = 0
-		
+		count = valgrind(bin, getspec(test))
 		print ' ' * (40 - len(bin)), '%3i' % count
 
 if __name__ == '__main__':
