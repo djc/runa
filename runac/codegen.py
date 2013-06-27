@@ -41,17 +41,7 @@ class CodeGen(object):
 		self.buf = []
 	
 	def visit(self, node, frame):
-		
-		if hasattr(self, node.__class__.__name__):
-			return getattr(self, node.__class__.__name__)(node, frame)
-		
-		for k in node.fields:
-			attr = getattr(node, k)
-			if isinstance(attr, list):
-				for v in attr:
-					self.visit(v, frame)
-			else:
-				self.visit(attr, frame)
+		return getattr(self, node.__class__.__name__)(node, frame)
 	
 	# Output helper methods
 	
