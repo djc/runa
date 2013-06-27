@@ -75,6 +75,9 @@ class EscapeFinder(object):
 	def Yield(self, node, escape=None):
 		self.visit(node.value, True)
 	
+	def Raise(self, node, escape=None):
+		self.visit(node.value, True)
+	
 	def Init(self, node, escape=None):
 		if escape:
 			node.escapes = True

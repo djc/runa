@@ -47,6 +47,7 @@ class Block(util.AttribRepr):
 		self.id = id
 		self.anno = anno
 		self.returns = False
+		self.raises = False
 		self.steps = []
 		self.preds = []
 		self.assigns = None
@@ -245,6 +246,10 @@ class FlowFinder(object):
 		self.cur.returns = True
 		self.cur = next
 	
+	def Raise(self, node):
+		self.cur.push(node)
+		self.cur.raises = True
+	
 	def If(self, node):
 		
 		prevcond, exits = None, []
@@ -342,6 +347,8 @@ class Module(object):
 			self.names[k] = v
 		self.code += mod.code
 
+FINAL = ast.Return, ast.Raise
+
 def module(node):
 	
 	mod = Module()
@@ -404,7 +411,7 @@ def module(node):
 			elif isinstance(bl.steps[-1], LoopHeader):
 				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
 				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
-			elif not isinstance(bl.steps[-1], ast.Return):
+			elif not isinstance(bl.steps[-1], FINAL):
 				auto = ast.Return(None)
 				auto.value = None
 				auto.pos = v.pos

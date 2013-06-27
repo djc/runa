@@ -318,6 +318,10 @@ class TypeChecker(object):
 		self.visit(node.left, scope)
 		node.type = self.scopes[None][node.right.name]
 	
+	def Raise(self, node, scope):
+		self.visit(node.value, scope)
+		assert node.value is not None
+	
 	def Attrib(self, node, scope):
 		
 		self.visit(node.obj, scope)

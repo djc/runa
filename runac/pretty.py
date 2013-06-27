@@ -181,6 +181,10 @@ class PrettyPrinter(object):
 			self.write(' ')
 			self.visit(node.value)
 	
+	def Raise(self, node):
+		self.write('Raise ')
+		self.visit(node.value)
+	
 	def CondBranch(self, node):
 		self.write('CondBranch ')
 		self.visit(node.cond)

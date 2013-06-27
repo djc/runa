@@ -274,6 +274,16 @@ class Assign(Statement):
 		self.right = p.expr(self.lbp)
 		return self
 
+class Raise(Statement):
+	
+	kw = 'raise'
+	lbp = 0
+	fields = 'value',
+	
+	def nud(self, p):
+		self.value = p.expr()
+		return self
+
 class Yield(Statement):
 	
 	kw = 'yield'

@@ -651,7 +651,13 @@ class CodeGen(object):
 		bits = res, leftval.type.ir, leftval.var, llabel, rightval.var, rlabel
 		self.writeline('%s = phi %s [ %s, %%%s ], [ %s, %%%s ]' % bits)
 		return Value(leftval.type, res)
-		
+	
+	def Raise(self, node, frame):
+		val = self.visit(node.value, frame)
+		bits = val.type.ir, val.var
+		self.writeline('call void @runa.raise(%s %s) noreturn' % bits)
+		self.writeline('unreachable')
+	
 	def Return(self, node, frame):
 		
 		if node.value is None and self.main:
@@ -767,7 +773,8 @@ class CodeGen(object):
 		elif ctxt is not None:
 			args = ['%s %%ctx' % (types.ref(ctxt).ir)]
 		
-		self.writeline('define %s @%s(%s) {' % (rt, irname, ', '.join(args)))
+		bits = rt, irname, ', '.join(args)
+		self.writeline('define %s @%s(%s) uwtable {' % bits)
 		self.indent()
 		
 		frame = Frame(frame)
