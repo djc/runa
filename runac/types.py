@@ -93,6 +93,7 @@ class base(ReprId):
 class trait(ReprId):
 	
 	byval = False
+	attribs = {}
 	methods = {}
 	type = Type()
 	
@@ -108,9 +109,13 @@ class trait(ReprId):
 		return '<trait: %s>' % self.name
 
 class concrete(base):
-	pass
+	attribs = {}
+	methods = {}
 
 class template(base):
+	
+	attribs = {}
+	methods = {}
 	
 	@property
 	def ir(self):
@@ -150,14 +155,24 @@ class iter(template):
 
 class void(base):
 	ir = 'void'
+	attribs = {}
+	methods = {}
 	byval = True
 
 class anyint(base):
+	
+	attribs = {}
+	methods = {}
+	
 	@property
 	def ir(self):
 		raise TypeError('not a concrete type')
 
 class anyfloat(base):
+	
+	attribs = {}
+	methods = {}
+	
 	@property
 	def ir(self):
 		raise TypeError('not a concrete type')

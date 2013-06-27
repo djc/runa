@@ -1,0 +1,3 @@
+tests/void-print.rns [5.10]: arguments (void) cannot be passed as (&ToStr)
+    print(jtharper())
+         ^
