@@ -377,7 +377,7 @@ class TypeChecker(object):
 				
 				node.args.insert(0, node.name.obj)
 				actual = [a.type for a in node.args]
-				node.fun = t.select(node.name.attrib, actual)
+				node.fun = t.select(node, node.name.attrib, actual)
 				node.type = node.fun.type.over[0]
 			
 			if not types.compat(actual, node.fun.type.over[1]):
@@ -411,7 +411,7 @@ class TypeChecker(object):
 		else:
 			
 			# initializing a type
-			node.fun = obj.select('__init__', actual)
+			node.fun = obj.select(node, '__init__', actual)
 			node.name.name = node.fun.decl
 			node.type = types.owner(obj)
 			if '__init__' in node.fun.decl:

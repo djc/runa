@@ -22,15 +22,17 @@ class ReprId(object):
 	def __ne__(self, other):
 		return not self.__eq__(other)
 	
-	def select(self, name, actual):
+	def select(self, node, name, actual):
 		
 		opts = copy.copy(self.methods[name])
 		if name == '__init__' and '__new__' in self.methods:
 			opts += self.methods['__new__']
 		
 		res = []
+		formals = []
 		for fun in opts:
-			
+
+			formals.append([t.name for t in fun.type.over[1]][1:])
 			tmp = actual
 			if '__init__' in fun.decl:
 				tmp = [ref(self)] + actual
@@ -52,8 +54,8 @@ class ReprId(object):
 				res.append(fun)
 		
 		if not res:
-			astr = ', '.join(t.name for t in actual)
-			bits = astr, '), ('.join(formals)
+			astr = ', '.join([t.name for t in actual][1:])
+			bits = astr, '), ('.join(', '.join(f) for f in formals)
 			msg = '(%s) does not fit any of (%s)'
 			raise util.Error(node, msg % bits)
 		
