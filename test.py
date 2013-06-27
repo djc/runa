@@ -30,23 +30,23 @@ def run(self, key):
 	out = compile(fullname, bin)
 	if not out:
 		cmd = [bin] + spec.get('args', [])
-		proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-		ret = proc.wait()
-		out = proc.stdout.read()
+		opts = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+		proc = subprocess.Popen(cmd, **opts)
+		res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
 	else:
-		ret = 0
+		res = [0, '', out]
 	
-	if os.path.exists(base + '.out'):
-		expected = open(base + '.out').read()
-	else:
-		expected = ''
+	expected = [spec.get('ret', 0), '', '']
+	for i, ext in enumerate(('.out', '.err')):
+		if os.path.exists(base + ext):
+			expected[i + 1] = open(base + ext).read()
 	
-	expret = spec.get('ret', 0)
 	if self is None:
-		return expret == ret and expected == out
+		return res == expected
 	else:
-		self.assertEqual(ret, expret)
-		self.assertMultiLineEqual(expected, out)
+		self.assertEqual(expected[0], res[0])
+		self.assertMultiLineEqual(expected[1], res[1])
+		self.assertMultiLineEqual(expected[2], res[2])
 
 def testfunc(key):
 	def do(self):
