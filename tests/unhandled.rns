@@ -1,0 +1,6 @@
+# test: {"ret": 1}
+def func():
+	raise Exception('error')
+
+def main():
+	func()
