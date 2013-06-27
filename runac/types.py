@@ -418,5 +418,6 @@ def fill(node):
 	elif node.name.name in BASIC_FLOATS:
 		cls.bits = BASIC_FLOATS[node.name.name]
 		FLOATS.add(obj)
+		ALL['anyfloat'].methods.update(cls.methods)
 	
 	return obj
