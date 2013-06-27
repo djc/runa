@@ -1,0 +1,5 @@
+def rpsls() -> $str:
+	return 'Spock'
+
+def main():
+	print(rpsls())

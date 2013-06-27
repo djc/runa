@@ -722,7 +722,7 @@ class CodeGen(object):
 			args.append(self.load(Value(types.get('&&byte'), vtp)))
 		
 		type, name = rtype, '@' + node.fun.decl
-		if atypes[-1] == types.VarArgs():
+		if atypes and atypes[-1] == types.VarArgs():
 			type = node.fun.type
 		elif node.virtual:
 			
@@ -744,7 +744,10 @@ class CodeGen(object):
 		argstr = ', '.join('%s %s' % (a.type.ir, a.var) for a in args)
 		if rtype == types.void():
 			self.writeline('call %s %s(%s)' % (type.ir, name, argstr))
-			return args[0] if isinstance(node.args[0], typer.Init) else None
+			if node.args and isinstance(node.args[0], typer.Init):
+				return args[0]
+			else:
+				return None
 		
 		res = self.varname()
 		bits = res, type.ir, name, argstr
