@@ -160,7 +160,11 @@ class EscapeFinder(object):
 		self.note(node.value)
 	
 	def note(self, val):
-		assert isinstance(val, ast.Name)
+		
+		if isinstance(val, ast.String):
+			return
+		
+		assert isinstance(val, ast.Name), val
 		ls = self.cur[0].escapes.setdefault(val.name, [])
 		ls.append((self.cur[1], val.type))
 	
