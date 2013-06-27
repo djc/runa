@@ -24,6 +24,16 @@ class ReprId(object):
 	
 	def select(self, node, name, actual):
 		
+		if name not in self.methods:
+			msg = "%s does not have a method '%s'"
+			if node.args:
+				t = node.args[0].type.name
+			elif isinstance(node.name.type, Type):
+				t = node.name.name
+			else:
+				assert False, node
+			raise util.Error(node, msg % (t, name))
+		
 		opts = copy.copy(self.methods[name])
 		if name == '__init__' and '__new__' in self.methods:
 			opts += self.methods['__new__']

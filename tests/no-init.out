@@ -1,0 +1,3 @@
+tests/no-init.rns [5.18]: Sheldon does not have a method '__init__'
+    print(Sheldon())
+                 ^
