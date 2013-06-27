@@ -1,6 +1,8 @@
+declare void @exit(i32);
 declare i8* @malloc(i64)
 declare void @free(i8*)
 declare i32 @printf(i8*, ...)
+declare i32 @dprintf(i32, i8*, ...)
 declare void @llvm.memcpy.p0i8.p0i8.i64(i8*, i8*, i64, i32, i1)
 
 @fmt_MALLOC = constant [16 x i8] c"malloc(%ld) %p\0a\00"
@@ -72,4 +74,59 @@ Body:
 Done:
 	ret %array$str* %array
 	
+}
+
+%UnwEx = type { i64, i8*, i64, i64 }
+%UnwExClean = type void (i32, %UnwEx*)*
+
+declare i32 @_Unwind_RaiseException(%UnwEx*)
+
+@ExcErr = constant [45 x i8] c"!!! Runa: error while raising exception: %i\0a\00"
+@ForeignExc = constant [36 x i8] c"!!! Runa: foreign exception caught\0a\00"
+@Unhandled = constant [25 x i8] c"Unhandled Exception: %s\0a\00"
+
+define void @runa.unhandled(%Exception* %exc) {
+	%fmt = getelementptr inbounds [25 x i8]* @Unhandled, i32 0, i32 0
+	%msg.slot = getelementptr %Exception* %exc, i32 0, i32 4
+	%msg = load %str** %msg.slot
+	%msg.data.slot = getelementptr %str* %msg, i32 0, i32 1
+	%msg.data = load i8** %msg.data.slot
+	call i32 (i32, i8*, ...)* @dprintf(i32 2, i8* %fmt, i8* %msg.data)
+	ret void
+}
+
+define void @runa.clean(i32 %reason, %UnwEx* %exc) {
+	%cond = icmp eq i32 %reason, 1 ; _URC_FOREIGN_EXCEPTION_CAUGHT
+	br i1 %cond, label %Foreign, label %Normal
+Foreign:
+	%fmt = getelementptr inbounds [36 x i8]* @ForeignExc, i32 0, i32 0
+	call i32 (i32, i8*, ...)* @dprintf(i32 2, i8* %fmt)
+	call void @exit(i32 1)
+	ret void
+Normal:
+	%bland = bitcast %UnwEx* %exc to i8*
+	call void @free(i8* %bland)
+	ret void
+}
+
+define void @runa.raise(%Exception* %obj) {
+	%exc = bitcast %Exception* %obj to %UnwEx*
+	%class = getelementptr %UnwEx* %exc, i32 0, i32 0
+	store i64 19507889121949010, i64* %class ; 'RunaRNE\x00'
+	%slot = getelementptr %UnwEx* %exc, i32 0, i32 1
+	%clean = bitcast %UnwExClean @runa.clean to i8*
+	store i8* %clean, i8** %slot
+	%err = call i32 @_Unwind_RaiseException(%UnwEx* %exc)
+	%cond = icmp eq i32 %err, 5 ; _URC_END_OF_STACK
+	br i1 %cond, label %Unhandled, label %Other
+Unhandled:
+	call void @runa.unhandled(%Exception* %obj)
+	br label %End
+Other:
+	%fmt = getelementptr inbounds [45 x i8]* @ExcErr, i32 0, i32 0
+	call i32 (i32, i8*, ...)* @dprintf(i32 2, i8* %fmt, i32 %err)
+	br label %End
+End:
+	call void @exit(i32 1)
+	ret void
 }

@@ -1,0 +1,10 @@
+class Exception:
+	
+	ehid: uint
+	clean: &byte
+	priv1: uint
+	priv2: uint
+	msg: $str
+	
+	def __init__(self, msg: $str):
+		self.msg = msg
