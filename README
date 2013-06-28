@@ -1,0 +1,33 @@
+Runa
+====
+
+A statically-typed Python-like programming language.
+
+
+Installation
+------------
+
+Dependencies:
+
+* Python 2.7
+* Clang (tested with 3.2)
+
+So far, it has only been tested on 64-bits OS X and Linux.
+
+
+How to get started
+------------------
+
+Type the following program into a file called `hello.rns`:
+
+	def main():
+		print('hello, world')
+
+Make sure to use tab-based indentation; spaces are not currently supported.
+Now, run the compiler to generate a binary, then run it:
+
+    djc@enrai runa $ ./runa compile hello.rns
+    djc@enrai runa $ ./hello
+    hello, world
+
+Review the test cases in `tests/` for other code that should work.
