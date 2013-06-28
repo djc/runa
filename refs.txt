@@ -108,3 +108,7 @@ http://blog.reverberate.org/2013/05/deep-wizardry-stack-unwinding.html
 Neil Brown
 Little things that matter in language design
 https://lwn.net/Articles/553131/
+
+Andrey Petrov
+How to maintain a successful open source project
+https://medium.com/p/aaa2a5437d3a
