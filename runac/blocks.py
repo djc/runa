@@ -64,7 +64,7 @@ class FlowGraph(util.AttribRepr):
 	
 	def __init__(self):
 		self.blocks = {0: Block(0, 'entry')}
-		self.edges = None
+		self.edges = {}
 		self.exits = None
 		self.yields = {}
 	
@@ -72,6 +72,9 @@ class FlowGraph(util.AttribRepr):
 		id = len(self.blocks)
 		self.blocks[id] = Block(id, anno)
 		return self.blocks[id]
+	
+	def edge(self, src, dst):
+		self.edges.setdefault(src, []).append(dst)
 	
 	def walk(self, path):
 		
@@ -215,7 +218,12 @@ class FlowFinder(object):
 		exit = self.flow.block('ternary-exit')
 		left.push(Branch(exit.id))
 		right.push(Branch(exit.id))
+		
 		self.cur = exit
+		self.flow.edge(entry.id, left.id)
+		self.flow.edge(entry.id, right.id)
+		self.flow.edge(left.id, exit.id)
+		self.flow.edge(right.id, exit.id)
 		return Phi(node.pos, (left.id, lvar), (right.id, rvar))
 	
 	# Statements
@@ -239,11 +247,14 @@ class FlowFinder(object):
 		self.cur.push(node)
 	
 	def Yield(self, node):
+		
 		self.cur.push(node)
 		next = self.flow.block('yield-to')
 		self.flow.yields[self.cur.id] = next.id
 		node.target = next.id
+		
 		self.cur.returns = True
+		self.flow.edge(self.cur.id, next.id)
 		self.cur = next
 	
 	def Raise(self, node):
@@ -259,6 +270,7 @@ class FlowFinder(object):
 				assert isinstance(prevcond.steps[-1], CondBranch)
 				tmp, self.cur = self.cur, self.flow.block('if-cond')
 				prevcond.steps[-1].tg2 = self.cur.id
+				self.flow.edge(prevcond.id, self.cur.id)
 				self.cur.push(CondBranch(self.inter(cond), None, None))
 				self.cur, prevcond = tmp, self.cur
 			
@@ -266,13 +278,16 @@ class FlowFinder(object):
 			if i and cond is not None:
 				assert isinstance(prevcond.steps[-1], CondBranch)
 				prevcond.steps[-1].tg1 = block.id
+				self.flow.edge(prevcond.id, block.id)
 			
 			if not i:
+				self.flow.edge(self.cur.id, block.id)
 				self.cur.push(CondBranch(self.inter(cond), block.id, None))
 				prevcond = self.cur
 			elif cond is None:
 				assert isinstance(prevcond.steps[-1], CondBranch)
 				prevcond.steps[-1].tg2 = block.id
+				self.flow.edge(prevcond.id, block.id)
 				prevcond = None
 			
 			self.cur = block
@@ -284,28 +299,34 @@ class FlowFinder(object):
 		if prevcond:
 			assert isinstance(prevcond.steps[-1], CondBranch)
 			prevcond.steps[-1].tg2 = exit.id
+			self.flow.edge(prevcond.id, exit.id)
 		
 		self.cur = exit
 		for block in exits:
 			block.push(Branch(exit.id))
+			self.flow.edge(block.id, exit.id)
 	
 	def While(self, node):
 		
 		head = self.flow.block('while-head')
 		body = self.flow.block('while-body')
 		self.cur.push(Branch(head.id))
+		self.flow.edge(self.cur.id, head.id)
 		
 		self.cur = head
 		head.push(CondBranch(self.inter(node.cond), body.id, None))
+		self.flow.edge(head.id, body.id)
 		
 		self.cur = body
 		self.visit(node.suite)
 		self.cur.push(Branch(head.id))
+		self.flow.edge(self.cur.id, head.id)
 		
 		exit = self.flow.block('while-exit')
 		self.cur = exit
 		assert isinstance(head.steps[-1], CondBranch)
 		head.steps[-1].tg2 = exit.id
+		self.flow.edge(head.id, self.cur.id)
 	
 	def For(self, node):
 		
@@ -317,16 +338,20 @@ class FlowFinder(object):
 		asgt.right = LoopSetup(node)
 		self.cur.push(asgt)
 		self.cur.push(Branch(head.id))
+		self.flow.edge(self.cur.id, head.id)
 		head.push(LoopHeader(asgt.left, node.lvar, body.id, None))
+		self.flow.edge(head.id, body.id)
 		
 		self.cur = body
 		self.visit(node.suite)
 		self.cur.push(Branch(head.id))
+		self.flow.edge(self.cur.id, head.id)
 		
 		exit = self.flow.block('for-exit')
 		self.cur = exit
 		assert isinstance(head.steps[-1], LoopHeader)
 		head.steps[-1].tg2 = exit.id
+		self.flow.edge(head.id, exit.id)
 
 class Module(object):
 	
@@ -347,7 +372,7 @@ class Module(object):
 			self.names[k] = v
 		self.code += mod.code
 
-FINAL = ast.Return, ast.Raise
+FINAL = ast.Return, ast.Raise, Branch, CondBranch, ast.Yield, LoopHeader
 
 def module(node):
 	
@@ -391,8 +416,6 @@ def module(node):
 	for k, v in mod.code:
 		
 		cfg = v.flow = FlowFinder().build(v.suite)
-		cfg.edges = {}
-		
 		for i, bl in cfg.blocks.iteritems():
 			
 			if not bl.steps:
@@ -401,16 +424,6 @@ def module(node):
 				bl.steps.append(auto)
 				continue
 			
-			if isinstance(bl.steps[-1], Branch):
-				cfg.edges.setdefault(i, []).append(bl.steps[-1].label)
-			elif isinstance(bl.steps[-1], CondBranch):
-				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
-				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
-			elif isinstance(bl.steps[-1], ast.Yield):
-				cfg.edges.setdefault(i, []).append(bl.steps[-1].target)
-			elif isinstance(bl.steps[-1], LoopHeader):
-				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg1)
-				cfg.edges.setdefault(i, []).append(bl.steps[-1].tg2)
 			elif not isinstance(bl.steps[-1], FINAL):
 				auto = ast.Return(None)
 				auto.value = None
