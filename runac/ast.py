@@ -295,6 +295,18 @@ class Yield(Statement):
 		self.target = None # for use in blocks
 		return self
 
+class Except(Statement):
+	
+	kw = 'except'
+	lbp = 0
+	fields = 'type', 'suite'
+	
+	def nud(self, p):
+		self.type = p.expr()
+		p.eat(Colon)
+		self.suite = Suite(p, self.pos)
+		return self
+
 class Suite(Statement):
 	
 	fields = 'stmts',
@@ -325,6 +337,23 @@ class Argument(Node):
 
 class Decl(Node):
 	fields = 'decor', 'name', 'args', 'rtype'
+
+class TryBlock(Node):
+	
+	kw = 'try'
+	lbp = 0
+	fields = 'suite', 'catch'
+	
+	def nud(self, p):
+		
+		p.advance(Colon)
+		self.suite = Suite(p, self.pos)
+		self.catch = []
+		while isinstance(p.token, Except):
+			self.catch.append(p.expr())
+		
+		assert len(self.catch) > 0, 'must have 1 or more except handlers'
+		return self
 
 class Function(Node):
 	

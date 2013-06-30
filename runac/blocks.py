@@ -352,6 +352,9 @@ class FlowFinder(object):
 		assert isinstance(head.steps[-1], LoopHeader)
 		head.steps[-1].tg2 = exit.id
 		self.flow.edge(head.id, exit.id)
+	
+	def TryBlock(self, node):
+		pass
 
 class Module(object):
 	
