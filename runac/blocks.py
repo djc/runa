@@ -41,6 +41,11 @@ class LoopHeader(util.AttribRepr):
 		self.tg1 = tg1
 		self.tg2 = tg2
 
+class LPad(util.AttribRepr):
+	fields = ()
+	def __init__(self, map):
+		self.map = map
+
 class Block(util.AttribRepr):
 	
 	def __init__(self, id, anno=None):
@@ -98,6 +103,7 @@ class FlowFinder(object):
 		self.flow = FlowGraph()
 		self.cur = self.flow.blocks[0]
 		self.tmp = 0
+		self.caught = None
 	
 	def name(self):
 		self.tmp += 1
@@ -111,22 +117,44 @@ class FlowFinder(object):
 		return getattr(self, node.__class__.__name__)(node)
 	
 	def append(self, node):
+		
 		node = self.visit(node)
-		if node is not None:
-			self.cur.push(node)
+		if node is None:
+			return
+		
+		self.cur.push(node)
+		if isinstance(node, ast.Call):
+			self.redirect(node)
 	
 	def Suite(self, node):
 		for stmt in node.stmts:
 			self.append(stmt)
 	
 	def inter(self, node):
+		
 		if isinstance(node, ast.Name):
 			return node
+		
 		asgt = ast.Assign(None)
 		asgt.left = ast.Name(self.name(), None)
 		asgt.right = self.visit(node)
 		self.cur.push(asgt)
+		
+		if isinstance(asgt.right, ast.Call):
+			self.redirect(asgt.right)
+		
 		return asgt.left
+	
+	def redirect(self, node):
+		
+		if self.caught is None:
+			return
+		
+		next = self.flow.block('try-continue')
+		node.callbr = next.id, None
+		self.flow.edge(self.cur.id, next.id)
+		self.caught.append((self.cur.id, node))
+		self.cur = next
 	
 	# Expressions
 	
@@ -238,13 +266,17 @@ class FlowFinder(object):
 		self.cur.returns = True
 	
 	def Assign(self, node):
+		
 		node.right = self.visit(node.right)
 		if isinstance(node.left, ast.Attrib):
 			new = SetAttr(node.left.pos)
 			new.obj = node.left.obj
 			new.attrib = node.left.attrib
 			node.left = new
+		
 		self.cur.push(node)
+		if isinstance(node.right, ast.Call):
+			self.redirect(node.right)
 	
 	def Yield(self, node):
 		
@@ -354,7 +386,37 @@ class FlowFinder(object):
 		self.flow.edge(head.id, exit.id)
 	
 	def TryBlock(self, node):
-		pass
+		
+		self.caught = []
+		self.visit(node.suite)
+		if self.cur.anno == 'try-continue':
+			assert not self.cur.steps
+			del self.flow.blocks[self.cur.id]
+			self.flow.edges[self.caught[-1][0]].remove(self.cur.id)
+		
+		pad = self.flow.block('landing-pad')
+		for i, (bid, call) in enumerate(self.caught):
+			self.flow.edge(bid, pad.id)
+			if i < len(self.caught) - 1:
+				call.callbr = call.callbr[0], pad.id
+			else:
+				last = bid, call
+		
+		map = {}
+		self.caught = None
+		for handler in node.catch:
+			self.cur = self.flow.block('catch')
+			self.visit(handler.suite)
+			map[handler.type] = self.cur.id
+			self.flow.edge(pad.id, self.cur.id)
+		
+		pad.push(LPad(map))
+		exit = self.cur = self.flow.block('try-exit')
+		last[1].callbr = exit.id, pad.id
+		self.flow.edge(last[0], exit.id)
+		for id in map.itervalues():
+			self.flow.blocks[id].push(Branch(exit.id))
+			self.flow.edge(id, exit.id)
 
 class Module(object):
 	
@@ -375,7 +437,7 @@ class Module(object):
 			self.names[k] = v
 		self.code += mod.code
 
-FINAL = ast.Return, ast.Raise, Branch, CondBranch, ast.Yield, LoopHeader
+FINAL = ast.Return, ast.Raise, Branch, CondBranch, ast.Yield, LoopHeader, LPad
 
 def module(node):
 	
@@ -427,12 +489,17 @@ def module(node):
 				bl.steps.append(auto)
 				continue
 			
-			elif not isinstance(bl.steps[-1], FINAL):
-				auto = ast.Return(None)
-				auto.value = None
-				auto.pos = v.pos
-				bl.steps.append(auto)
-				bl.returns = True
+			last = bl.steps[-1]
+			if isinstance(last, ast.Call) and last.callbr:
+				continue
+			elif isinstance(last, FINAL):
+				continue
+			
+			auto = ast.Return(None)
+			auto.value = None
+			auto.pos = v.pos
+			bl.steps.append(auto)
+			bl.returns = True
 		
 		cfg.exits = set()
 		reachable = set()

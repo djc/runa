@@ -467,6 +467,11 @@ class TypeChecker(object):
 			bits = tuple(i.type.name for i in (node.left[1], node.right[1]))
 			raise util.Error(node, "unmatched types '%s', '%s'" % bits)
 	
+	def LPad(self, node, scope):
+		for type in node.map:
+			t = types.get(type)
+			assert t.name == 'Exception'
+	
 	def Branch(self, node, scope):
 		return
 	

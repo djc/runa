@@ -658,6 +658,9 @@ class CodeGen(object):
 		self.writeline('call void @runa.raise(%s %s) noreturn' % bits)
 		self.writeline('unreachable')
 	
+	def LPad(self, node, frame):
+		pass
+	
 	def Return(self, node, frame):
 		
 		if node.value is None and self.main:

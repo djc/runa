@@ -168,6 +168,8 @@ class PrettyPrinter(object):
 				self.write(', ')
 		self.write(')')
 		self.anno(node)
+		if node.callbr is not None:
+			self.write(' => %s, %s' % node.callbr)
 	
 	def Return(self, node):
 		self.write('Return')
@@ -222,6 +224,13 @@ class PrettyPrinter(object):
 		self.visit(node.lvar)
 		self.write(' <- ')
 		self.visit(node.source)
+	
+	def LPad(self, node):
+		self.write('LPad: {')
+		for k, v in node.map.iteritems():
+			self.visit(k)
+			self.write(': ' + str(v))
+		self.write('}')
 	
 	def LoopSetup(self, node):
 		self.write('LoopSetup ')

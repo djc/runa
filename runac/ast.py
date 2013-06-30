@@ -236,6 +236,7 @@ class Call(BinaryOp):
 	def led(self, p, left):
 		
 		self.name = left
+		self.callbr = None
 		self.fun = None # for type inferencing
 		self.virtual = None # for type inferencing
 		self.args = []
