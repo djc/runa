@@ -231,7 +231,7 @@ class FlowFinder(object):
 	
 	def Assign(self, node):
 		node.right = self.visit(node.right)
-		if not isinstance(node.left, ast.Name):
+		if isinstance(node.left, ast.Attrib):
 			new = SetAttr(node.left.pos)
 			new.obj = node.left.obj
 			new.attrib = node.left.attrib
