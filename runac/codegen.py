@@ -334,12 +334,14 @@ class CodeGen(object):
 		if isinstance(t, types.WRAPPERS):
 			t = left.type.over
 		
-		bool = self.varname()
-		fun = t.methods['__bool__'][0]
-		arg = self.coerce(left, fun.type.over[1][0])
-		argstr = '%s %s' % (arg.type.ir, arg.var)
-		bits = bool, fun.type.over[0].ir, fun.decl, argstr
-		self.writeline('%s = call %s @%s(%s)' % bits)
+		bool = left.var
+		if t != types.get('bool'):
+			bool = self.varname()
+			fun = t.methods['__bool__'][0]
+			arg = self.coerce(left, fun.type.over[1][0])
+			argstr = '%s %s' % (arg.type.ir, arg.var)
+			bits = bool, fun.type.over[0].ir, fun.decl, argstr
+			self.writeline('%s = call %s @%s(%s)' % bits)
 		
 		res = self.varname()
 		if op == 'and':
