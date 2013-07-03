@@ -4,7 +4,10 @@ class byte:
 	pass
 
 class i32:
-	pass
+	def __str__(self) -> $str:
+		data = __malloc__(20)
+		len = snprintf(data, 20, '%i\0'.data, self)
+		return str(len as u32, data)
 
 class u32:
 	def __str__(self) -> $str:
