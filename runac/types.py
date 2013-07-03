@@ -112,10 +112,16 @@ class concrete(base):
 	attribs = {}
 	methods = {}
 
-class template(base):
+class template(ReprId):
 	
+	byval = False
 	attribs = {}
 	methods = {}
+	type = Type()
+	
+	@property
+	def name(self):
+		return self.__class__.__name__
 	
 	@property
 	def ir(self):
@@ -349,7 +355,7 @@ def get(t, stubs={}):
 ALL = {}
 for k in globals().keys():
 	obj = globals()[k]
-	if type(obj) == type and issubclass(obj, base):
+	if type(obj) == type and issubclass(obj, (base, template)):
 		ALL[k] = globals()[k]
 
 for k, cls in ALL.iteritems():

@@ -868,8 +868,7 @@ class CodeGen(object):
 		
 	def type(self, type):
 		
-		ignore = types.WRAPPERS + (types.template,)
-		if isinstance(type, ignore):
+		if isinstance(type, types.WRAPPERS):
 			return
 		
 		if type.name == 'array[str]':
