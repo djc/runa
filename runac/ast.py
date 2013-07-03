@@ -197,11 +197,6 @@ class Or(BinaryOp):
 	lbp = 40
 	fields = 'left', 'right'
 
-class As(BinaryOp):
-	op = 'as'
-	lbp = 10
-	fields = 'left', 'right'
-
 class EQ(BinaryOp):
 	op = '=='
 	lbp = 20
