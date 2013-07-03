@@ -189,12 +189,12 @@ class In(Expr):
 
 class And(BinaryOp):
 	op = 'and'
-	lbp = 40
+	lbp = 15
 	fields = 'left', 'right'
 
 class Or(BinaryOp):
 	op = 'or'
-	lbp = 40
+	lbp = 15
 	fields = 'left', 'right'
 
 class EQ(BinaryOp):
