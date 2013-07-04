@@ -384,15 +384,15 @@ def add(node):
 	else:
 		fields = {'methods': {}, 'attribs': {}}
 	
+	if node.name.name in BASIC:
+		fields['ir'] = BASIC[node.name.name]
+		fields['byval'] = True
+	
 	ALL[node.name.name] = type(node.name.name, (parent,), fields)
 
 def fill(node):
 	
 	cls = ALL[node.name.name]
-	if node.name.name in BASIC:
-		cls.ir = BASIC[node.name.name]
-		cls.byval = True
-	
 	stubs = {}
 	if not isinstance(node, ast.Trait):
 		cls.params = tuple(n.name for n in node.params)
