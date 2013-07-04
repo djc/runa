@@ -272,6 +272,24 @@ class TypeChecker(object):
 	def Div(self, node, scope):
 		self.arith('div', node, scope)
 	
+	# Bitwise operators
+	
+	def bitwise(self, op, node, scope):
+		self.visit(node.left, scope)
+		self.visit(node.right, scope)
+		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
+		assert lt in types.INTS and rt in types.INTS
+		node.type = node.left.type
+	
+	def BWAnd(self, node, scope):
+		self.bitwise('and', node, scope)
+	
+	def BWOr(self, node, scope):
+		self.bitwise('or', node, scope)
+	
+	def BWXor(self, node, scope):
+		self.bitwise('xor', node, scope)
+	
 	# Iteration-related nodes
 	
 	def Yield(self, node, scope):

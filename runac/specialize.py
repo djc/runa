@@ -105,6 +105,23 @@ class Specializer(object):
 	def Div(self, node, type=None):
 		self.arith('div', node, type)
 	
+	# Bitwise operators
+	
+	def bitwise(self, op, node, type):
+		self.visit(node.left, type)
+		self.visit(node.right, type)
+		assert node.left.type == node.right.type
+		node.type = node.left.type
+	
+	def BWAnd(self, node, type=None):
+		self.bitwise('and', node, type)
+	
+	def BWOr(self, node, type=None):
+		self.bitwise('or', node, type)
+	
+	def BWXor(self, node, type=None):
+		self.bitwise('xor', node, type)
+	
 	# Miscellaneous
 	
 	def LoopSetup(self, node, type=None):

@@ -467,6 +467,17 @@ class CodeGen(object):
 	def Div(self, node, frame):
 		return self.arith('div', node, frame)
 	
+	# Bitwise operators
+	
+	def BWAnd(self, node, frame):
+		return self.arith('and', node, frame)
+	
+	def BWOr(self, node, frame):
+		return self.arith('or', node, frame)
+	
+	def BWXor(self, node, frame):
+		return self.arith('xor', node, frame)
+	
 	# Iteration
 	
 	def Yield(self, node, frame):

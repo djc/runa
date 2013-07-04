@@ -216,6 +216,15 @@ class FlowFinder(object):
 	def Div(self, node):
 		return self.binary(node)
 	
+	def BWAnd(self, node):
+		return self.binary(node)
+	
+	def BWOr(self, node):
+		return self.binary(node)
+	
+	def BWXor(self, node):
+		return self.binary(node)
+	
 	def Attrib(self, node):
 		node.obj = self.inter(node.obj)
 		return node

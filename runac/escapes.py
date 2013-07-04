@@ -72,6 +72,17 @@ class EscapeFinder(object):
 	def Div(self, node, escape=None):
 		pass
 	
+	# Bitwise operators
+	
+	def BWAnd(self, node, escape=None):
+		pass
+		
+	def BWOr(self, node, escape=None):
+		pass
+	
+	def BWXor(self, node, escape=None):
+		pass
+	
 	def Yield(self, node, escape=None):
 		self.visit(node.value, True)
 	
