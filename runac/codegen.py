@@ -859,9 +859,6 @@ class CodeGen(object):
 		if ref.decl.startswith('runa.'):
 			return
 		
-		if isinstance(ref, types.WRAPPERS):
-			return
-		
 		rtype = ref.type.over[0].ir
 		args = ', '.join(t.ir for t in ref.type.over[1])
 		self.writeline('declare %s @%s(%s)' % (rtype, ref.decl, args))
