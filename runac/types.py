@@ -442,3 +442,13 @@ def fill(node):
 		ALL['anyfloat'].methods.update(cls.methods)
 	
 	return obj
+
+def realize(n):
+	if isinstance(n, ast.Decl):
+		rtype = get(n.rtype)
+		atypes = [get(a.type) for a in n.args]
+		return FunctionDef(n.name.name, function(rtype, atypes))
+	else:
+		rtype = get(n.rtype)
+		atypes = [get(t) for t in n.atypes]
+		return FunctionDef(n.decl, function(rtype, atypes))

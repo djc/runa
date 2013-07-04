@@ -40,11 +40,6 @@ class Decl(object):
 		name = self.__class__.__name__
 		atypes = ', '.join(self.atypes)
 		return '<%s(%r, %s, (%s))>' % (name, self.decl, self.rtype, atypes)
-	
-	def realize(self):
-		rtype = types.get(self.rtype)
-		atypes = [types.get(t) for t in self.atypes]
-		return types.FunctionDef(self.decl, types.function(rtype, atypes))
 
 ROOT = Module('', {
 	'__internal__': Module('__internal__', {
@@ -571,8 +566,10 @@ def typer(mod):
 			ns = ns.attribs[path.pop(0)]
 		
 		val = ns.attribs[path[0]]
-		base[name] = val.realize() if isinstance(val, Decl) else val
-		mod.names[name] = base[name]
+		if isinstance(val, Decl):
+			val = types.realize(val)
+		
+		mod.names[name] = base[name] = val
 	
 	for k, v in mod.names.iteritems():
 		if not isinstance(v, blocks.Constant):
@@ -588,6 +585,8 @@ def typer(mod):
 	for k, v in mod.names.iteritems():
 		if isinstance(v, (ast.Class, ast.Trait)):
 			base[k] = mod.names[k] = types.fill(v)
+		if isinstance(v, ast.Decl):
+			base[k] = mod.names[k] = types.realize(v)
 	
 	for k, fun in mod.code:
 		

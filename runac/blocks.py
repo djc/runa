@@ -475,6 +475,9 @@ def module(node):
 			assert isinstance(n.left, ast.Name), n.left
 			mod.names[n.left.name] = Constant(n.right)
 		
+		elif isinstance(n, ast.Decl):
+			mod.names[n.name.name] = n
+		
 		else:
 			assert False, n
 	
