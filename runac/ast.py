@@ -156,6 +156,21 @@ class Div(BinaryOp):
 	lbp = 60
 	fields = 'left', 'right'
 
+class BWAnd(BinaryOp):
+	op = '&'
+	lbp = 40
+	fields = 'left', 'right'
+
+class BWOr(BinaryOp):
+	op = '|'
+	lbp = 41
+	fields = 'left', 'right'
+
+class BWXor(BinaryOp):
+	op = '^'
+	lbp = 42
+	fields = 'left', 'right'
+
 class Not(Expr):
 	op = 'not'
 	lbp = 0
@@ -169,7 +184,7 @@ class Owner(Node):
 	lbp = 0
 	fields = 'value'
 	def nud(self, p):
-		self.value = p.expr()
+		self.value = p.expr(mode='type')
 		return self
 
 class Ref(Node):
@@ -177,7 +192,7 @@ class Ref(Node):
 	lbp = 0
 	fields = 'value'
 	def nud(self, p):
-		self.value = p.expr()
+		self.value = p.expr(mode='type')
 		return self
 
 class In(Expr):
@@ -218,9 +233,15 @@ class GT(BinaryOp):
 	fields = 'left', 'right'
 
 class As(BinaryOp):
+	
 	op = 'as'
 	lbp = 30
 	fields = 'left', 'right'
+		
+	def led(self, p, left):
+		self.left = left
+		self.right = p.expr(self.lbp, mode='type')
+		return self
 
 class Call(BinaryOp):
 	
@@ -371,8 +392,8 @@ class Function(Node):
 			
 			cur.name = next
 			if isinstance(p.token, Colon):
-				p.advance(Colon)
-				cur.type = p.expr()
+				p.advance(Colon, mode='type')
+				cur.type = p.expr(mode='type')
 			
 			self.args.append(cur)
 			cur	= Argument(self.pos)
@@ -576,8 +597,8 @@ class Class(Statement):
 		
 		while isinstance(p.token, Name):
 			field = p.expr()
-			p.advance(Colon)
-			type = p.expr()
+			p.advance(Colon, mode='type')
+			type = p.expr(mode='type')
 			self.attribs.append((type, field))
 			p.eat(NL)
 		
@@ -659,19 +680,29 @@ class Pratt(object):
 				yield Decorator(v, (s, e, l))
 		yield End((s, e))
 	
+	def mode(self, t):
+		if t == 'type':
+			OPERATORS['&'] = Ref
+		elif t == 'expr':
+			OPERATORS['&'] = BWAnd
+		else:
+			assert False, t
+	
 	def eat(self, type):
 		while isinstance(self.token, type):
 			self.token = self.next()
 	
-	def advance(self, id):
+	def advance(self, id, mode='expr'):
 		if not isinstance(self.token, id):
 			bits = self.token.__class__.__name__, id.__name__
 			raise util.Error(self.token, 'expected %r, got %r' % bits)
 		t = self.token
+		self.mode(mode)
 		self.token = self.next()
 		return t
 	
-	def expr(self, rbp=0):
+	def expr(self, rbp=0, mode='expr'):
+		self.mode(mode)
 		t, self.token = self.token, self.next()
 		left = t.nud(self)
 		while rbp < self.token.lbp and not isinstance(left, Statement):
