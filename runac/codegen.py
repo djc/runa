@@ -384,7 +384,9 @@ class CodeGen(object):
 				right = self.load(right)
 			
 			assert left.type == right.type, (left.type, right.type)
-			if op not in {'eq', 'ne'}:
+			if left.type in types.FLOATS:
+				op = 'o' + op
+			elif op not in {'eq', 'ne'}:
 				op = {False: 'u', True: 's'}[left.type.signed] + op
 			
 			inst = 'fcmp' if left.type in types.FLOATS else 'icmp'
