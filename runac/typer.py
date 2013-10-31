@@ -501,6 +501,9 @@ class TypeChecker(object):
 		if node.value is None and self.fun.rtype != types.void():
 			msg = "function may not return value of type 'void'"
 			raise util.Error(node, msg)
+		elif node.value is not None and self.fun.rtype == types.void():
+			msg = "function must return type 'void' ('%s' not allowed)"
+			raise util.Error(node, msg % (node.value.type.name))
 		elif node.value is None:
 			return
 		
