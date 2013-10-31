@@ -228,7 +228,8 @@ class TypeChecker(object):
 			msg = "value of type '%s' may only be compared to float type"
 			raise util.Error(node, msg % node.left.type.name)
 		elif lt not in types.INTS and lt not in types.FLOATS:
-			assert False, '%s sides different types (%s, %s)' % (op, lt, rt)
+			msg = "types '%s' and '%s' cannot be compared"
+			raise util.Error(node, msg % (lt.name, rt.name))
 		
 		node.type = types.get('bool')
 	

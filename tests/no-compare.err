@@ -1,0 +1,3 @@
+tests/no-compare.rns [2.16]: types 'byte' and 'anyint' cannot be compared
+    return val == 0
+               ^

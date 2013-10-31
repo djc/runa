@@ -1,0 +1,2 @@
+def test(val: byte) -> bool:
+	return val == 0
