@@ -115,6 +115,9 @@ class EscapeFinder(object):
 		for val in node.values:
 			self.visit(val, escape)
 	
+	def Pass(self, node, escape=None):
+		pass
+	
 	def CondBranch(self, node, escape=None):
 		pass
 	
