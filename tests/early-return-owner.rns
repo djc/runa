@@ -1,0 +1,8 @@
+def trains() -> $str:
+	return 'winter'
+
+def main():
+	if False:
+		return
+	print(trains())
+	return

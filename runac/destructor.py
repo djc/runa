@@ -8,11 +8,18 @@ class Free(util.AttribRepr):
 def destructify(code):
 	
 	left = {}
-	returns = set()
+	returns = {}
 	for i, bl in code.flow.blocks.iteritems():
 		
 		if bl.returns:
-			returns.add(i)
+			returns[i], q = set(), {i}
+			while q:
+				cur = q.pop()
+				returns[i].add(cur)
+				for p in code.flow.blocks[cur].preds:
+					if p.id in returns[i] or p.id in q:
+						continue
+					q.add(p.id)
 		
 		for var, steps in bl.assigns.iteritems():
 			
@@ -48,8 +55,12 @@ def destructify(code):
 		left['args'] = None, None, types.get('$array[str]')
 	
 	for name, (bl, s, type) in left.iteritems():
-		for rbli in returns:
+		for rbli, reachable in returns.iteritems():
+			
 			rbl = code.flow.blocks[rbli]
+			if bl not in reachable:
+				continue
+			
 			node = ast.Name(name, None)
 			node.type = type
 			rbl.steps.insert(-1, Free(node))
