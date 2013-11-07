@@ -14,6 +14,9 @@ class Frame(object):
 		self.parent = parent
 		self.defined = {}
 	
+	def __repr__(self):
+		return '<Frame(%i, %r)>' % (id(self.parent), self.defined)
+	
 	def __contains__(self, key):
 		return key in self.defined or (self.parent and key in self.parent)
 	
