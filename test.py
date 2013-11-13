@@ -43,10 +43,14 @@ def run(self, key):
 	
 	if self is None:
 		return res == expected
-	else:
+	elif res[1]:
 		self.assertEqual(expected[0], res[0])
 		self.assertMultiLineEqual(expected[1], res[1])
 		self.assertMultiLineEqual(expected[2], res[2])
+	elif res[2]:
+		self.assertMultiLineEqual(expected[2], res[2])
+		self.assertMultiLineEqual(expected[1], res[1])
+		self.assertEqual(expected[0], res[0])
 
 def testfunc(key):
 	def do(self):
