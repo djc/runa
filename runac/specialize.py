@@ -42,6 +42,17 @@ class Specializer(object):
 		else:
 			assert False, '%s -> %s' % (node.type, dst)
 	
+	def binspec(self, node, type):
+		if types.generic(node.left.type) and types.generic(node.right.type):
+			self.visit(node.left)
+			self.visit(node.right)
+		elif types.generic(node.left.type):
+			self.visit(node.left, node.right.type)
+			self.visit(node.right)
+		elif types.generic(node.right.type):
+			self.visit(node.right, node.left.type)
+			self.visit(node.left)
+	
 	# Constants
 	
 	def Int(self, node, type=None):
@@ -63,15 +74,7 @@ class Specializer(object):
 	# Comparison operators
 	
 	def compare(self, node, type):
-		if types.generic(node.left.type) and types.generic(node.right.type):
-			self.visit(node.left)
-			self.visit(node.right)
-		elif types.generic(node.left.type):
-			self.visit(node.left, node.right.type)
-			self.visit(node.right)
-		elif types.generic(node.right.type):
-			self.visit(node.right, node.left.type)
-			self.visit(node.left)
+		self.binspec(node, type)
 	
 	def EQ(self, node, type=None):
 		self.compare(node, type)
@@ -108,10 +111,7 @@ class Specializer(object):
 	# Bitwise operators
 	
 	def bitwise(self, op, node, type):
-		self.visit(node.left, type)
-		self.visit(node.right, type)
-		assert node.left.type == node.right.type
-		node.type = node.left.type
+		self.binspec(node, type)
 	
 	def BWAnd(self, node, type=None):
 		self.bitwise('and', node, type)
