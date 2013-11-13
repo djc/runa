@@ -135,6 +135,15 @@ class PrettyPrinter(object):
 	def Div(self, node):
 		self.binary('Div', node)
 	
+	def BWAnd(self, node):
+		self.binary('BWAnd', node)
+	
+	def BWOr(self, node):
+		self.binary('BWOr', node)
+	
+	def BWXor(self, node):
+		self.binary('BWXor', node)
+	
 	def Pass(self, node):
 		self.write('Pass')
 	
