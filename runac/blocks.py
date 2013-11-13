@@ -176,7 +176,6 @@ class FlowFinder(object):
 		return node
 	
 	def As(self, node):
-		node.left = self.inter(node.left)
 		return node
 	
 	def Not(self, node):
