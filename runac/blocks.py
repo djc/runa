@@ -63,7 +63,7 @@ class Block(util.AttribRepr):
 		self.steps.append(inst)
 	
 	def needbranch(self):
-		return not isinstance(self.steps[-1], ast.Return)
+		return not self.steps or not isinstance(self.steps[-1], ast.Return)
 
 class FlowGraph(util.AttribRepr):
 	
