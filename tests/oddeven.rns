@@ -1,0 +1,12 @@
+def oddeven(start: int, after: int) -> iter[int]:
+	i = start
+	while i < after:
+		if (i % 2) == 0:
+			yield i + 1
+		else:
+			yield i - 1
+		i = i + 1
+
+def main():
+	for i in oddeven(0, 5):
+		print(i)
