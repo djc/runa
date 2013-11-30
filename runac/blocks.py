@@ -97,6 +97,8 @@ class FlowGraph(util.AttribRepr):
 			for res in self.walk(path + (n,)):
 				yield res
 
+ATOMIC = ast.Bool, ast.Int, ast.Float, ast.Name
+
 class FlowFinder(object):
 	
 	def __init__(self):
@@ -132,7 +134,7 @@ class FlowFinder(object):
 	
 	def inter(self, node):
 		
-		if isinstance(node, ast.Name):
+		if isinstance(node, ATOMIC):
 			return node
 		
 		asgt = ast.Assign(None)

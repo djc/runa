@@ -174,6 +174,12 @@ class Specializer(object):
 		assert node.values[0].type == node.values[1].type
 		node.type = node.values[0].type
 	
+	def Phi(self, node, type=None):
+		self.visit(node.left[1], type)
+		self.visit(node.right[1], type)
+		assert node.left[1].type == node.right[1].type
+		node.type = node.left[1].type
+		
 	def propagate(self):
 		for i, bl in self.cfg.blocks.iteritems():
 			for step in reversed(bl.steps):

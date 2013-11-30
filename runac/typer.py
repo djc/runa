@@ -470,10 +470,15 @@ class TypeChecker(object):
 	
 	def Phi(self, node, scope):
 		
-		assert isinstance(node.left[1], ast.Name)
-		self.Name(node.left[1], scope, strict=False)
-		assert isinstance(node.right[1], ast.Name)
-		self.Name(node.right[1], scope, strict=False)
+		if isinstance(node.left[1], ast.Name):
+			self.Name(node.left[1], scope, strict=False)
+		else:
+			self.visit(node.left[1], scope)
+		
+		if isinstance(node.right[1], ast.Name):
+			self.Name(node.right[1], scope, strict=False)
+		else:
+			self.visit(node.right[1], scope)
 		
 		if node.left[1].type == node.right[1].type:
 			node.type = node.left[1].type
@@ -503,6 +508,7 @@ class TypeChecker(object):
 			raise util.Error(node, msg)
 		elif node.value is not None and self.fun.rtype == types.void():
 			msg = "function must return type 'void' ('%s' not allowed)"
+			self.visit(node.value, scope)
 			raise util.Error(node, msg % (node.value.type.name))
 		elif node.value is None:
 			return
