@@ -156,6 +156,11 @@ class Div(BinaryOp):
 	lbp = 60
 	fields = 'left', 'right'
 
+class Mod(BinaryOp):
+	op = '%'
+	lbp = 55
+	fields = 'left', 'right'
+
 class BWAnd(BinaryOp):
 	op = '&'
 	lbp = 40

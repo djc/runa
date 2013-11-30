@@ -212,6 +212,9 @@ class FlowFinder(object):
 	def Sub(self, node):
 		return self.binary(node)
 	
+	def Mod(self, node):
+		return self.binary(node)
+	
 	def Mul(self, node):
 		return self.binary(node)
 	

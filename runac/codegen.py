@@ -443,8 +443,8 @@ class CodeGen(object):
 			if isinstance(right.type, types.WRAPPERS):
 				right = self.load(right)
 			
-			assert left.type == right.type
-			op = {'div': 'sdiv'}.get(op, op)
+			assert left.type == right.type, (left.type, right.type)
+			op = {'div': 'sdiv', 'mod': 'srem'}.get(op, op)
 			res = self.varname()
 			bits = res, op, left.type.ir, left.var, right.var
 			self.writeline('%s = %s %s %s, %s' % bits)
@@ -465,6 +465,9 @@ class CodeGen(object):
 	
 	def Sub(self, node, frame):
 		return self.arith('sub', node, frame)
+	
+	def Mod(self, node, frame):
+		return self.arith('mod', node, frame)
 	
 	def Mul(self, node, frame):
 		return self.arith('mul', node, frame)

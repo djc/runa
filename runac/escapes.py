@@ -66,6 +66,9 @@ class EscapeFinder(object):
 	def Sub(self, node, escape=None):
 		pass
 	
+	def Mod(self, node, escape=None):
+		pass
+	
 	def Mul(self, node, escape=None):
 		pass
 	

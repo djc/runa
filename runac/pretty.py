@@ -129,6 +129,9 @@ class PrettyPrinter(object):
 	def Sub(self, node):
 		self.binary('Sub', node)
 	
+	def Mod(self, node):
+		self.binary('Mod', node)
+	
 	def Mul(self, node):
 		self.binary('Mul', node)
 	

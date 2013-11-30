@@ -101,6 +101,9 @@ class Specializer(object):
 	def Sub(self, node, type=None):
 		self.arith('sub', node, type)
 	
+	def Mod(self, node, type=None):
+		self.arith('mod', node, type)
+	
 	def Mul(self, node, type=None):
 		self.arith('mul', node, type)
 	

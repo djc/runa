@@ -267,6 +267,9 @@ class TypeChecker(object):
 	def Sub(self, node, scope):
 		self.arith('sub', node, scope)
 	
+	def Mod(self, node, scope):
+		self.arith('mod', node, scope)
+	
 	def Mul(self, node, scope):
 		self.arith('mul', node, scope)
 	
