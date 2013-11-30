@@ -91,8 +91,7 @@ class Specializer(object):
 	# Arithmetic operators
 	
 	def arith(self, op, node, type):
-		self.visit(node.left, type)
-		self.visit(node.right, type)
+		self.binspec(node, type)
 		assert node.left.type == node.right.type
 		node.type = node.left.type
 	
@@ -152,6 +151,10 @@ class Specializer(object):
 	def Return(self, node, type=None):
 		if node.value is not None:
 			self.visit(node.value, self.fun.rtype)
+	
+	def Yield(self, node, type=None):
+		if node.value is not None:
+			self.visit(node.value, self.fun.rtype.params[0])
 	
 	def Call(self, node, type=None):
 		for i, arg in enumerate(node.args):
