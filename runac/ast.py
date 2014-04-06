@@ -699,7 +699,7 @@ class Pratt(object):
 	
 	def advance(self, id, mode='expr'):
 		if not isinstance(self.token, id):
-			bits = self.token.__class__.__name__, id.__name__
+			bits = id.__name__, self.token.__class__.__name__
 			raise util.Error(self.token, 'expected %r, got %r' % bits)
 		t = self.token
 		self.mode(mode)
