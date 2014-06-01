@@ -326,17 +326,19 @@ class Except(Statement):
 	def nud(self, p):
 		self.type = p.expr()
 		p.eat(Colon)
-		self.suite = Suite(p, self.pos)
+		self.suite = Suite(self.pos)
+		self.suite.eat(p)
 		return self
 
 class Suite(Statement):
 	
 	fields = 'stmts',
 	
-	def __init__(self, p, pos):
-		
+	def __init__(self, pos):
 		Node.__init__(self, pos)
 		self.stmts = []
+	
+	def eat(self, p):
 		
 		p.eat(NL)
 		p.advance(Indent)
@@ -369,7 +371,8 @@ class TryBlock(Node):
 	def nud(self, p):
 		
 		p.advance(Colon)
-		self.suite = Suite(p, self.pos)
+		self.suite = Suite(self.pos)
+		self.suite.eat(p)
 		self.catch = []
 		while isinstance(p.token, Except):
 			self.catch.append(p.expr())
@@ -428,7 +431,8 @@ class Function(Node):
 			return decl
 		
 		p.advance(Colon)
-		self.suite = Suite(p, self.pos)
+		self.suite = Suite(self.pos)
+		self.suite.eat(p)
 		return self
 
 class Pass(Statement):
@@ -479,20 +483,23 @@ class If(Statement):
 		
 		cond = p.expr()
 		p.advance(Colon)
-		block = Suite(p, self.pos)
+		block = Suite(self.pos)
+		block.eat(p)
 		self.blocks = [(cond, block)]
 		
 		while isinstance(p.token, Elif):
 			kw = p.advance(Elif)
 			cond = p.expr()
 			p.advance(Colon)
-			block = Suite(p, kw.pos)
+			block = Suite(kw.pos)
+			block.eat(p)
 			self.blocks.append((cond, block))
 		
 		if isinstance(p.token, Else):
 			kw = p.advance(Else)
 			p.advance(Colon)
-			block = Suite(p, kw.pos)
+			block = Suite(kw.pos)
+			block.eat(p)
 			self.blocks.append((None, block))
 		
 		return self
@@ -541,7 +548,8 @@ class For(Statement):
 		p.advance(In)
 		self.source = p.expr()
 		p.advance(Colon)
-		self.suite = Suite(p, self.pos)
+		self.suite = Suite(self.pos)
+		self.suite.eat(p)
 		return self
 
 class While(Statement):
@@ -550,7 +558,8 @@ class While(Statement):
 	def nud(self, p):
 		self.cond = p.expr()
 		p.advance(Colon)
-		self.suite = Suite(p, self.pos)
+		self.suite = Suite(self.pos)
+		self.suite.eat(p)
 		return self
 
 class Decorator(Node):
