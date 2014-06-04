@@ -6,6 +6,17 @@ class AttribRepr(object):
 		show = ('%s=%r' % (k, v) for (k, v) in contents if k not in IGNORE)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
+def error(fn, msg, pos):
+	
+	if pos is None:
+		return '%s: %s\n' % (fn, msg)
+	
+	col = len(pos[2][:pos[0][1]].replace('\t', ' ' * 4)) + 1
+	a = '%s [%s.%s]: %s' % (fn, pos[0][0] + 1, col, msg)
+	b = pos[2].replace('\t', ' ' * 4).rstrip()
+	c = ' ' * (pos[0][1] + 3 * pos[2].count('\t')) + '^'
+	return '\n'.join((a, b, c)) + '\n'
+
 class Error(Exception):
 	
 	def __init__(self, node, msg):
@@ -13,13 +24,4 @@ class Error(Exception):
 		self.msg = msg
 	
 	def show(self, fn):
-		
-		if getattr(self.node, 'pos', None) is None:
-			return '%s: %s\n' % (fn, self.msg)
-		
-		pos = self.node.pos
-		col = len(pos[2][:pos[0][1]].replace('\t', ' ' * 4)) + 1
-		a = '%s [%s.%s]: %s' % (fn, pos[0][0] + 1, col, self.msg)
-		b = pos[2].replace('\t', ' ' * 4).rstrip()
-		c = ' ' * (pos[0][1] + 3 * pos[2].count('\t')) + '^'
-		return '\n'.join((a, b, c)) + '\n'
+		return error(fn, self.msg, getattr(self.node, 'pos', None))
