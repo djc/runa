@@ -461,10 +461,12 @@ class Ternary(Expr):
 	lbp = 10
 	fields = 'cond', 'values'
 	
-	def __init__(self, p, left, pos):
+	def __init__(self, pos):
 		Expr.__init__(self, pos)
 		self.cond = None
 		self.values = []
+	
+	def set(self, left, p):
 		self.values.append(left)
 		self.cond = p.expr()
 		p.advance(Else)
@@ -477,7 +479,9 @@ class If(Statement):
 	fields = 'blocks',
 	
 	def led(self, p, left):
-		return Ternary(p, left, self.pos)
+		res = Ternary(self.pos)
+		res.set(left, p)
+		return res
 	
 	def nud(self, p):
 		
