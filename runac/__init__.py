@@ -1,8 +1,7 @@
-from util import Error
+from util import Error, ParseError
 import os, subprocess
 
-from .tokenizer import tokenize
-from .ast import parse
+from .parser import parse, lex
 from .blocks import module
 from .liveness import liveness
 from .typer import typer
@@ -17,12 +16,12 @@ CORE_DIR = os.path.join(BASE, 'core')
 def merge(mod):
 	for fn in os.listdir(CORE_DIR):
 		if not fn.endswith('.rns'): continue
-		with open(os.path.join(CORE_DIR, fn)) as f:
-			mod.merge(module(parse(tokenize(f))))
+		fn = os.path.join(CORE_DIR, fn)
+		mod.merge(module(parse(fn)))
 
 def ir(fn):
 	with open(fn) as f:
-		mod = module(parse(tokenize(f)))
+		mod = module(parse(fn))
 		merge(mod)
 		liveness(mod)
 		typer(mod)

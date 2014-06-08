@@ -4,11 +4,12 @@ import runac
 import optparse, sys, os, subprocess
 
 def tokens(fn, opts):
-	for x in runac.tokenize(open(fn)):
-		print x
+	with open(fn) as f:
+		for x in runac.lex(f.read()):
+			print (x.name, x.value, (x.source_pos.lineno, x.source_pos.colno))
 
 def parse(fn, opts):
-	print runac.parse(runac.tokenize(open(fn)))
+	print runac.parse(fn)
 
 def generate(fn, opts):
 	ir = runac.ir(fn)
@@ -56,4 +57,6 @@ if __name__ == '__main__':
 	try:
 		find(args[0])(args[1], opts)
 	except runac.Error as e:
+		sys.stderr.write(e.show(args[1]))
+	except runac.ParseError as e:
 		sys.stderr.write(e.show(args[1]))

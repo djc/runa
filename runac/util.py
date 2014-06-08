@@ -13,6 +13,9 @@ def error(fn, msg, pos):
 	
 	col = len(pos[2][:pos[0][1]].replace('\t', ' ' * 4)) + 1
 	a = '%s [%s.%s]: %s' % (fn, pos[0][0] + 1, col, msg)
+	if not pos[2]:
+		return a + '\n'
+	
 	b = pos[2].replace('\t', ' ' * 4).rstrip()
 	c = ' ' * (pos[0][1] + 3 * pos[2].count('\t')) + '^'
 	return '\n'.join((a, b, c)) + '\n'
@@ -25,3 +28,14 @@ class Error(Exception):
 	
 	def show(self, fn):
 		return error(fn, self.msg, getattr(self.node, 'pos', None))
+
+class ParseError(Exception):
+	
+	def __init__(self, fn, t, pos):
+		self.fn = fn
+		self.t = t
+		self.pos = pos
+	
+	def show(self, fn):
+		msg = 'unexpected token %s (%r)' % (self.t.name, self.t.value)
+		return error(fn, msg, self.pos)
