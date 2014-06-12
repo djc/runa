@@ -1,5 +1,5 @@
 import ast, types, blocks, typer, util
-import sys, copy
+import sys, copy, platform
 
 ESCAPES = {'\\n': '\\0a', '\\0': '\\00'}
 
@@ -999,8 +999,9 @@ class CodeGen(object):
 			self.visit(v, frame)
 
 TRIPLES = {
-	'darwin': 'x86_64-apple-darwin11.0.0',
-	'linux2': 'x86_64-pc-linux-gnu',
+	('64bit', 'darwin'): 'x86_64-apple-darwin11.0.0',
+	('64bit', 'linux2'): 'x86_64-pc-linux-gnu',
+	('32bit', 'linux2'): 'i386-pc-linux-gnu',
 }
 
 def generate(mod):
@@ -1008,7 +1009,8 @@ def generate(mod):
 	gen = CodeGen()
 	gen.Module(mod)
 	
-	code = ['target triple = "%s"\n\n' % TRIPLES[sys.platform]]
+	arch, os = platform.architecture()[0], sys.platform
+	code = ['target triple = "%s"\n\n' % TRIPLES[arch, os]]
 	code += gen.typedecls
 	
 	with open('core/rt.ll') as f:
