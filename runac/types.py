@@ -1,5 +1,5 @@
 import ast, util
-import copy
+import copy, platform
 
 class Type(object):
 	def __eq__(self, other):
@@ -183,21 +183,23 @@ class anyfloat(base):
 	def ir(self):
 		raise TypeError('not a concrete type')
 
+WORD_SIZE = int(platform.architecture()[0][:2])
+
 BASIC = {
 	'bool': 'i1',
 	'byte': 'i8',
 	'i32': 'i32',
 	'u32': 'i32',
-	'int': 'i64',
-	'uint': 'i64',
+	'int': 'i%i' % WORD_SIZE,
+	'uint': 'i%i' % WORD_SIZE,
 	'float': 'double',
 }
 
 INTEGERS = {
 	'i32': (True, 32),
 	'u32': (False, 32),
-	'int': (True, 64),
-	'uint': (False, 64),
+	'int': (True, WORD_SIZE),
+	'uint': (False, WORD_SIZE),
 }
 
 BASIC_FLOATS = {'float': 64}
