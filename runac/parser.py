@@ -104,6 +104,7 @@ pg = rply.ParserGenerator([
 		'WHILE',
 		'YIELD',
 	], precedence=[
+		('left', ['COMMA']),
 		('left', ['IF']),
 		('left', ['OR']),
 		('left', ['AND']),
@@ -339,7 +340,7 @@ def statements_single(s, p):
 	res.stmts = [p[0]]
 	return res
 
-@pg.production('stmt : FOR lval IN ternary COLON suite')
+@pg.production('stmt : FOR lval IN expr-tuple COLON suite')
 def for_stmt(s, p):
 	res = ast.For(s.pos(p[0]))
 	res.lvar = p[1]
@@ -399,7 +400,7 @@ def elif_(s, p):
 def asgt_stmt(s, p):
 	return p[0]
 
-@pg.production('asgt : lval ASGT ternary NL')
+@pg.production('asgt : lval ASGT expr-tuple NL')
 def asgt(s, p):
 	return binop(s, ast.Assign, p)
 
@@ -407,7 +408,7 @@ def asgt(s, p):
 def yield_stmt(s, p):
 	return p[0]
 
-@pg.production('yield : YIELD ternary NL')
+@pg.production('yield : YIELD expr-tuple NL')
 def value_yield(s, p):
 	res = ast.Yield(s.pos(p[0]))
 	res.value = p[1]
@@ -417,7 +418,7 @@ def value_yield(s, p):
 def return_stmt(s, p):
 	return p[0]
 
-@pg.production('return : RETURN ternary NL')
+@pg.production('return : RETURN expr-tuple NL')
 def value_return(s, p):
 	res = ast.Return(s.pos(p[0]))
 	res.value = p[1]
@@ -442,6 +443,21 @@ def pass_(s, p):
 @pg.production('stmt : expr NL')
 def expr_stmt(s, p):
 	return p[0]
+
+@pg.production('type : LPAR type-tuple RPAR')
+def tuple_type(s, p):
+	return p[1]
+
+@pg.production('type-tuple : type-tuple COMMA type')
+def type_tuple(s, p):
+	p[0].append(p[2])
+	return p[0]
+
+@pg.production('type-tuple : type COMMA type')
+def two_type_tuple(s, p):
+	res = ast.Tuple(s.pos(p[1]))
+	res.values = [p[0], p[2]]
+	return res
 
 @pg.production('type : DOLLAR vtype')
 def owner_type(s, p):
@@ -468,6 +484,16 @@ def param_type(s, p):
 
 @pg.production('vtype : var')
 def name_type(s, p):
+	return p[0]
+
+@pg.production('expr-tuple : ternary COMMA ternary')
+def expr_tuple(s, p):
+	res = ast.Tuple(s.pos(p[1]))
+	res.values = [p[0], p[2]]
+	return res
+
+@pg.production('expr-tuple : ternary')
+def expr_tuple(s, p):
 	return p[0]
 
 @pg.production('ternary : expr IF expr ELSE expr')
@@ -599,9 +625,22 @@ def mul(s, p):
 def as_(s, p):
 	return binop(s, ast.As, p)
 
-@pg.production('expr : lval')
+@pg.production('expr : expr DOT NAME')
+def attr_expr(s, p):
+	res = ast.Attrib(s.pos(p[1]))
+	res.obj = p[0]
+	res.attrib = p[2].value
+	return res
+
+@pg.production('expr : var')
 def var_expr(s, p):
 	return p[0]
+
+@pg.production('lval : lval COMMA lval')
+def lval_tuple(s, p):
+	res = ast.Tuple(s.pos(p[1]))
+	res.values = [p[0], p[2]]
+	return res
 
 @pg.production('lval : var')
 def var_lval(s, p):

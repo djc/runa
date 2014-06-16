@@ -114,6 +114,9 @@ class GT(Expr):
 class As(Expr):
 	fields = 'left', 'right'
 
+class Tuple(Expr):
+	fields = 'values',
+
 class Call(Expr):
 	fields = 'args',
 
