@@ -116,3 +116,7 @@ https://medium.com/p/aaa2a5437d3a
 Guido van Rossum
 Python 2 vs. Python 3: A retrospective
 https://www.dropbox.com/s/83ppa5iykqmr14z/Py2v3Hackers2013.pptx
+
+Evan Swick
+Inside Swift
+http://www.eswick.com/2014/06/inside-swift/
