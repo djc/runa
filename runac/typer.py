@@ -90,6 +90,9 @@ class Scope(object):
 		self.parent = parent
 		self.vars = {}
 	
+	def __repr__(self):
+		return '<Scope(%r)>' % self.vars
+	
 	def __contains__(self, key):
 		if key in self.vars:
 			return True
