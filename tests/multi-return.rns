@@ -1,0 +1,7 @@
+def pick_two() -> (int, int):
+	return 5, 6
+
+def main():
+	a, b = pick_two()
+	print(a)
+	print(b)
