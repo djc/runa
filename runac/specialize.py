@@ -64,10 +64,6 @@ class Specializer(object):
 	def Name(self, node, type=None):
 		if not types.generic(node.type):
 			return
-		elif type is not None and isinstance(types.unwrap(type), types.trait):
-			self.specialize(node, type)
-		elif type is not None:
-			self.track[node.name] = type
 		else:
 			self.specialize(node, type)
 	
