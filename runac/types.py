@@ -269,6 +269,9 @@ def generic(t):
 
 def compat(a, f):
 	
+	if isinstance(a, concrete) and isinstance(f, concrete):
+		return all(compat(i[0], i[1]) for i in zip(a.params, f.params))
+	
 	if isinstance(a, (tuple, list)) and isinstance(f, (tuple, list)):
 		if len(a) != len(f):
 			return False
