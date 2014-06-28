@@ -520,11 +520,7 @@ class TypeChecker(object):
 			return
 		
 		self.visit(node.value, scope)
-		if node.value.type == self.fun.rtype:
-			return
-		elif isinstance(node.value.type, types.anyint):
-			assert self.fun.rtype in types.INTS
-		else:
+		if not types.compat(node.value.type, self.fun.rtype):
 			msg = "return value does not match declared return type '%s'"
 			raise util.Error(node, msg % self.fun.rtype.name)
 
