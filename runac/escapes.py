@@ -33,6 +33,10 @@ class EscapeFinder(object):
 		if not escape: return
 		self.track.add(node.name)
 	
+	def Tuple(self, node, escape=None):
+		for n in node.values:
+			self.visit(n)
+	
 	# Boolean operators
 	
 	def Not(self, node, escape=None):
@@ -101,7 +105,13 @@ class EscapeFinder(object):
 	
 	def Assign(self, node, escape=None):
 		
-		if isinstance(node.left, ast.Name):
+		if isinstance(node.left, ast.Tuple):
+			tracked = [n.name in self.track for n in node.left.values]
+			if sum(1 if i else 0 for i in tracked) not in {0, len(tracked)}:
+				assert False, 'partly tracked tuple elements'
+			else:
+				self.visit(node.right, all(tracked))
+		elif isinstance(node.left, ast.Name):
 			self.visit(node.right, node.left.name in self.track)
 		elif isinstance(node.left, blocks.SetAttr):
 			

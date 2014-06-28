@@ -251,6 +251,14 @@ class CodeGen(object):
 		addr = self.gep(self.intercept, 0, attr[0])
 		return self.load(Value(types.ref(attr[1]), addr))
 	
+	def Tuple(self, node, frame):
+		val = self.alloca(node.type)
+		for i, e in enumerate(node.values):
+			slot = self.gep(val, 0, i)
+			src = self.visit(e, frame)
+			self.store((e.type, src.var), slot)
+		return val
+	
 	def Bool(self, node, frame):
 		return Value(node.type, 'true' if node.val else 'false')
 	
@@ -602,7 +610,19 @@ class CodeGen(object):
 			self.store(val, wrap.var)
 			frame[node.left.name] = wrap
 			return
-			
+		
+		elif isinstance(node.left, ast.Tuple):
+			for i, e in enumerate(node.left.values):
+				src = self.gep(val, 0, i)
+				loaded = self.load(Value(types.ref(e.type), src))
+				assert e.name not in frame
+				assert not e.name.startswith('$')
+				assert not self.intercept
+				wrap = self.alloca(e.type)
+				self.store(loaded, wrap.var)
+				frame[e.name] = wrap
+			return
+		
 		elif isinstance(node.left, blocks.SetAttr):
 			target = self.visit(node.left, frame)
 		else:
@@ -694,6 +714,16 @@ class CodeGen(object):
 			self.writeline('ret void')
 			return
 		
+		if node.value is not None and node.value.type.name.startswith('tuple['):
+			value = self.visit(node.value, frame)
+			for i, t in enumerate(node.value.type.params):
+				src = self.gep(value, 0, i)
+				dst = self.gep((value.type.ir, '%$R'), 0, i)
+				loaded = self.load(Value(types.ref(t), src))
+				self.store(loaded, dst)
+			self.writeline('ret void')
+			return
+		
 		if self.intercept is not None:
 			ctxt = types.unwrap(self.intercept.type)
 			rt = ctxt.function.type.over[0]
@@ -730,8 +760,12 @@ class CodeGen(object):
 	
 	def Call(self, node, frame):
 		
-		args = []
+		rvar, args = None, []
 		rtype, atypes = node.fun.type.over
+		if rtype.name.startswith('tuple['):
+			rvar = self.alloca(rtype)
+			args.append(rvar)
+		
 		wrapped = None
 		for i, arg in enumerate(node.args):
 			
@@ -772,6 +806,10 @@ class CodeGen(object):
 			else:
 				return None
 		
+		if rvar is not None:
+			self.writeline('call void %s(%s)' % (name, argstr))
+			return rvar
+		
 		res = self.varname()
 		bits = res, type.ir, name, argstr
 		self.writeline('%s = call %s %s(%s)' % bits)
@@ -799,6 +837,10 @@ class CodeGen(object):
 			args = ['i32 %argc', 'i8** %argv']
 		elif ctxt is not None:
 			args = ['%s %%ctx' % (types.ref(ctxt).ir)]
+		
+		if rt.startswith('%tuple$'):
+			args.insert(0, '%s* %%$R' % rt)
+			rt = 'void'
 		
 		bits = rt, irname, ', '.join(args)
 		self.writeline('define %s @%s(%s) uwtable {' % bits)
@@ -902,6 +944,11 @@ class CodeGen(object):
 		if type.name.startswith('iter['):
 			bits = type.ir, type.params[0].ir
 			self.writeline('%s = type { i1, %s }' % bits)
+			return
+		
+		if type.name.startswith('tuple['):
+			name, ttypes = type.ir, [t.ir for t in type.params]
+			self.writeline('%s = type { %s }' % (name, ', '.join(ttypes)))
 			return
 		
 		fields = sorted(type.attribs.itervalues())

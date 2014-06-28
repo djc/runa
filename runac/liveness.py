@@ -25,6 +25,10 @@ class Analyzer(object):
 	def Name(self, node):
 		self.vars[0].add(node.name)
 	
+	def Tuple(self, node):
+		for n in node.values:
+			self.visit(n)
+	
 	def Attrib(self, node):
 		self.visit(node.obj)
 	
@@ -41,7 +45,13 @@ class Analyzer(object):
 		self.vars[1].add(node.lvar.name)
 	
 	def Assign(self, node):
-		if isinstance(node.left, ast.Name):
+		if isinstance(node.left, ast.Tuple):
+			for n in node.left.values:
+				if isinstance(n, ast.Name):
+					self.vars[1].add(n.name)
+				else:
+					self.visit(n)
+		elif isinstance(node.left, ast.Name):
 			self.vars[1].add(node.left.name)
 		else:
 			self.visit(node.left)

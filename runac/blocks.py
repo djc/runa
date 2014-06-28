@@ -267,6 +267,10 @@ class FlowFinder(object):
 		self.flow.edge(right.id, exit.id)
 		return Phi(node.pos, (left.id, lvar), (right.id, rvar))
 	
+	def Tuple(self, node):
+		node.values = [self.inter(v) for v in node.values]
+		return node
+	
 	# Statements
 	
 	def Pass(self, node):

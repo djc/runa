@@ -32,6 +32,12 @@ class Specializer(object):
 				node.type = types.unwrap(dst)
 			else:
 				assert False, (node.type, dst)
+		elif isinstance(dst, types.concrete):
+			ttypes = []
+			for i, e in enumerate(node.type.params):
+				assert types.compat(e, dst.params[i])
+				ttypes.append(dst.params[i])
+			node.type = types.build_tuple(ttypes)
 		elif isinstance(types.unwrap(dst), types.trait):
 			if node.type == types.anyint():
 				node.type = types.get('int')
@@ -62,10 +68,21 @@ class Specializer(object):
 		self.specialize(node, type)
 	
 	def Name(self, node, type=None):
-		if not types.generic(node.type):
+		
+		params = []
+		if hasattr(node.type, 'params'):
+			params = [types.generic(t) for t in node.type.params]
+		
+		if not types.generic(node.type) and not any(params):
 			return
 		else:
 			self.specialize(node, type)
+	
+	def Tuple(self, node, type=None):
+		ttypes = [None] * len(node.values) if type is None else type.params
+		for i, e in enumerate(node.values):
+			self.specialize(e, ttypes[i])
+		node.type = types.build_tuple(n.type for n in node.values)
 	
 	# Comparison operators
 	
@@ -132,6 +149,8 @@ class Specializer(object):
 		self.visit(node.cond, types.get('ToBool'))
 	
 	def Assign(self, node, type=None):
+		if isinstance(node.left, ast.Tuple):
+			self.visit(node.right, node.left.type)
 		if isinstance(node.left, ast.Name):
 			self.visit(node.right, self.track.get(node.left.name))
 	

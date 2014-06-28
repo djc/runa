@@ -127,6 +127,8 @@ class Scope(object):
 		elif isinstance(node, ast.Elem):
 			inner = self.resolve(node.key)
 			return self[node.obj.name][inner]
+		elif isinstance(node, ast.Tuple):
+			return types.build_tuple(self.resolve(v) for v in node.values)
 		elif isinstance(node, ast.Ref):
 			return types.ref(self.resolve(node.value))
 		elif isinstance(node, ast.Owner):
@@ -193,6 +195,11 @@ class TypeChecker(object):
 	
 	def String(self, node, scope):
 		node.type = types.owner(types.get('str'))
+	
+	def Tuple(self, node, scope):
+		for v in node.values:
+			self.visit(v, scope)
+		node.type = types.build_tuple(v.type for v in node.values)
 	
 	# Boolean operators
 	
@@ -453,6 +460,26 @@ class TypeChecker(object):
 		self.visit(node.cond, scope)
 	
 	def Assign(self, node, scope):
+		
+		if isinstance(node.left, ast.Tuple):
+			
+			ttypes = []
+			self.visit(node.right, scope)
+			assert node.right.type.name.startswith('tuple[')
+			for i, dst in enumerate(node.left.values):
+				
+				assert isinstance(dst, ast.Name)
+				t = node.right.type.params[i]
+				if dst in scope and scope[dst.name].type != t:
+					assert False, 'reassignment'
+				
+				assert t is not None
+				scope[dst.name] = Object(t)
+				dst.type = t
+				ttypes.append(t)
+			
+			node.left.type = types.build_tuple(ttypes)
+			return
 		
 		if not isinstance(node.left, ast.Name):
 			
