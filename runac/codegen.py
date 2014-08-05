@@ -103,16 +103,17 @@ class CodeGen(object):
 		self.writeline('%s = load %s %s' % bits)
 		return Value(val.type.over, bits[0])
 	
-	def store(self, val, dst):
+	def store(self, val, dst, comment=None):
+		comment = ' ; ' + comment if comment else ''
 		if isinstance(val, Value):
-			bits = val.type.ir, val.var, val.type.ir, dst
+			bits = val.type.ir, val.var, val.type.ir, dst, comment
 		elif isinstance(val, tuple) and isinstance(val[0], types.base):
-			bits = val[0].ir, val[1], val[0].ir, dst
+			bits = val[0].ir, val[1], val[0].ir, dst, comment
 		elif isinstance(val, tuple):
-			bits = val[0], val[1], val[0], dst
+			bits = val[0], val[1], val[0], dst, comment
 		else:
 			assert False
-		self.writeline('store %s %s, %s* %s' % bits)
+		self.writeline('store %s %s, %s* %s%s' % bits)
 	
 	def gep(self, val, *args):
 		
@@ -607,7 +608,7 @@ class CodeGen(object):
 			else:
 				wrap = self.alloca(val.type)
 			
-			self.store(val, wrap.var)
+			self.store(val, wrap.var, "to variable '%s'" % node.left.name)
 			frame[node.left.name] = wrap
 			return
 		
