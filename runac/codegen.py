@@ -1019,13 +1019,35 @@ class CodeGen(object):
 				self.declare(v)
 		
 		self.newline()
+		deps = {}
 		for k, v in mod.names.iteritems():
 			if k in types.BASIC:
-				continue
-			elif isinstance(v, types.trait):
-				self.trait(v)
+				deps[k] = None
 			elif isinstance(v, types.base):
-				self.type(v)
+				atypes = {a[1] for a in v.attribs.itervalues()}
+				tdeps = {types.unwrap(t) for t in atypes}
+				deps[k] = v, {t for t in tdeps if t.name not in types.BASIC}
+		
+		remains = {k for (k, v) in deps.iteritems() if v is not None}
+		while remains:
+			
+			done = set()
+			for k in remains:
+				if not deps[k][1]:
+					self.type(deps[k][0])
+					done.add(deps[k][0])
+			
+			assert done
+			for k in remains:
+				for t in done:
+					if t in deps[k][1]:
+						deps[k][1].remove(t)
+			
+			remains -= {t.name for t in done}
+		
+		for k, v in mod.names.iteritems():
+			if isinstance(v, types.trait):
+				self.trait(v)
 		
 		for var in mod.variants:
 			if var.name.endswith('$ctx'):
