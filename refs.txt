@@ -124,3 +124,7 @@ http://www.eswick.com/2014/06/inside-swift/
 Bob Ippolito
 What Python can learn from Haskell
 http://bob.ippoli.to/python-haskell-ep2014/#/title
+
+edA-qa mort-ora-y
+The true cost of zero cost exceptions
+http://mortoray.com/2013/09/12/the-true-cost-of-zero-cost-exceptions/
