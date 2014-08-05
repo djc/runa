@@ -289,10 +289,20 @@ class TypeChecker(object):
 	# Bitwise operators
 	
 	def bitwise(self, op, node, scope):
+		
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
+		
 		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
-		assert lt in types.INTS and rt in types.INTS
+		if node.left.type == node.right.type:
+			node.type = node.left.type
+		elif lt in types.INTS:
+			assert rt in types.INTS
+			node.type = node.left.type
+		else:
+			msg = "bitwise operations do not apply to '%s', '%s'"
+			raise util.Error(node, msg % (lt.name, rt.name))
+		
 		node.type = node.left.type
 	
 	def BWAnd(self, node, scope):
