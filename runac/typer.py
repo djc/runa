@@ -652,6 +652,8 @@ def typer(mod):
 	for k, v in mod.names.iteritems():
 		if isinstance(v, (ast.Class, ast.Trait)):
 			base[k] = mod.names[k] = types.fill(v)
+	
+	for k, v in mod.names.iteritems():
 		if isinstance(v, ast.Decl):
 			base[k] = mod.names[k] = types.realize(v)
 	
