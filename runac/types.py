@@ -152,6 +152,18 @@ class template(ReprId):
 			else:
 				cls.attribs[k] = v[0], v[1]
 		
+		for k, mtypes in self.methods.iteritems():
+			for method in mtypes:
+				
+				rtype = method.type.over[0]
+				formal = method.type.over[1]
+				formal = (ref(cls()),) + formal[1:]
+				t = function(rtype, formal)
+				
+				pmd = self.name + '$' + '.'.join(t.name for t in params)
+				decl = method.decl.replace(self.name, pmd)
+				cls.methods.setdefault(k, []).append(FunctionDef(decl, t))
+		
 		return cls()
 
 def build_tuple(params):
