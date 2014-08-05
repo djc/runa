@@ -172,7 +172,7 @@ class CodeGen(object):
 			return val
 		
 		if vt[0] in types.UINTS and dt[0] in types.UINTS:
-			assert dt[0].bits > vt[0].bits
+			assert dt[0].bits > vt[0].bits, (dt[0], vt[0])
 			assert not vt[1] and not dt[1]
 			res = self.varname()
 			bits = res, vt[0].ir, val.var, dt[0].ir
