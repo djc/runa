@@ -89,7 +89,7 @@ pg = rply.ParserGenerator([
 		'BOOL',
 		'CARET', 'CLASS', 'COLON', 'COMMA',
 		'DEDENT', 'DEF', 'DIV', 'DOLLAR', 'DOT',
-		'ELIF', 'ELSE', 'EQ',
+		'ELIF', 'ELSE', 'EQ', 'EXCEPT',
 		'FOR', 'FROM',
 		'GE', 'GT',
 		'IF', 'IMPORT', 'IN', 'INDENT',
@@ -100,7 +100,7 @@ pg = rply.ParserGenerator([
 		'PASS', 'PIPE', 'PLUS',
 		'RAISE', 'RBRA', 'RETURN', 'RPAR',
 		'STR',
-		'TRAIT',
+		'TRAIT', 'TRY',
 		'WHILE',
 		'YIELD',
 	], precedence=[
@@ -338,6 +338,16 @@ def statements(s, p):
 def statements_single(s, p):
 	res = ast.Suite(p[0].pos)
 	res.stmts = [p[0]]
+	return res
+
+@pg.production('stmt : TRY COLON suite EXCEPT var COLON suite')
+def try_stmt(s, p):
+	res = ast.TryBlock(s.pos(p[0]))
+	res.suite = p[2]
+	handler = ast.Except(s.pos(p[3]))
+	handler.type = p[4]
+	handler.suite = p[6]
+	res.catch = [handler]
 	return res
 
 @pg.production('stmt : FOR lval IN expr-tuple COLON suite')
