@@ -413,6 +413,8 @@ def add(node):
 	
 	if isinstance(node, ast.Trait):
 		fields = {'methods': {}}
+	elif node.params:
+		fields = {'methods': {}, 'attribs': {}, 'params': {}}
 	else:
 		fields = {'methods': {}, 'attribs': {}}
 	
