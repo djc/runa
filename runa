@@ -43,7 +43,7 @@ if __name__ == '__main__':
 	
 	cmdlist = ', '.join(COMMANDS)
 	description = 'The Runa compiler. Available commands: %s; ' % cmdlist
-	description += 'any unique abbreviation also works. Each takes a single'
+	description += 'any unique abbreviation also works. Each takes a single '
 	description += 'file name as an argument.'
 	parser = optparse.OptionParser(description=description)
 	
