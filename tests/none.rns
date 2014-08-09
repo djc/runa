@@ -1,0 +1,4 @@
+from libc.stdlib import getenv
+
+def main():
+	print('success' if getenv('EAST_BUDLEIGH'.data) is None else 'failure')
