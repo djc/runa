@@ -17,7 +17,7 @@ def error(fn, msg, pos):
 		return a + '\n'
 	
 	b = pos[2].replace('\t', ' ' * 4).rstrip()
-	c = ' ' * (pos[0][1] + 3 * pos[2].count('\t')) + '^'
+	c = ' ' * (pos[0][1] + 3 * min(pos[0][1], pos[2].count('\t'))) + '^'
 	return '\n'.join((a, b, c)) + '\n'
 
 class Error(Exception):
