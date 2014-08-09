@@ -97,7 +97,7 @@ class FlowGraph(util.AttribRepr):
 			for res in self.walk(path + (n,)):
 				yield res
 
-ATOMIC = ast.Bool, ast.Int, ast.Float, ast.Name
+ATOMIC = ast.NoneVal, ast.Bool, ast.Int, ast.Float, ast.Name
 
 class FlowFinder(object):
 	
@@ -160,6 +160,9 @@ class FlowFinder(object):
 	
 	# Expressions
 	
+	def NoneVal(self, node):
+		return node
+	
 	def Bool(self, node):
 		return node
 	
@@ -191,6 +194,9 @@ class FlowFinder(object):
 		return self.binary(node)
 	
 	def Or(self, node):
+		return self.binary(node)
+	
+	def Is(self, node):
 		return self.binary(node)
 	
 	def EQ(self, node):

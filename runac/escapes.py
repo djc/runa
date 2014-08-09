@@ -14,6 +14,9 @@ class EscapeFinder(object):
 	
 	# Constants
 	
+	def NoneVal(self, node, escape=None):
+		pass
+	
 	def Bool(self, node, escape=None):
 		pass
 	
@@ -49,6 +52,9 @@ class EscapeFinder(object):
 		pass
 	
 	# Comparison operators
+	
+	def Is(self, node, escape=None):
+		pass
 	
 	def EQ(self, node, escape=None):
 		pass

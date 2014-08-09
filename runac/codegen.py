@@ -382,6 +382,13 @@ class CodeGen(object):
 	
 	# Comparison operators
 	
+	def Is(self, node, frame):
+		left = self.visit(node.left, frame)
+		tmp = self.varname()
+		bits = tmp, left.type.ir, left.var
+		self.writeline('%s = icmp eq %s %s, null' % bits)
+		return Value(types.get('bool'), tmp)
+	
 	def compare(self, op, node, frame):
 		
 		left = self.visit(node.left, frame)

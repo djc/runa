@@ -187,6 +187,9 @@ class TypeChecker(object):
 		
 		node.type = first
 	
+	def NoneVal(self, node, scope):
+		node.type = types.get('NoType')
+	
 	def Bool(self, node, scope):
 		node.type = types.get('bool')
 	
@@ -225,6 +228,13 @@ class TypeChecker(object):
 		self.boolean('or', node, scope)
 	
 	# Comparison operators
+	
+	def Is(self, node, scope):
+		self.visit(node.left, scope)
+		self.visit(node.right, scope)
+		assert isinstance(node.right, ast.NoneVal), node.right
+		assert isinstance(node.left.type, types.WRAPPERS), node.left
+		node.type = types.get('bool')
 	
 	def compare(self, op, node, scope):
 		
