@@ -12,13 +12,13 @@ def error(fn, msg, pos):
 		return '%s: %s\n' % (fn, msg)
 	
 	col = len(pos[2][:pos[0][1]].replace('\t', ' ' * 4)) + 1
-	a = '%s [%s.%s]: %s' % (fn, pos[0][0] + 1, col, msg)
+	desc = '%s [%s.%s]: %s' % (fn, pos[0][0] + 1, col, msg)
 	if not pos[2]:
-		return a + '\n'
+		return desc + '\n'
 	
-	b = pos[2].replace('\t', ' ' * 4).rstrip()
-	c = ' ' * (pos[0][1] + 3 * min(pos[0][1], pos[2].count('\t'))) + '^'
-	return '\n'.join((a, b, c)) + '\n'
+	line = pos[2].replace('\t', ' ' * 4).rstrip()
+	point = ' ' * (pos[0][1] + 3 * min(pos[0][1], pos[2].count('\t'))) + '^'
+	return '\n'.join((desc, line, point)) + '\n'
 
 class Error(Exception):
 	
