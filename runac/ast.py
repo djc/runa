@@ -24,6 +24,9 @@ class Expr(Node):
 		self.type = None
 		self.escapes = False
 
+class NoneVal(Expr):
+	pass
+
 class Bool(Expr):
 	def __init__(self, val, pos):
 		Expr.__init__(self, pos)
@@ -97,6 +100,9 @@ class And(Expr):
 	fields = 'left', 'right'
 
 class Or(Expr):
+	fields = 'left', 'right'
+
+class Is(Expr):
 	fields = 'left', 'right'
 
 class EQ(Expr):

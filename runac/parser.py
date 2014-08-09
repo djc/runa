@@ -4,7 +4,7 @@ import rply, sys
 NAME_LIKE = {
 	'class', 'def', 'elif', 'else', 'except', 'for', 'from', 'if', 'import',
 	'return', 'while', 'pass', 'raise', 'trait', 'try', 'yield', 'not', 'and',
-	'or', 'in', 'as',
+	'or', 'in', 'as', 'is',
 }
 
 def lexer():
@@ -38,6 +38,7 @@ def lexer():
 	lg.add('STR', r"'(.*?)'")
 	lg.add('STR', r'"(.*?)"')
 	lg.add('BOOL', 'True|False')
+	lg.add('NONE', 'None')
 	lg.add('NAME', r'[a-zA-Z_][a-zA-Z0-9_]*')
 	lg.add('NUM', r'[-+?[0-9]*\.?[0-9]+')
 	lg.add('NL', r'\n')
@@ -93,10 +94,10 @@ pg = rply.ParserGenerator([
 		'ELIF', 'ELSE', 'EQ', 'EXCEPT',
 		'FOR', 'FROM',
 		'GE', 'GT',
-		'IF', 'IMPORT', 'IN', 'INDENT',
+		'IF', 'IMPORT', 'IN', 'INDENT', 'IS',
 		'LBRA', 'LE', 'LPAR', 'LT',
 		'MINUS', 'MUL', 'MOD',
-		'NAME', 'NE', 'NL', 'NOT', 'NUM',
+		'NAME', 'NE', 'NL', 'NONE', 'NOT', 'NUM',
 		'OR',
 		'PASS', 'PIPE', 'PLUS',
 		'RAISE', 'RBRA', 'RETURN', 'RPAR',
@@ -110,7 +111,7 @@ pg = rply.ParserGenerator([
 		('left', ['OR']),
 		('left', ['AND']),
 		('right', ['NOT']),
-		('left', ['LT', 'LE', 'GT', 'GE', 'NE', 'EQ']),
+		('left', ['LT', 'LE', 'GT', 'GE', 'NE', 'EQ', 'IS']),
 		('left', ['PIPE']),
 		('left', ['CARET']),
 		('left', ['AMP']),
@@ -592,6 +593,10 @@ def bwor(s, p):
 def bwxor(s, p):
 	return binop(s, ast.BWXor, p)
 
+@pg.production('expr : expr IS expr')
+def is_(s, p):
+	return binop(s, ast.Is, p)
+
 @pg.production('expr : expr EQ expr')
 def eq(s, p):
 	return binop(s, ast.EQ, p)
@@ -686,6 +691,10 @@ def number(s, p):
 @pg.production('expr : BOOL')
 def bool_(s, p):
 	return ast.Bool(p[0].value, s.pos(p[0]))
+
+@pg.production('expr : NONE')
+def none(s, p):
+	return ast.NoneVal(s.pos(p[0]))
 
 @pg.error
 def error(s, t):
