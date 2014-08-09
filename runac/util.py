@@ -17,8 +17,8 @@ def error(fn, msg, pos):
 		return desc + '\n'
 	
 	line = pos[2].replace('\t', ' ' * 4).rstrip()
-	point = ' ' * (pos[0][1] + 3 * min(pos[0][1], pos[2].count('\t'))) + '^'
-	return '\n'.join((desc, line, point)) + '\n'
+	spaces = pos[0][1] + 3 * min(pos[0][1], pos[2].count('\t'))
+	return '\n'.join((desc, line, ' ' * spaces + '^')) + '\n'
 
 class Error(Exception):
 	
