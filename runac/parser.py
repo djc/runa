@@ -64,9 +64,10 @@ def lex(s):
 		if hold:
 			yield hold[0]
 			cur = len(hold[1].value) if len(hold) > 1 else 0
+			pos = hold[1 if len(hold) > 1 else 0].source_pos
 			for i in range(abs(cur - level)):
 				type = 'INDENT' if cur > level else 'DEDENT'
-				yield rply.Token(type, '', hold[0].source_pos)
+				yield rply.Token(type, '', pos)
 				level = cur
 			hold = []
 		
