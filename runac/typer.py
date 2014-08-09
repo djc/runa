@@ -49,6 +49,9 @@ ROOT = Module('', {
 		'__offset__': Decl('runa.offset', '&byte', ('&byte', 'uint')),
 	}),
 	'libc': Module('libc', {
+		'stdlib': Module('libc.stdlib', {
+			'getenv': Decl('getenv', '&byte', ('&byte',)),
+		}),
 		'stdio': Module('libc.stdio', {
 			'snprintf': Decl('snprintf', 'i32', (
 				'&byte', 'i32', '&byte', '...'
