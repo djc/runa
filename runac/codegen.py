@@ -558,7 +558,9 @@ class CodeGen(object):
 		assert left.type in types.INTS and node.type in types.INTS
 		assert left.type.bits <= node.type.bits
 		assert left.type in types.SINTS and node.type in types.UINTS
-		return Value(node.type, left.var)
+		bits = self.varname(), left.type.ir, left.var, node.type.ir
+		self.writeline('%s = zext %s %s to %s' % bits)
+		return Value(node.type, bits[0])
 	
 	def CondBranch(self, node, frame):
 		
