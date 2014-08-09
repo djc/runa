@@ -147,6 +147,10 @@ def module_elems_single(s, p):
 def function_module_elem(s, p):
 	return p[0]
 
+@pg.production('module-elem : function-decl')
+def decl_module_elem(s, p):
+	return p[0]
+
 @pg.production('module-elem : class')
 def class_module_elem(s, p):
 	return p[0]
