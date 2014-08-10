@@ -157,6 +157,7 @@ class Specializer(object):
 	def Elem(self, node, type=None):
 		self.visit(node.obj)
 		self.visit(node.key)
+		# TODO: should specialize key type
 		assert not types.generic(node.type)
 	
 	def Attrib(self, node, type=None):
