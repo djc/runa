@@ -175,7 +175,7 @@ def build_tuple(params):
 	name = 'tuple[%s]' % ', '.join(p.name for p in params)
 	internal = name.replace('%', '_').replace('.', '_')
 	cls = ALL[('tuple', params)] = type(internal, (concrete,), {
-		'ir': '%tuple$' + '.'.join(t.name for t in params),
+		'ir': '%tuple$' + '.'.join(wrangle(t.name) for t in params),
 		'name': name,
 		'params': params,
 		'methods': {'v%i' % i: (i, t) for (i, t) in enumerate(params)},
