@@ -48,6 +48,8 @@ if __name__ == '__main__':
 	parser = optparse.OptionParser(description=description)
 	
 	parser.add_option('--test', help='no output', action='store_true')
+	parser.add_option('--traceback', help='show full traceback',
+	                  action='store_true')
 	opts, args = parser.parse_args()
 	
 	if len(args) < 1:
@@ -57,6 +59,10 @@ if __name__ == '__main__':
 	try:
 		find(args[0])(args[1], opts)
 	except runac.Error as e:
+		if opts.traceback:
+			raise
 		sys.stderr.write(e.show(args[1]))
 	except runac.ParseError as e:
+		if opts.traceback:
+			raise
 		sys.stderr.write(e.show(args[1]))

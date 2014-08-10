@@ -23,6 +23,7 @@ def error(fn, msg, pos):
 class Error(Exception):
 	
 	def __init__(self, node, msg):
+		Exception.__init__(self, msg)
 		self.node = node
 		self.msg = msg
 	
