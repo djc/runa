@@ -430,6 +430,11 @@ def add(node):
 	
 	ALL[node.name.name] = type(node.name.name, (parent,), fields)
 
+def wrangle(s):
+	s = s.replace('&', 'R')
+	s = s.replace('$', 'O')
+	return s
+
 def fill(node):
 	
 	cls = ALL[node.name.name]
@@ -455,7 +460,6 @@ def fill(node):
 		
 		irname = '%s.%s' % (node.name.name, name)
 		if name in cls.methods:
-			wrangle = lambda x: x.replace('&', 'R').replace('$', 'O')
 			irname = irname + '$' + '.'.join(wrangle(a[1].name) for a in args)
 			assert rtype == cls.methods[name][0].type.over[0]
 		
