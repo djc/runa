@@ -156,6 +156,9 @@ class template(ReprId):
 			for method in mtypes:
 				
 				rtype = method.type.over[0]
+				if rtype == self:
+					rtype = cls()
+				
 				formal = method.type.over[1]
 				formal = (ref(cls()),) + formal[1:]
 				t = function(rtype, formal)
@@ -376,6 +379,9 @@ def get(t, stubs={}):
 	elif isinstance(t, ast.Name):
 		return stubs[t.name] if t.name in stubs else ALL[t.name]()
 	elif isinstance(t, ast.Elem):
+		if isinstance(get(t.obj.name, stubs), template):
+			if t.key.name in stubs:
+				return get(t.obj.name, stubs)
 		return ALL[t.obj.name]()[get(t.key, stubs)]
 	elif isinstance(t, ast.Owner):
 		return owner(get(t.value, stubs))

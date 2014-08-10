@@ -128,6 +128,10 @@ class Scope(object):
 			assert self[node.name].type == types.Type()
 			return self[node.name]
 		elif isinstance(node, ast.Elem):
+			outer = self[node.obj.name]
+			if isinstance(outer, types.template):
+				if node.key.name in outer.params:
+					return outer
 			inner = self.resolve(node.key)
 			return self[node.obj.name][inner]
 		elif isinstance(node, ast.Tuple):
