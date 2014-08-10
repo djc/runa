@@ -22,20 +22,19 @@ def destructify(code):
 					q.add(p.id)
 		
 		for var, steps in bl.assigns.iteritems():
-			
-			assert len(steps) == 1
-			sid = steps.pop()
-			step = bl.steps[sid]
-			
-			if isinstance(step, blocks.LoopHeader):
-				type = step.lvar.type
-			else:
-				type = step.right.type
-			
-			if not isinstance(type, types.owner):
-				continue
-			
-			left[var] = i, sid, type
+			for sid in steps:
+
+				step = bl.steps[sid]
+				if isinstance(step, blocks.LoopHeader):
+					type = step.lvar.type
+				else:
+					type = step.right.type
+				
+				if not isinstance(type, types.owner):
+					continue
+				
+				assert var not in left, var
+				left[var] = i, sid, type
 		
 		for sid, step in enumerate(bl.steps):
 			
