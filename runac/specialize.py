@@ -149,10 +149,10 @@ class Specializer(object):
 		self.visit(node.cond, types.get('ToBool'))
 	
 	def Assign(self, node, type=None):
-		if isinstance(node.left, ast.Tuple):
-			self.visit(node.right, node.left.type)
 		if isinstance(node.left, ast.Name):
 			self.visit(node.right, self.track.get(node.left.name))
+		else:
+			self.visit(node.right, node.left.type)
 	
 	def Elem(self, node, type=None):
 		self.visit(node.obj)
