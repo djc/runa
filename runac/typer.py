@@ -370,7 +370,8 @@ class TypeChecker(object):
 	
 	def As(self, node, scope):
 		self.visit(node.left, scope)
-		node.type = self.scopes[None][node.right.name]
+		node.type = self.scopes[None].resolve(node.right)
+		# TODO: check if the conversion makes sense
 	
 	def Raise(self, node, scope):
 		self.visit(node.value, scope)
