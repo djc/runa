@@ -139,6 +139,9 @@ class Specializer(object):
 	
 	# Miscellaneous
 	
+	def As(self, node, type=None):
+		self.visit(node.left)
+	
 	def LoopSetup(self, node, type=None):
 		self.visit(node.loop.source, type)
 	
