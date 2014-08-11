@@ -3,6 +3,18 @@ from libc.stdio import snprintf
 class byte:
 	pass
 
+class u8:
+	def __str__(self) -> $str:
+		data = __malloc__(3)
+		len = snprintf(data, 3, '%hhu\0'.data, self)
+		return str(len as uint, data)
+
+class i8:
+	def __str__(self) -> $str:
+		data = __malloc__(4)
+		len = snprintf(data, 4, '%hhi\0'.data, self)
+		return str(len as uint, data)
+
 class i32:
 	def __str__(self) -> $str:
 		data = __malloc__(20)

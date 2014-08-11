@@ -218,6 +218,8 @@ WORD_SIZE = int(platform.architecture()[0][:2])
 BASIC = {
 	'bool': 'i1',
 	'byte': 'i8',
+	'i8': 'i8',
+	'u8': 'i8',
 	'i32': 'i32',
 	'u32': 'i32',
 	'int': 'i%i' % WORD_SIZE,
@@ -226,6 +228,8 @@ BASIC = {
 }
 
 INTEGERS = {
+	'i8': (True, 8),
+	'u8': (False, 8),
 	'i32': (True, 32),
 	'u32': (False, 32),
 	'int': (True, WORD_SIZE),
