@@ -414,7 +414,7 @@ class CodeGen(object):
 			self.writeline('%s = %s %s %s %s, %s' % bits)
 			return Value(types.get('bool'), tmp)
 		
-		assert left.type == right.type
+		assert left.type == right.type, (left.type, right.type)
 		inv = False
 		if op in {'eq', 'ne'} and '__%s__' % op not in left.type.over.methods:
 			op = {'eq': 'ne', 'ne': 'eq'}[op]
@@ -671,7 +671,7 @@ class CodeGen(object):
 		et = t.attribs['data'][1].over
 		
 		key = self.visit(node.key, frame)
-		assert key.type == types.get('int'), key.type
+		assert key.type == types.get('int'), (key.type, node)
 		
 		data = self.gep(obj, 0, 1)
 		obj = '[0 x %s]*' % et.ir, data
