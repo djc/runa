@@ -132,3 +132,7 @@ http://mortoray.com/2013/09/12/the-true-cost-of-zero-cost-exceptions/
 Theofilos Petsios
 C++ Exception Handling - Base ABI
 http://theofilos.cs.columbia.edu/blog/2013/09/22/base_abi/
+
+John Regehr et al.
+Proposal for a Friendly Dialect of C
+http://blog.regehr.org/archives/1180
