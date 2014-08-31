@@ -513,7 +513,7 @@ class TypeChecker(object):
 			
 			self.visit(node.left, scope)
 			self.visit(node.right, scope)
-			if node.left.type != node.right.type:
+			if not types.compat(node.right.type, node.left.type):
 				bits = node.right.type.name, node.left.type.name
 				msg = 'incorrect assignment of %s to %s'
 				raise util.Error(node, msg % bits)
