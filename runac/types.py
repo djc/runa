@@ -437,6 +437,8 @@ def add(node):
 def wrangle(s):
 	s = s.replace('&', 'R')
 	s = s.replace('$', 'O')
+	s = s.replace('[', 'BT')
+	s = s.replace(']', 'ET')
 	return s
 
 def fill(node):
