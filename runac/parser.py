@@ -718,7 +718,7 @@ class State(object):
 
 		col = t.source_pos.colno - 1
 		line = self.lines[ln] if ln < len(self.lines) else ''
-		return (ln, col), (ln, col + len(t.value)), line
+		return (ln, col), (ln, col + len(t.value)), line, self.fn
 
 def parse(fn):
 	state = State(fn)

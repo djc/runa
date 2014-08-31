@@ -1,3 +1,3 @@
-tests/main-type-r.rns [1.1]: main() return type must be i32
+main-type-r.rns [1.1]: main() return type must be i32
 def main(name: &str, args: &array[str]) -> float:
 ^

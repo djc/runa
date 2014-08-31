@@ -18,9 +18,9 @@ def compile(src, bin):
 		runac.compile(runac.ir(src), bin)
 		return None
 	except runac.Error as e:
-		return e.show(src)
+		return e.show()
 	except runac.ParseError as e:
-		return e.show(src)
+		return e.show()
 
 def run(self, key):
 	

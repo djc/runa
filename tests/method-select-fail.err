@@ -1,3 +1,3 @@
-tests/method-select-fail.rns [2.20]: (anyint) does not fit any of ()
+method-select-fail.rns [2.20]: (anyint) does not fit any of ()
     print(9.__str__(4))
                    ^

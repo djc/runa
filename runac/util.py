@@ -1,3 +1,5 @@
+import os
+
 IGNORE = {'pos'}
 
 class AttribRepr(object):
@@ -27,7 +29,8 @@ class Error(Exception):
 		self.node = node
 		self.msg = msg
 	
-	def show(self, fn):
+	def show(self):
+		fn = os.path.basename(self.node.pos[3])
 		return error(fn, self.msg, getattr(self.node, 'pos', None))
 
 class ParseError(Exception):
@@ -37,6 +40,7 @@ class ParseError(Exception):
 		self.t = t
 		self.pos = pos
 	
-	def show(self, fn):
+	def show(self):
+		fn = os.path.basename(self.pos[3])
 		msg = 'unexpected token %s (%r)' % (self.t.name, self.t.value)
 		return error(fn, msg, self.pos)
