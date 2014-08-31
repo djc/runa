@@ -301,10 +301,10 @@ def unwrap(t):
 def generic(t):
 	return isinstance(unwrap(t), (anyint, anyfloat))
 
-def compat(a, f):
+def compat(a, f, strict=False):
 	
 	if isinstance(a, concrete) and isinstance(f, concrete):
-		return all(compat(i[0], i[1]) for i in zip(a.params, f.params))
+		return all(compat(i[0], i[1], True) for i in zip(a.params, f.params))
 	
 	if isinstance(a, (tuple, list)) and isinstance(f, (tuple, list)):
 		if len(a) != len(f):
@@ -319,7 +319,9 @@ def compat(a, f):
 		return True
 	elif isinstance(a, ref) and isinstance(f, owner):
 		return False
-	elif isinstance(a, WRAPPERS) or isinstance(f, WRAPPERS):
+	elif not strict and (isinstance(a, WRAPPERS) or isinstance(f, WRAPPERS)):
+		return compat(unwrap(a), unwrap(f))
+	elif strict and (isinstance(a, WRAPPERS) and isinstance(f, WRAPPERS)):
 		return compat(unwrap(a), unwrap(f))
 	elif a in UINTS and f in UINTS:
 		return a.bits < f.bits
