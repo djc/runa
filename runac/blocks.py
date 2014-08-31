@@ -138,7 +138,7 @@ class FlowFinder(object):
 			return node
 		
 		asgt = ast.Assign(None)
-		asgt.left = ast.Name(self.name(), None)
+		asgt.left = ast.Name(self.name(), node.pos)
 		asgt.right = self.visit(node)
 		self.cur.push(asgt)
 		
