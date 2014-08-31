@@ -81,7 +81,8 @@ class Specializer(object):
 	def Tuple(self, node, type=None):
 		ttypes = [None] * len(node.values) if type is None else type.params
 		for i, e in enumerate(node.values):
-			self.specialize(e, ttypes[i])
+			if types.generic(e.type):
+				self.specialize(e, ttypes[i])
 		node.type = types.build_tuple(n.type for n in node.values)
 	
 	# Comparison operators
