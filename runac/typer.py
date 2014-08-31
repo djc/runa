@@ -570,7 +570,7 @@ class TypeChecker(object):
 		elif node.value is not None and self.fun.rtype == types.void():
 			msg = "function must return type 'void' ('%s' not allowed)"
 			self.visit(node.value, scope)
-			raise util.Error(node, msg % (node.value.type.name))
+			raise util.Error(node.value, msg % (node.value.type.name))
 		elif node.value is None:
 			return
 		
@@ -579,7 +579,7 @@ class TypeChecker(object):
 			msg = "return value type does not match declared return type\n"
 			msg += "    '%s' vs '%s'"
 			bits = node.value.type.name, self.fun.rtype.name
-			raise util.Error(node, msg % bits)
+			raise util.Error(node.value, msg % bits)
 
 def variant(mod, t):
 	if isinstance(t, types.WRAPPERS):

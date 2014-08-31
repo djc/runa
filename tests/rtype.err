@@ -1,4 +1,4 @@
-rtype.rns [2.5]: return value type does not match declared return type
+rtype.rns [2.12]: return value type does not match declared return type
     '$str' vs 'int'
     return 's'
-    ^
+           ^
