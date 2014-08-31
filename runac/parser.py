@@ -35,6 +35,7 @@ def lexer():
 	lg.add('ASGT', '=')
 	lg.add('COMMA', ',')
 	lg.add('COLON', ':')
+	lg.add('QM', '\?')
 	lg.add('STR', r"'(.*?)'")
 	lg.add('STR', r'"(.*?)"')
 	lg.add('BOOL', 'True|False')
@@ -100,6 +101,7 @@ pg = rply.ParserGenerator([
 		'NAME', 'NE', 'NL', 'NONE', 'NOT', 'NUM',
 		'OR',
 		'PASS', 'PIPE', 'PLUS',
+		'QM',
 		'RAISE', 'RBRA', 'RETURN', 'RPAR',
 		'STR',
 		'TRAIT', 'TRY',
@@ -473,6 +475,12 @@ def type_tuple(s, p):
 def two_type_tuple(s, p):
 	res = ast.Tuple(s.pos(p[1]))
 	res.values = [p[0], p[2]]
+	return res
+
+@pg.production('type : type QM')
+def opt_type(s, p):
+	res = ast.Opt(p[0].pos)
+	res.value = p[0]
 	return res
 
 @pg.production('type : DOLLAR vtype')

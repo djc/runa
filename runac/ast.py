@@ -93,6 +93,9 @@ class Owner(Expr):
 class Ref(Expr):
 	fields = 'value'
 
+class Opt(Expr):
+	fields = 'value'
+
 class In(Expr):
 	fields = 'left', 'right'
 
