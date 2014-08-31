@@ -576,8 +576,10 @@ class TypeChecker(object):
 		
 		self.visit(node.value, scope)
 		if not types.compat(node.value.type, self.fun.rtype):
-			msg = "return value does not match declared return type '%s'"
-			raise util.Error(node, msg % self.fun.rtype.name)
+			msg = "return value type does not match declared return type\n"
+			msg += "    '%s' vs '%s'"
+			bits = node.value.type.name, self.fun.rtype.name
+			raise util.Error(node, msg % bits)
 
 def variant(mod, t):
 	if isinstance(t, types.WRAPPERS):
