@@ -275,6 +275,22 @@ class ref(base):
 	def __repr__(self):
 		return '<type: &%s>' % (self.over.name)
 
+class opt(base):
+	
+	def __init__(self, over):
+		self.over = over
+	
+	@property
+	def name(self):
+		return '%s?' % self.over.name
+	
+	@property
+	def ir(self):
+		return self.over.ir
+	
+	def __repr__(self):
+		return '<type: %s?>' % (self.over.name)
+
 class function(base):
 	
 	def __init__(self, rtype, formal):
