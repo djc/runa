@@ -140,6 +140,8 @@ class Scope(object):
 			return types.ref(self.resolve(node.value))
 		elif isinstance(node, ast.Owner):
 			return types.owner(self.resolve(node.value))
+		elif isinstance(node, ast.Opt):
+			return types.opt(self.resolve(node.value))
 		else:
 			assert False
 
