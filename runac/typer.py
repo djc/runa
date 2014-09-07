@@ -556,9 +556,18 @@ class TypeChecker(object):
 		
 		if node.left[1].type == node.right[1].type:
 			node.type = node.left[1].type
-		else:
-			bits = tuple(i.type.name for i in (node.left[1], node.right[1]))
-			raise util.Error(node, "unmatched types '%s', '%s'" % bits)
+			return
+		
+		no_type = types.get('NoType').__class__
+		if isinstance(node.left[1].type, no_type):
+			node.type = types.opt(node.right[1].type)
+			return
+		elif isinstance(node.right[1].type, no_type):
+			node.type = types.opt(node.left[1].type)
+			return
+		
+		bits = tuple(i.type.name for i in (node.left[1], node.right[1]))
+		raise util.Error(node, "unmatched types '%s', '%s'" % bits)
 	
 	def LPad(self, node, scope):
 		for type in node.map:
