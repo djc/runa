@@ -523,7 +523,9 @@ class TypeChecker(object):
 		name = node.left.name
 		self.visit(node.right, scope)
 		if name in scope and scope[name].type != node.right.type:
-			assert False, 'reassignment'
+			bits = scope[name].type.name, node.right.type.name
+			msg = "reassignment with different type ('%s' vs '%s')"
+			raise util.Error(node, msg % bits)
 		
 		assert node.right.type is not None
 		scope[node.left.name] = node.right
