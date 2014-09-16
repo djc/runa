@@ -33,7 +33,8 @@ class Frame(object):
 
 class CodeGen(object):
 	
-	def __init__(self):
+	def __init__(self, word):
+		self.word = word
 		self.level = 0
 		self.start = True
 		self.main = False
@@ -294,16 +295,16 @@ class CodeGen(object):
 			
 			size = self.load(Value(types.get('&uint'), '@str.size'))
 			tmp = self.varname()
-			bits = tmp, size.var
-			self.writeline('%s = call i8* @runa.malloc(i64 %s)' % bits)
+			bits = tmp, self.word, size.var
+			self.writeline('%s = call i8* @runa.malloc(%s %s)' % bits)
 			
 			full = self.varname()
 			self.writeline('%s = bitcast i8* %s to %%str*' % (full, tmp))
 			full = Value(types.owner(t), full)
 			
 			data = self.varname()
-			bits = data, length
-			self.writeline('%s = call i8* @runa.malloc(i64 %s)' % bits)
+			bits = data, self.word, length
+			self.writeline('%s = call i8* @runa.malloc(%s %s)' % bits)
 			
 			tmp = self.varname()
 			bits = tmp, data, dtype
@@ -326,8 +327,8 @@ class CodeGen(object):
 		sizevar = '@%s.size' % node.type.over.ir[1:]
 		size = self.load(Value(types.get('&int'), sizevar))
 		
-		bits = self.varname(), size.var
-		self.writeline('%s = call i8* @runa.malloc(i64 %s)' % bits)
+		bits = self.varname(), self.word, size.var
+		self.writeline('%s = call i8* @runa.malloc(%s %s)' % bits)
 		
 		res = self.varname()
 		bits = res, bits[0], node.type.ir
@@ -930,8 +931,9 @@ class CodeGen(object):
 			
 		bits = name, dtype, literal
 		self.writeline('@%s.data = constant %s c"%s"' % bits)
-		bits = name, slen, 'i8* bitcast (%s* @%s.data to i8*)' % (dtype, name)
-		self.writeline('@%s = constant %%str { i64 %s, %s }' % bits)
+		cast = 'i8* bitcast (%s* @%s.data to i8*)' % (dtype, name)
+		bits = name, self.word, slen, cast
+		self.writeline('@%s = constant %%str { %s %s, %s }' % bits)
 		frame[name] = Value(val.type, '@%s' % name)
 	
 	def declare(self, ref):
@@ -953,7 +955,7 @@ class CodeGen(object):
 			return
 		
 		if type.name.startswith('array['):
-			s = 'i64, [0 x %s]' % type.attribs['data'][1].over.ir
+			s = self.word + ', [0 x %s]' % type.attribs['data'][1].over.ir
 			self.writeline('%s = type { %s }' % (type.ir, s))
 			return
 		
@@ -973,7 +975,7 @@ class CodeGen(object):
 		
 		t = type.ir
 		gep = '%s* getelementptr (%s* null, i32 1)' % (t, t)
-		cast = 'constant i64 ptrtoint (%s to i64)' % gep
+		cast = 'constant %s ptrtoint (%s to %s)' % (self.word, gep, self.word)
 		self.writeline('@%s.size = %s' % (t[1:], cast))
 		self.newline()
 	
@@ -1091,10 +1093,10 @@ TRIPLES = {
 
 def generate(mod):
 	
-	gen = CodeGen()
+	arch, os = platform.architecture()[0], sys.platform
+	gen = CodeGen('i' + arch[:2])
 	gen.Module(mod)
 	
-	arch, os = platform.architecture()[0], sys.platform
 	code = ['target triple = "%s"\n\n' % TRIPLES[arch, os]]
 	code += gen.typedecls
 	
