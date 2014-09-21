@@ -9,8 +9,7 @@ class Specializer(object):
 		self.track = {}
 	
 	def visit(self, node, type=None):
-		if hasattr(self, node.__class__.__name__):
-			getattr(self, node.__class__.__name__)(node, type)
+		getattr(self, node.__class__.__name__)(node, type)
 	
 	def specialize(self, node, dst):
 		if node.type == dst:
@@ -19,6 +18,8 @@ class Specializer(object):
 			node.type = types.get('int')
 		elif node.type == types.anyfloat() and dst is None:
 			node.type = types.get('float')
+		elif dst is None:
+			return
 		elif node.type == types.anyint() and types.unwrap(dst) in types.INTS:
 			if isinstance(node, ast.Int):
 				dst = types.unwrap(dst)
@@ -61,11 +62,17 @@ class Specializer(object):
 	
 	# Constants
 	
+	def Bool(self, node, type=None):
+		pass
+	
 	def Int(self, node, type=None):
 		self.specialize(node, type)
 	
 	def Float(self, node, type=None):
 		self.specialize(node, type)
+	
+	def String(self, node, type=None):
+		pass
 	
 	def Name(self, node, type=None):
 		
@@ -85,7 +92,26 @@ class Specializer(object):
 				self.specialize(e, ttypes[i])
 		node.type = types.build_tuple(n.type for n in node.values)
 	
+	def Init(self, node, type=None):
+		pass
+	
+	# Boolean operators
+	
+	def Not(self, node, type=None):
+		self.specialize(node.value, None)
+	
+	def And(self, node, type=None):
+		self.specialize(node.left, None)
+		self.specialize(node.right, None)
+	
+	def Or(self, node, type=None):
+		self.specialize(node.left, None)
+		self.specialize(node.right, None)
+	
 	# Comparison operators
+	
+	def Is(self, node, type):
+		self.binspec(node, type)
 	
 	def compare(self, node, type):
 		self.binspec(node, type)
@@ -205,7 +231,13 @@ class Specializer(object):
 		self.visit(node.right[1], type)
 		assert node.left[1].type == node.right[1].type
 		node.type = node.left[1].type
-		
+	
+	def Branch(self, node, type=None):
+		pass
+	
+	def Raise(self, node, type=None):
+		pass
+	
 	def propagate(self):
 		for i, bl in self.cfg.blocks.iteritems():
 			for step in reversed(bl.steps):
