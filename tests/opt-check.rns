@@ -1,0 +1,21 @@
+class test:
+	val: uint
+	def __init__(self, v: uint):
+		self.val = v
+
+def maybe(i: int) -> $test?:
+	return test(1) if i & 2 else None
+
+def main():
+	
+	obj = maybe(1)
+	if obj is None:
+		print('no val')
+	else:
+		print(obj.val)
+
+	obj = maybe(3)
+	if obj is None:
+		print('no val')
+	else:
+		print(obj.val)
