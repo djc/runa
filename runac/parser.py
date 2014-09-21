@@ -10,6 +10,7 @@ NAME_LIKE = {
 def lexer():
 	lg = rply.LexerGenerator()
 	lg.add('ARROW', '->')
+	lg.add('IADD', '\+=')
 	lg.add('EQ', '==')
 	lg.add('NE', '!=')
 	lg.add('GE', '>=')
@@ -95,7 +96,7 @@ pg = rply.ParserGenerator([
 		'ELIF', 'ELSE', 'EQ', 'EXCEPT',
 		'FOR', 'FROM',
 		'GE', 'GT',
-		'IF', 'IMPORT', 'IN', 'INDENT', 'IS',
+		'IADD', 'IF', 'IMPORT', 'IN', 'INDENT', 'IS',
 		'LBRA', 'LE', 'LPAR', 'LT',
 		'MINUS', 'MUL', 'MOD',
 		'NAME', 'NE', 'NL', 'NONE', 'NOT', 'NUM',
@@ -421,6 +422,14 @@ def asgt_stmt(s, p):
 @pg.production('asgt : lval ASGT expr-tuple NL')
 def asgt(s, p):
 	return binop(s, ast.Assign, p)
+
+@pg.production('stmt : aug-asgt')
+def aug_asgt_stmt(s, p):
+	return p[0]
+
+@pg.production('aug-asgt : lval IADD expr-tuple NL')
+def iadd(s, p):
+	return binop(s, ast.IAdd, p)
 
 @pg.production('stmt : yield')
 def yield_stmt(s, p):

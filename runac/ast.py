@@ -134,6 +134,9 @@ class Call(Expr):
 class Assign(Node):
 	fields = 'left', 'right'
 
+class IAdd(Node):
+	fields = 'left', 'right'
+
 class Raise(Node):
 	fields = 'value',
 
