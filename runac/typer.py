@@ -528,6 +528,13 @@ class TypeChecker(object):
 			scope[node.left.name] = node.right
 		node.left.type = node.right.type
 	
+	def IAdd(self, node, scope):
+		self.visit(node.left, scope)
+		self.visit(node.right, scope)
+		if node.left.type != node.right.type:
+			bits = node.right.type.name, node.left.type.name
+			raise util.Error(node, "cannot add '%s' to '%s'" % bits)
+	
 	def Phi(self, node, scope):
 		
 		if isinstance(node.left[1], ast.Name):

@@ -130,6 +130,10 @@ class EscapeFinder(object):
 		else:
 			assert False
 	
+	def IAdd(self, node, escape=None):
+		allowed = tuple(t.__class__ for t in types.INTS | types.FLOATS)
+		assert isinstance(node.left.type, allowed)
+	
 	def Ternary(self, node, escape=None):
 		for val in node.values:
 			self.visit(val, escape)

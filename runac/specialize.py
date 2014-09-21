@@ -184,6 +184,12 @@ class Specializer(object):
 		else:
 			self.visit(node.right, node.left.type)
 	
+	def IAdd(self, node, type=None):
+		if isinstance(node.left, ast.Name):
+			self.visit(node.right, self.track.get(node.left.name))
+		else:
+			self.visit(node.right, node.left.type)
+	
 	def Elem(self, node, type=None):
 		self.visit(node.obj)
 		self.visit(node.key)

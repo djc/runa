@@ -288,7 +288,7 @@ class FlowFinder(object):
 		self.cur.push(node)
 		self.cur.returns = True
 	
-	def Assign(self, node):
+	def assign(self, node):
 		
 		node.right = self.visit(node.right)
 		if isinstance(node.left, ast.Attrib):
@@ -300,6 +300,12 @@ class FlowFinder(object):
 		self.cur.push(node)
 		if isinstance(node.right, ast.Call):
 			self.redirect(node.right)
+	
+	def Assign(self, node):
+		self.assign(node)
+	
+	def IAdd(self, node):
+		self.assign(node)
 	
 	def Yield(self, node):
 		

@@ -660,6 +660,16 @@ class CodeGen(object):
 		
 		assert False
 	
+	def IAdd(self, node, frame):
+		
+		assert isinstance(node.left, ast.Name), node.left
+		assert not self.intercept
+		
+		wrap = frame[node.left.name]
+		res = self.arith('add', node, frame)
+		self.store(res, wrap.var, "to variable '%s'" % node.left.name)
+		frame[node.left.name] = wrap
+	
 	def Attrib(self, node, frame):
 		obj = self.visit(node.obj, frame)
 		t = types.unwrap(obj.type)
