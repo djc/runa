@@ -489,10 +489,10 @@ class TypeChecker(object):
 	
 	def Assign(self, node, scope):
 		
+		self.visit(node.right, scope)
 		if isinstance(node.left, ast.Tuple):
 			
 			ttypes = []
-			self.visit(node.right, scope)
 			assert node.right.type.name.startswith('tuple[')
 			for i, dst in enumerate(node.left.values):
 				
@@ -509,26 +509,23 @@ class TypeChecker(object):
 			node.left.type = types.build_tuple(ttypes)
 			return
 		
-		if not isinstance(node.left, ast.Name):
-			
+		var = isinstance(node.left, ast.Name)
+		new = var and node.left.name not in scope
+		if not new or not var:
 			self.visit(node.left, scope)
-			self.visit(node.right, scope)
-			if not types.compat(node.right.type, node.left.type):
-				bits = node.right.type.name, node.left.type.name
-				msg = 'incorrect assignment of %s to %s'
-				raise util.Error(node, msg % bits)
-			
-			return
-		
-		name = node.left.name
-		self.visit(node.right, scope)
-		if name in scope and scope[name].type != node.right.type:
-			bits = scope[name].type.name, node.right.type.name
-			msg = "reassignment with different type ('%s' vs '%s')"
-			raise util.Error(node, msg % bits)
 		
 		assert node.right.type is not None
-		scope[node.left.name] = node.right
+		if not new and not types.compat(node.right.type, node.left.type):
+			if not var:
+				bits = node.right.type.name, node.left.type.name
+				msg = 'incorrect assignment of %s to %s'
+			else:
+				bits = scope[node.left.name].type.name, node.right.type.name
+				msg = "reassignment with different type ('%s' vs '%s')"
+			raise util.Error(node, msg % bits)
+		
+		if var:
+			scope[node.left.name] = node.right
 		node.left.type = node.right.type
 	
 	def Phi(self, node, scope):
