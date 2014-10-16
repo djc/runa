@@ -530,13 +530,8 @@ def module(node):
 			final.returns = True
 		
 		cfg.exits = set()
-		reachable = set()
 		for p in cfg.walk((0,)):
-			reachable |= set(p[:-1])
 			cfg.exits.add(p[-2])
-		
-		for i in set(cfg.blocks) - reachable:
-			del cfg.blocks[i]
 		
 		for src, dsts in cfg.edges.iteritems():
 			for dst in dsts:
