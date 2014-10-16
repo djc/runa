@@ -356,16 +356,18 @@ class FlowFinder(object):
 			if self.cur.needbranch():
 				exits.append(self.cur)
 		
-		exit = self.flow.block('if-exit')
+		if prevcond is None and not exits:
+			return
+		
+		self.cur = self.flow.block('if-exit')
 		if prevcond:
 			assert isinstance(prevcond.steps[-1], CondBranch)
-			prevcond.steps[-1].tg2 = exit.id
-			self.flow.edge(prevcond.id, exit.id)
+			prevcond.steps[-1].tg2 = self.cur.id
+			self.flow.edge(prevcond.id, self.cur.id)
 		
-		self.cur = exit
 		for block in exits:
-			block.push(Branch(exit.id))
-			self.flow.edge(block.id, exit.id)
+			block.push(Branch(self.cur.id))
+			self.flow.edge(block.id, self.cur.id)
 	
 	def While(self, node):
 		
