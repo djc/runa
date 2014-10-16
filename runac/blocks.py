@@ -513,25 +513,19 @@ def module(node):
 	for k, v in mod.code:
 		
 		cfg = v.flow = FlowFinder().build(v.suite)
-		for i, bl in cfg.blocks.iteritems():
-			
-			if not bl.steps:
-				auto = ast.Return(None)
-				auto.value = None
-				bl.steps.append(auto)
-				continue
-			
-			last = bl.steps[-1]
-			if isinstance(last, ast.Call) and last.callbr:
-				continue
-			elif isinstance(last, FINAL):
-				continue
-			
+		final = cfg.blocks[len(cfg.blocks) - 1]
+		callbr, branch = False, False
+		if final.steps:
+			last = final.steps[-1]
+			callbr = isinstance(last, ast.Call) and last.callbr
+			branch = isinstance(last, FINAL)
+		
+		if not final.steps or not (callbr or branch):
 			auto = ast.Return(None)
 			auto.value = None
 			auto.pos = v.pos
-			bl.steps.append(auto)
-			bl.returns = True
+			final.steps.append(auto)
+			final.returns = True
 		
 		cfg.exits = set()
 		reachable = set()
