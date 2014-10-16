@@ -70,7 +70,6 @@ class FlowGraph(util.AttribRepr):
 	def __init__(self):
 		self.blocks = {0: Block(0, 'entry')}
 		self.edges = {}
-		self.exits = None
 		self.yields = {}
 	
 	def block(self, anno=None):
@@ -80,22 +79,6 @@ class FlowGraph(util.AttribRepr):
 	
 	def edge(self, src, dst):
 		self.edges.setdefault(src, []).append(dst)
-	
-	def walk(self, path):
-		
-		last = path[-1]
-		next = self.edges.get(last, [])
-		if last in path[:-1]:
-			x = [path[i + 1] for (i, b) in enumerate(path[:-1]) if b == last]
-			next = sorted(set(next) - set(x))
-		
-		if not next:
-			yield path + (None,)
-			return
-		
-		for n in next:
-			for res in self.walk(path + (n,)):
-				yield res
 
 ATOMIC = ast.NoneVal, ast.Bool, ast.Int, ast.Float, ast.Name
 
@@ -528,10 +511,6 @@ def module(node):
 			auto.pos = v.pos
 			final.steps.append(auto)
 			final.returns = True
-		
-		cfg.exits = set()
-		for p in cfg.walk((0,)):
-			cfg.exits.add(p[-2])
 		
 		for src, dsts in cfg.edges.iteritems():
 			for dst in dsts:
