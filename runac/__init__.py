@@ -1,34 +1,33 @@
 from util import Error, ParseError
-import os, subprocess
-
-from .parser import parse, lex
-from .blocks import module
-from .liveness import liveness
-from .typer import typer
-from .specialize import specialize
-from .escapes import escapes
-from .destructor import destruct
-from .codegen import generate
+from . import (
+	parser, blocks, liveness, typer, specialize, escapes, destructor, codegen,
+)
+import os, subprocess, collections
 
 BASE = os.path.dirname(__path__[0])
 CORE_DIR = os.path.join(BASE, 'core')
+
+PASSES = collections.OrderedDict((
+	('liveness', liveness.liveness),
+	('typer', typer.typer),
+	('specialize', specialize.specialize),
+	('escapes', escapes.escapes),
+	('destruct', destructor.destruct),
+))
 
 def merge(mod):
 	for fn in os.listdir(CORE_DIR):
 		if not fn.endswith('.rns'): continue
 		fn = os.path.join(CORE_DIR, fn)
-		mod.merge(module(parse(fn)))
+		mod.merge(blocks.module(parser.parse(fn)))
 
 def ir(fn):
 	with open(fn) as f:
-		mod = module(parse(fn))
+		mod = blocks.module(parser.parse(fn))
 		merge(mod)
-		liveness(mod)
-		typer(mod)
-		specialize(mod)
-		escapes(mod)
-		destruct(mod)
-		return generate(mod)
+		for name, fun in PASSES.iteritems():
+			fun(mod)
+		return codegen.generate(mod)
 
 def compile(ir, outfn):
 	
