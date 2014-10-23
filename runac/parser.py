@@ -175,14 +175,14 @@ def from_import(s, p):
 	return res
 
 @pg.production('dotted : var DOT NAME')
-def dotted(s, p):
+def dotted_attr(s, p):
 	res = ast.Attrib(s.pos(p[1]))
 	res.obj = p[0]
 	res.attrib = p[2].value
 	return res
 
 @pg.production('dotted : var')
-def dotted(s, p):
+def dotted_var(s, p):
 	return p[0]
 
 @pg.production('names : names COMMA var')
@@ -305,11 +305,11 @@ def type_rtype(s, p):
 	return p[1]
 
 @pg.production('formal-list : LPAR RPAR')
-def no_params(s, p):
+def no_formals(s, p):
 	return []
 
 @pg.production('formal-list : LPAR formals RPAR')
-def params(s, p):
+def formals_list(s, p):
 	return p[1]
 
 @pg.production('formals : formals COMMA formal')
@@ -520,13 +520,13 @@ def name_type(s, p):
 	return p[0]
 
 @pg.production('expr-tuple : ternary COMMA ternary')
-def expr_tuple(s, p):
+def expr_tuple_multi(s, p):
 	res = ast.Tuple(s.pos(p[1]))
 	res.values = [p[0], p[2]]
 	return res
 
 @pg.production('expr-tuple : ternary')
-def expr_tuple(s, p):
+def expr_tuple_base(s, p):
 	return p[0]
 
 @pg.production('ternary : expr IF expr ELSE expr')
@@ -647,15 +647,15 @@ def mul(s, p):
 	return binop(s, ast.Mul, p)
 
 @pg.production('expr : expr DIV expr')
-def mul(s, p):
+def div(s, p):
 	return binop(s, ast.Div, p)
 
 @pg.production('expr : expr PLUS expr')
-def mul(s, p):
+def plus(s, p):
 	return binop(s, ast.Add, p)
 
 @pg.production('expr : expr MINUS expr')
-def mul(s, p):
+def minus(s, p):
 	return binop(s, ast.Sub, p)
 
 @pg.production('expr : expr AS type')
