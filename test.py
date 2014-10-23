@@ -77,7 +77,7 @@ def valgrind(bin, spec):
 	cmd = ['valgrind', '--leak-check=full', bin] + spec.get('args', [])
 	streams = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
 	proc = subprocess.Popen(cmd, **streams)
-	ret = proc.wait()
+	proc.wait()
 	err = proc.stderr.read()
 	
 	blocks, cur = [], []

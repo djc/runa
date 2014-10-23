@@ -530,7 +530,6 @@ class CodeGen(object):
 		
 		ctxt = types.unwrap(ctx.type)
 		for i, name in enumerate(node.loop.source.fun.type.args):
-			at = node.loop.source.fun.type.over[1][i]
 			idx = ctxt.attribs[name][0]
 			var = self.visit(node.loop.source.args[i], frame)
 			slot = self.gep(ctx, 0, idx)
@@ -810,10 +809,7 @@ class CodeGen(object):
 			type = node.fun.type
 		elif node.virtual:
 			
-			mname = node.fun.decl.split('.', 1)[1]
 			t = types.unwrap(node.fun.type.over[1][0])
-			idx = sorted(t.methods).index(mname)
-			
 			vtp = self.gep(wrapped, 0, 0)
 			vtt = '%%%s.vt*' % t.name
 			vt = self.varname()

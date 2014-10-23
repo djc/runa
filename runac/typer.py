@@ -629,7 +629,7 @@ def process(mod, base, fun):
 			defn = base[fun.name.name]
 		
 		name = fun.irname + '$ctx'
-		cls = types.ALL[name] = type(name, (types.concrete,), {
+		types.ALL[name] = type(name, (types.concrete,), {
 			'name': name,
 			'ir': '%' + name,
 			'yields': fun.rtype.params[0],
