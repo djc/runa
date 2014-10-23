@@ -96,9 +96,6 @@ class EscapeFinder(object):
 	def BWXor(self, node, escape=None):
 		pass
 	
-	def Yield(self, node, escape=None):
-		self.visit(node.value, True)
-	
 	def Raise(self, node, escape=None):
 		self.visit(node.value, True)
 	
