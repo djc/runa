@@ -1096,7 +1096,7 @@ class CodeGen(object):
 			self.visit(v, frame)
 
 TRIPLES = {
-	('64bit', 'darwin'): 'x86_64-apple-macosx10.9.0',
+	('64bit', 'darwin'): 'x86_64-apple-macosx10.10.0',
 	('64bit', 'linux2'): 'x86_64-pc-linux-gnu',
 	('32bit', 'linux2'): 'i386-pc-linux-gnu',
 }
