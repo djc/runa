@@ -22,12 +22,11 @@ def merge(mod):
 		mod.merge(blocks.module(parser.parse(fn)))
 
 def ir(fn):
-	with open(fn) as f:
-		mod = blocks.module(parser.parse(fn))
-		merge(mod)
-		for name, fun in PASSES.iteritems():
-			fun(mod)
-		return codegen.generate(mod)
+	mod = blocks.module(parser.parse(fn))
+	merge(mod)
+	for name, fun in PASSES.iteritems():
+		fun(mod)
+	return codegen.generate(mod)
 
 def compile(ir, outfn):
 	
