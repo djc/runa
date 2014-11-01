@@ -89,6 +89,7 @@ class FlowFinder(object):
 		self.cur = self.flow.blocks[0]
 		self.tmp = 0
 		self.caught = None
+		self.branched = None
 	
 	def name(self):
 		self.tmp += 1
@@ -262,6 +263,16 @@ class FlowFinder(object):
 	
 	# Statements
 	
+	def Break(self, node):
+		br = Branch(None)
+		self.cur.push(br)
+		self.branched.setdefault('break', []).append(br)
+	
+	def Continue(self, node):
+		br = Branch(None)
+		self.cur.push(br)
+		self.branched.setdefault('continue', []).append(br)
+	
 	def Pass(self, node):
 		self.cur.push(node)
 	
@@ -349,11 +360,14 @@ class FlowFinder(object):
 			self.flow.edge(prevcond.id, self.cur.id)
 		
 		for block in exits:
+			if block.steps and isinstance(block.steps[-1], FINAL):
+				continue
 			block.push(Branch(self.cur.id))
 			self.flow.edge(block.id, self.cur.id)
 	
 	def While(self, node):
 		
+		self.branched = {}
 		head = self.flow.block('while-head')
 		body = self.flow.block('while-body')
 		self.cur.push(Branch(head.id))
@@ -373,9 +387,16 @@ class FlowFinder(object):
 		assert isinstance(head.steps[-1], CondBranch)
 		head.steps[-1].tg2 = exit.id
 		self.flow.edge(head.id, self.cur.id)
+		
+		for n in self.branched.get('continue', []):
+			n.label = head.id
+		for n in self.branched.get('break', []):
+			n.label = exit.id
+		self.branched = None
 	
 	def For(self, node):
 		
+		self.branched = {}
 		head = self.flow.block('for-head')
 		body = self.flow.block('for-body')
 		
@@ -398,6 +419,12 @@ class FlowFinder(object):
 		assert isinstance(head.steps[-1], LoopHeader)
 		head.steps[-1].tg2 = exit.id
 		self.flow.edge(head.id, exit.id)
+		
+		for n in self.branched.get('continue', []):
+			n.label = head.id
+		for n in self.branched.get('break', []):
+			n.label = exit.id
+		self.branched = None
 	
 	def TryBlock(self, node):
 		
