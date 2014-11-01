@@ -15,6 +15,12 @@ PASSES = collections.OrderedDict((
 	('destruct', destructor.destruct),
 ))
 
+def lex(f):
+	return parser.lex(f)
+
+def parse(fn):
+	return parser.parse(fn)
+
 def merge(mod):
 	for fn in os.listdir(CORE_DIR):
 		if not fn.endswith('.rns'): continue
