@@ -164,6 +164,12 @@ class TryBlock(Node):
 class Function(Node):
 	fields = 'decor', 'name', 'args', 'rtype', 'suite'
 
+class Break(Node):
+	fields = ()
+
+class Continue(Node):
+	fields = ()
+
 class Pass(Node):
 	fields = ()
 

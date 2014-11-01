@@ -2,9 +2,9 @@ from runac import ast, util
 import rply, sys
 
 NAME_LIKE = {
-	'class', 'def', 'elif', 'else', 'except', 'for', 'from', 'if', 'import',
-	'return', 'while', 'pass', 'raise', 'trait', 'try', 'yield', 'not', 'and',
-	'or', 'in', 'as', 'is',
+	'break', 'class', 'continue', 'def', 'elif', 'else', 'except', 'for',
+	'from', 'if', 'import', 'return', 'while', 'pass', 'raise', 'trait',
+	'try', 'yield', 'not', 'and', 'or', 'in', 'as', 'is',
 }
 
 def lexer():
@@ -90,8 +90,8 @@ def lex(s):
 
 pg = rply.ParserGenerator([
 		'AMP', 'AND', 'ARROW', 'AS', 'ASGT',
-		'BOOL',
-		'CARET', 'CLASS', 'COLON', 'COMMA',
+		'BOOL', 'BREAK',
+		'CARET', 'CLASS', 'COLON', 'COMMA', 'CONTINUE',
 		'DEDENT', 'DEF', 'DIV', 'DOLLAR', 'DOT',
 		'ELIF', 'ELSE', 'EQ', 'EXCEPT',
 		'FOR', 'FROM',
@@ -462,6 +462,14 @@ def raise_(s, p):
 	res = ast.Raise(s.pos(p[0]))
 	res.value = p[1]
 	return res
+
+@pg.production('stmt : BREAK NL')
+def break_(s, p):
+	return ast.Break(s.pos(p[0]))
+
+@pg.production('stmt : CONTINUE NL')
+def continue_(s, p):
+	return ast.Continue(s.pos(p[0]))
 
 @pg.production('stmt : PASS NL')
 def pass_(s, p):
