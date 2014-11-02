@@ -733,6 +733,9 @@ class CodeGen(object):
 	
 	def Return(self, node, frame):
 		
+		if self.main is not None and self.main.args:
+			self.free(self.load(frame['args']))
+		
 		if node.value is None:
 			if self.main is not None and self.main.rtype.ir == 'void':
 				self.writeline('ret i32 0')
