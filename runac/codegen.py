@@ -37,7 +37,7 @@ class CodeGen(object):
 		self.word = word
 		self.level = 0
 		self.start = True
-		self.main = False
+		self.main = None
 		self.vars = 0
 		self.labels = {}
 		self.typedecls = None
@@ -733,12 +733,13 @@ class CodeGen(object):
 	
 	def Return(self, node, frame):
 		
-		if node.value is None and self.main:
-			self.writeline('ret i32 0')
-			return
-		if node.value is None and self.intercept is None:
-			self.writeline('ret void')
-			return
+		if node.value is None:
+			if self.main is not None and self.main.rtype.ir == 'void':
+				self.writeline('ret i32 0')
+				return
+			if self.intercept is None:
+				self.writeline('ret void')
+				return
 		
 		if node.value is not None and node.value.type.name.startswith('tuple['):
 			value = self.visit(node.value, frame)
@@ -907,7 +908,7 @@ class CodeGen(object):
 				frame[arg.name.name] = addr
 				self.store((arg.type, '%' + arg.name.name), addr.var)
 		
-		self.main = irname == 'main' and node.rtype.ir == 'void'
+		self.main = node if irname == 'main' else None
 		for i, block in sorted(node.flow.blocks.iteritems()):
 			self.visit(block, frame)
 		
