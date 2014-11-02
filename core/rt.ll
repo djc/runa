@@ -2,7 +2,6 @@ declare void @exit(i32);
 declare i8* @malloc({{ WORD }})
 declare void @free(i8*)
 declare i32 @printf(i8*, ...)
-declare i32 @dprintf(i32, i8*, ...)
 declare void @llvm.memcpy.p0i8.p0i8.{{ WORD }}(i8*, i8*, {{ WORD }}, i32, i1)
 
 @fmt_MALLOC = constant [16 x i8] c"malloc(%ld) %p\0a\00"
@@ -81,17 +80,23 @@ Done:
 
 declare i32 @_Unwind_RaiseException(%UnwEx*)
 
-@ExcErr = constant [45 x i8] c"!!! Runa: error while raising exception: %i\0a\00"
-@ForeignExc = constant [36 x i8] c"!!! Runa: foreign exception caught\0a\00"
-@Unhandled = constant [25 x i8] c"Unhandled Exception: %s\0a\00"
+@ExcErr = constant [44 x i8] c"!!! Runa: error while raising exception: %i\0a"
+@ForeignExc = constant [35 x i8] c"!!! Runa: foreign exception caught\0a"
+@Unhandled = constant [21 x i8] c"Unhandled Exception: "
+@NL = constant [1 x i8] c"\0a"
 
 define void @runa.unhandled(%Exception* %exc) {
-	%fmt = getelementptr inbounds [25 x i8]* @Unhandled, i32 0, i32 0
+	%prefix = getelementptr inbounds [21 x i8]* @Unhandled, i32 0, i32 0
+	call {{ WORD }} @write(i32 2, i8* %prefix, {{ WORD }} 21)
 	%msg.slot = getelementptr %Exception* %exc, i32 0, i32 4
 	%msg = load %str** %msg.slot
 	%msg.data.slot = getelementptr %str* %msg, i32 0, i32 1
 	%msg.data = load i8** %msg.data.slot
-	call i32 (i32, i8*, ...)* @dprintf(i32 2, i8* %fmt, i8* %msg.data)
+	%msg.len.slot = getelementptr %str* %msg, i32 0, i32 0
+	%msg.len = load {{ WORD }}* %msg.len.slot
+	call {{ WORD }} @write(i32 2, i8* %msg.data, {{ WORD }} %msg.len)
+	%nl = getelementptr inbounds [1 x i8]* @NL, i32 0, i32 0
+	call {{ WORD }} @write(i32 2, i8* %nl, {{ WORD }} 1)
 	ret void
 }
 
@@ -99,8 +104,8 @@ define void @runa.clean(i32 %reason, %UnwEx* %exc) {
 	%cond = icmp eq i32 %reason, 1 ; _URC_FOREIGN_EXCEPTION_CAUGHT
 	br i1 %cond, label %Foreign, label %Normal
 Foreign:
-	%fmt = getelementptr inbounds [36 x i8]* @ForeignExc, i32 0, i32 0
-	call i32 (i32, i8*, ...)* @dprintf(i32 2, i8* %fmt)
+	%msg = getelementptr inbounds [35 x i8]* @ForeignExc, i32 0, i32 0
+	call {{ WORD }} @write(i32 2, i8* %msg, {{ WORD }} 35)
 	call void @exit(i32 1)
 	ret void
 Normal:
@@ -123,8 +128,8 @@ Unhandled:
 	call void @runa.unhandled(%Exception* %obj)
 	br label %End
 Other:
-	%fmt = getelementptr inbounds [45 x i8]* @ExcErr, i32 0, i32 0
-	call i32 (i32, i8*, ...)* @dprintf(i32 2, i8* %fmt, i32 %err)
+	%msg = getelementptr inbounds [44 x i8]* @ExcErr, i32 0, i32 0
+	call {{ WORD }} @write(i32 2, i8* %msg, {{ WORD }} 44)
 	br label %End
 End:
 	call void @exit(i32 1)
