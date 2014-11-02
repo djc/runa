@@ -70,7 +70,10 @@ LangTests = type('LangTests', (unittest.TestCase,), attrs)
 def suite():
     return unittest.makeSuite(LangTests, 'test')
 
-IGNORE = 'Memcheck WARNING: HEAP SUMMARY: LEAK SUMMARY: For counts'.split()
+IGNORE = [
+	'Memcheck', 'WARNING:', 'HEAP SUMMARY:', 'LEAK SUMMARY:',
+	'All heap blocks', 'For counts',
+]
 
 def valgrind(bin, spec):
 	
