@@ -42,7 +42,7 @@ define %array$str* @args(i32 %argc, i8** %argv) {
 	
 	%str.size = load {{ WORD }}* @str.size
 	%arsz = mul {{ WORD }} %num, %str.size
-	%objsz = add {{ WORD }} 8, %arsz
+	%objsz = add {{ WORD }} {{ BYTES }}, %arsz
 	%array.raw = call i8* @runa.malloc({{ WORD }} %objsz)
 	%array = bitcast i8* %array.raw to %array$str*
 	
