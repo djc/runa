@@ -32,3 +32,17 @@ Now, run the compiler to generate a binary, then run it:
     hello, world
 
 Review the test cases in `tests/` for other code that should work.
+
+
+To do before 0.1
+----------------
+
+- Basic types: bool, ints, floats
+- Core types: str, array
+- Collections: list, dict, set
+- Duck typing
+- Memory management
+- Error handling/exceptions
+- Iterators/generators
+- Argument handling: default args, *args, **kwargs
+- Basic documentation
