@@ -3,6 +3,15 @@ Runa
 
 A Python-like systems programming language.
 
+Note: this is pre-alpha quality software. Use at your own peril.
+
+All feedback welcome. Feel free to file bugs, requests for documentation and
+any other feedback to the `issue tracker`_, `tweet me`_ or join the #runa
+channel on freenode.
+
+.. issue tracker: https://github.com/djc/runa/issues
+.. tweet me: https://twitter.com/djco/
+
 
 Installation
 ------------
