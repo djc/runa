@@ -21,15 +21,19 @@ How to get started
 
 Type the following program into a file called `hello.rns`:
 
-	def main():
-		print('hello, world')
+.. code::
+   
+   def main():
+       print('hello, world')
 
 Make sure to use tab-based indentation; spaces are not currently supported.
 Now, run the compiler to generate a binary, then run it:
 
-    djc@enrai runa $ ./runa compile hello.rns
-    djc@enrai runa $ ./hello
-    hello, world
+.. code::
+   
+   djc@enrai runa $ ./runa compile hello.rns
+   djc@enrai runa $ ./hello
+   hello, world
 
 Review the test cases in `tests/` for other code that should work.
 
