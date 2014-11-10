@@ -23,8 +23,9 @@ Dependencies:
 * Clang (tested with 3.3 and 3.4)
 
 So far, it has only been tested on 64-bits OS X and Linux and 32-bits Linux.
-The LLVM IR targets Yosemite, this could cause warnings on older OS X. Look
-at the final lines of ``runac/codegen.py`` to change the target triple.
+The LLVM IR targets Yosemite on OS X, this could cause warnings on older
+versions. Look at the final lines of ``runac/codegen.py`` to change the
+target triple.
 
 
 How to get started
