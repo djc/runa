@@ -28,7 +28,7 @@ So far, it has only been tested on 64-bits OS X and Linux.
 How to get started
 ------------------
 
-Type the following program into a file called `hello.rns`:
+Type the following program into a file called ``hello.rns``:
 
 .. code::
    
@@ -44,7 +44,7 @@ Now, run the compiler to generate a binary, then run it:
    djc@enrai runa $ ./hello
    hello, world
 
-Review the test cases in `tests/` for other code that should work.
+Review the test cases in ``tests/`` for other code that should work.
 
 
 To do before 0.1
