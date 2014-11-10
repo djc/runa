@@ -9,8 +9,8 @@ All feedback welcome. Feel free to file bugs, requests for documentation and
 any other feedback to the `issue tracker`_, `tweet me`_ or join the #runa
 channel on freenode.
 
-.. issue tracker: https://github.com/djc/runa/issues
-.. tweet me: https://twitter.com/djco/
+.. _issue tracker: https://github.com/djc/runa/issues
+.. _tweet me: https://twitter.com/djco/
 
 
 Installation
