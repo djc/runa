@@ -1,7 +1,7 @@
 Runa
 ====
 
-A statically-typed Python-like programming language.
+A Python-like systems programming language.
 
 
 Installation
