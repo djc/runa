@@ -1,4 +1,4 @@
-import ast, util
+from . import ast, util
 
 class SetAttr(ast.Attrib):
 	pass

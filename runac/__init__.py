@@ -1,4 +1,4 @@
-from util import Error, ParseError
+from .util import Error, ParseError
 from . import (
 	parser, blocks, liveness, typer, specialize, escapes, destructor, codegen,
 )

@@ -1,4 +1,4 @@
-import util
+from . import util
 
 # Base class
 

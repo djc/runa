@@ -1,4 +1,4 @@
-import types, ast, blocks, util
+from . import types, ast, blocks, util
 
 class Object(util.AttribRepr):
 	def __init__(self, type):

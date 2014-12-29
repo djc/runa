@@ -1,4 +1,4 @@
-from runac import ast, util
+from . import ast, util
 import rply, sys
 
 NAME_LIKE = {

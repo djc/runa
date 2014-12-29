@@ -1,4 +1,4 @@
-import ast, types
+from . import ast, types
 
 class Specializer(object):
 	

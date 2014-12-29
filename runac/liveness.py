@@ -1,4 +1,4 @@
-import ast
+from . import ast
 
 class Analyzer(object):
 	

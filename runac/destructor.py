@@ -1,4 +1,4 @@
-import ast, blocks, types, util
+from . import ast, blocks, types, util
 
 class Free(util.AttribRepr):
 	fields = 'value',

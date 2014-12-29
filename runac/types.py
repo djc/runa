@@ -1,4 +1,4 @@
-import ast, util
+from . import ast, util
 import copy, platform
 
 class Type(object):

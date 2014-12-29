@@ -1,4 +1,4 @@
-import types
+from . import types
 
 class PrettyPrinter(object):
 	

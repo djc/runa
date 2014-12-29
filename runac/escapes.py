@@ -1,4 +1,4 @@
-import ast, blocks, types
+from . import ast, blocks, types
 
 class EscapeFinder(object):
 	

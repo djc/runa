@@ -1,4 +1,4 @@
-import ast, types, blocks, typer, util
+from . import ast, types, blocks, typer, util
 import sys, copy, platform
 
 ESCAPES = {'\\n': '\\0a', '\\0': '\\00'}
