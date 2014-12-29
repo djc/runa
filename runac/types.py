@@ -443,6 +443,9 @@ def apply(tpl, params):
 		'attribs': {},
 	})
 	
+	if tpl.name == 'lump':
+		cls.ir = params[0].ir + '*'
+	
 	trans = {k: v for (k, v) in zip(tpl.params, params)}
 	for k, v in util.items(tpl.attribs):
 		if isinstance(v[1], Stub):

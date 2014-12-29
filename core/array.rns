@@ -1,3 +1,6 @@
+class lump[T]:
+	data: &T
+
 class array[T]:
 	len: uint
 	data: $T

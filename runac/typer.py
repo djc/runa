@@ -404,7 +404,7 @@ class TypeChecker(object):
 		self.checkopt(node, node.obj)
 		
 		objt = types.unwrap(node.obj.type)
-		if not objt.name.startswith('array['):
+		if objt.name.split('[')[0] not in {'array', 'lump'}:
 			msg = 'incorrect type for element protocol: %s'
 			raise util.Error(node, msg % objt.name)
 		
