@@ -959,6 +959,8 @@ class CodeGen(object):
 		
 		if isinstance(type, types.WRAPPERS):
 			return
+		if isinstance(type, types.opt):
+			return
 		
 		if type.name == 'array[str]':
 			# predefined for args creation function
