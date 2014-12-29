@@ -748,6 +748,3 @@ class State(object):
 def parse(fn):
 	state = State(fn)
 	return parser.parse(lex(state.src), state=state)
-
-if __name__ == '__main__':
-	print parse(sys.argv[1])
