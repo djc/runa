@@ -1103,12 +1103,12 @@ TRIPLES = {
 
 def generate(mod):
 	
-	arch, os = platform.architecture()[0], sys.platform
+	arch, os_key = platform.architecture()[0], sys.platform
 	word = 'i' + arch[:2]
 	gen = CodeGen(word)
 	gen.Module(mod)
 	
-	code = ['target triple = "%s"\n\n' % TRIPLES[arch, os]]
+	code = ['target triple = "%s"\n\n' % TRIPLES[arch, os_key]]
 	code += gen.typedecls
 	
 	with open('core/rt.ll') as f:
