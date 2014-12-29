@@ -242,10 +242,14 @@ class TypeChecker(object):
 	# Comparison operators
 	
 	def Is(self, node, scope):
+		
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
 		assert isinstance(node.right, ast.NoneVal), node.right
-		assert isinstance(node.left.type, types.WRAPPERS), node.left
+		
+		if not isinstance(node.left.type, types.opt):
+			assert isinstance(node.left.type, types.WRAPPERS), node.left
+		
 		node.type = types.get('bool')
 	
 	def compare(self, op, node, scope):
