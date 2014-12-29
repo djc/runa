@@ -1,5 +1,5 @@
 from . import ast, types, blocks, typer, util
-import sys, copy, platform
+import os, sys, copy, platform
 
 ESCAPES = {'\\n': '\\0a', '\\0': '\\00'}
 
@@ -1111,7 +1111,7 @@ def generate(mod):
 	code = ['target triple = "%s"\n\n' % TRIPLES[arch, os_key]]
 	code += gen.typedecls
 	
-	with open('core/rt.ll') as f:
+	with open(os.path.join(util.CORE_DIR, 'rt.ll')) as f:
 		src = f.read().replace('{{ WORD }}', word)
 		src = src.replace('{{ BYTES }}', str(int(arch[:2]) / 8))
 		code.append(src)
