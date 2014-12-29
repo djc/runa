@@ -215,6 +215,15 @@ class CodeGen(object):
 		if isinstance(dst, types.VarArgs):
 			return val
 		
+		while dt[1] > vt[1]:
+			slot = self.alloca(vt[0])
+			self.store(val, slot.var)
+			val = slot
+			vt = vt[0], vt[1] + 1
+		
+		if vt == dt:
+			return val
+		
 		assert False, '%s -> %s' % (val.type, dst)
 	
 	def traitwrap(self, val, trait):
