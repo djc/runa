@@ -236,10 +236,24 @@ class Specializer(object):
 		node.type = node.values[0].type
 	
 	def Phi(self, node, type=None):
+		
 		self.visit(node.left[1], type)
 		self.visit(node.right[1], type)
-		assert node.left[1].type == node.right[1].type
-		node.type = node.left[1].type
+		
+		if node.left[1].type == node.right[1].type:
+			node.type = node.left[1].type
+			return
+		
+		if node.left[1].type == types.get('NoType'):
+			assert node.type == types.opt(node.right[1].type)
+			node.left[1].type = node.type
+			return
+		elif node.right[1].type == types.get('NoType'):
+			assert node.type == types.opt(node.left[1].type)
+			node.right[1].type = node.type
+			return
+		
+		assert False, (node.left[1].type, node.right[1].type)
 	
 	def NoValue(self, node, type=None):
 		pass
