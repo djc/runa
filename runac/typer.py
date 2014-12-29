@@ -153,6 +153,7 @@ class TypeChecker(object):
 		self.flow = fun.flow
 		self.scopes = {}
 		self.cur = None, None
+		self.checked = {}
 	
 	def check(self, scope):
 		self.scopes[None] = scope
@@ -541,6 +542,18 @@ class TypeChecker(object):
 		if node.left.type != node.right.type:
 			bits = node.right.type.name, node.left.type.name
 			raise util.Error(node, "cannot add '%s' to '%s'" % bits)
+	
+	def DeOpt(self, node, scope):
+		self.visit(node.value, scope)
+		assert isinstance(node.value.type, types.opt), node.value
+		assert isinstance(node.value, ast.Name), node.value
+		self.checked[self.cur[0].id, node.value.name] = True
+	
+	def NoValue(self, node, scope):
+		self.visit(node.value, scope)
+		assert isinstance(node.value.type, types.opt), node.value
+		assert isinstance(node.value, ast.Name), node.value
+		self.checked[self.cur[0].id, node.value.name] = False
 	
 	def Phi(self, node, scope):
 		

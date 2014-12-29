@@ -239,6 +239,14 @@ class PrettyPrinter(object):
 		self.write('%i:' % node.right[0])
 		self.visit(node.right[1])
 	
+	def NoValue(self, node):
+		self.write('NoValue ')
+		self.visit(node.value)
+	
+	def DeOpt(self, node):
+		self.write('DeOpt ')
+		self.visit(node.value)
+	
 	def For(self, node):
 		self.visit(node.lvar)
 		self.write(' <- ')

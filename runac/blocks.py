@@ -1,4 +1,5 @@
 from . import ast, util
+import copy
 
 class SetAttr(ast.Attrib):
 	pass
@@ -46,6 +47,16 @@ class LPad(util.AttribRepr):
 	def __init__(self, map):
 		self.map = map
 
+class DeOpt(util.AttribRepr):
+	fields = 'value',
+	def __init__(self, node):
+		self.value = node
+
+class NoValue(util.AttribRepr):
+	fields = 'value',
+	def __init__(self, node):
+		self.value = node
+
 class Block(util.AttribRepr):
 	
 	def __init__(self, id, anno=None):
@@ -58,12 +69,26 @@ class Block(util.AttribRepr):
 		self.assigns = None
 		self.uses = None
 		self.escapes = {}
+		self.checks = {}
 	
 	def push(self, inst):
 		self.steps.append(inst)
 	
 	def needbranch(self):
 		return not self.steps or not isinstance(self.steps[-1], ast.Return)
+	
+	def checked(self, checked, steps=None):
+		
+		if steps is not None:
+			self.steps = []
+		
+		for node, chk in checked:
+			assert isinstance(node, ast.Name)
+			value = copy.copy(node)
+			self.steps.append(DeOpt(value) if chk else NoValue(value))
+		
+		if steps is not None:
+			self.steps += steps
 
 class FlowGraph(util.AttribRepr):
 	
@@ -318,15 +343,29 @@ class FlowFinder(object):
 	
 	def If(self, node):
 		
-		prevcond, exits = None, []
+		prevcond, exits, check, checked = None, [], False, []
 		for i, (cond, suite) in enumerate(node.blocks):
 			
+			if checked and check:
+				invert = checked[-1][0], not checked[-1][1]
+				checked = checked[:-1] + [invert]
+				check = False
+			
 			if i and cond is not None:
+				
 				assert isinstance(prevcond.steps[-1], CondBranch)
 				tmp, self.cur = self.cur, self.flow.block('if-cond')
 				prevcond.steps[-1].tg2 = self.cur.id
+				
+				condvar = self.inter(cond)
+				if isinstance(cond, ast.Is):
+					checked.append((cond.left, False))
+					check = True
+				
+				prevcond.checks = {n.name: chk for (n, chk) in checked}
+				self.cur.checked(checked, self.cur.steps)
 				self.flow.edge(prevcond.id, self.cur.id)
-				self.cur.push(CondBranch(self.inter(cond), None, None))
+				self.cur.push(CondBranch(condvar, None, None))
 				self.cur, prevcond = tmp, self.cur
 			
 			block = self.flow.block('if-suite')
@@ -336,12 +375,23 @@ class FlowFinder(object):
 				self.flow.edge(prevcond.id, block.id)
 			
 			if not i:
+				
+				condvar = self.inter(cond)
+				if isinstance(cond, ast.Is):
+					checked.append((cond.left, False))
+					check = True
+				
+				block.checked(checked)
+				self.cur.checks = {n.name: chk for (n, chk) in checked}
 				self.flow.edge(self.cur.id, block.id)
-				self.cur.push(CondBranch(self.inter(cond), block.id, None))
+				self.cur.push(CondBranch(condvar, block.id, None))
 				prevcond = self.cur
+			
 			elif cond is None:
 				assert isinstance(prevcond.steps[-1], CondBranch)
 				prevcond.steps[-1].tg2 = block.id
+				prevcond.checks = {n.name: chk for (n, chk) in checked}
+				block.checked(checked)
 				self.flow.edge(prevcond.id, block.id)
 				prevcond = None
 			

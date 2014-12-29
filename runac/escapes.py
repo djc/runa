@@ -160,6 +160,12 @@ class EscapeFinder(object):
 		self.visit(node.left[1], escape)
 		self.visit(node.right[1], escape)
 	
+	def DeOpt(self, node, escape=None):
+		self.visit(node.value, escape)
+	
+	def NoValue(self, node, escape=None):
+		self.visit(node.value, escape)
+	
 	def LPad(self, node, escape=None):
 		pass
 	
