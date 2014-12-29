@@ -261,6 +261,11 @@ class CodeGen(object):
 			self.store((e.type, src.var), slot)
 		return val
 	
+	def NoneVal(self, node, frame):
+		assert isinstance(node.type, types.opt)
+		assert isinstance(node.type.over, types.WRAPPERS)
+		return Value(types.get('NoType'), 'null')
+	
 	def Bool(self, node, frame):
 		return Value(node.type, 'true' if node.val else 'false')
 	
