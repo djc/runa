@@ -227,7 +227,9 @@ class TypeChecker(object):
 		assert isinstance(node.right, ast.NoneVal), node.right
 		
 		if not isinstance(node.left.type, types.opt):
-			assert isinstance(node.left.type, types.WRAPPERS), node.left
+			wrapper = isinstance(node.left.type, types.WRAPPERS)
+			lump = node.left.type.name.split('[', 1)[0] == 'lump'
+			assert wrapper or lump, node.left
 		
 		node.type = self.mod.type('bool')
 	

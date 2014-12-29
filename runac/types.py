@@ -275,9 +275,9 @@ class function(base):
 		args = ', '.join(a.ir for a in self.over[1])
 		return '%s (%s)*' % (self.over[0].ir, args)
 
-def unwrap(t):
-	while isinstance(t, WRAPPERS):
-		t = t.over
+def unwrap(t, luw=False): # lump unwrapping optional
+	while isinstance(t, WRAPPERS) or (t.name.startswith('lump[') and luw):
+		t = t.over if isinstance(t, WRAPPERS) else t.params[0]
 	return t
 
 def generic(t):
