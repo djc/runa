@@ -1,6 +1,6 @@
-from .util import Error, ParseError, CORE_DIR
 from . import (
-	parser, blocks, liveness, typer, specialize, escapes, destructor, codegen,
+	parser, blocks, liveness, typer, specialize,
+	escapes, destructor, codegen, util,
 )
 import os, subprocess, collections
 
@@ -19,9 +19,9 @@ def parse(fn):
 	return parser.parse(fn)
 
 def merge(mod):
-	for fn in os.listdir(CORE_DIR):
+	for fn in os.listdir(util.CORE_DIR):
 		if not fn.endswith('.rns'): continue
-		fn = os.path.join(CORE_DIR, fn)
+		fn = os.path.join(util.CORE_DIR, fn)
 		mod.merge(blocks.module(parser.parse(fn)))
 
 def ir(fn):
