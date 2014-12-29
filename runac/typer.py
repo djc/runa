@@ -189,6 +189,9 @@ class TypeChecker(object):
 		for n in defined:
 			assert n.type == first
 		
+		if node.type is not None and node.type != first:
+			assert False, (node, first)
+		
 		node.type = first
 	
 	def NoneVal(self, node, scope):
