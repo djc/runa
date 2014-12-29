@@ -1,11 +1,8 @@
-from .util import Error, ParseError
+from .util import Error, ParseError, CORE_DIR
 from . import (
 	parser, blocks, liveness, typer, specialize, escapes, destructor, codegen,
 )
 import os, subprocess, collections
-
-BASE = os.path.dirname(__path__[0])
-CORE_DIR = os.path.join(BASE, 'core')
 
 PASSES = collections.OrderedDict((
 	('liveness', liveness.liveness),

@@ -1,5 +1,7 @@
 import os
 
+BASE = os.path.dirname(os.path.dirname(__file__))
+CORE_DIR = os.path.join(BASE, 'core')
 IGNORE = {'pos'}
 
 class AttribRepr(object):
