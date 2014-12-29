@@ -166,6 +166,14 @@ class TypeChecker(object):
 	def visit(self, node, scope):
 		getattr(self, node.__class__.__name__)(node, scope)
 	
+	def checkopt(self, posnode, val):
+		if self.checked.get((self.cur[0].id, val.name)):
+			val.type = val.type.over
+			return
+		if isinstance(val.type, types.opt):
+			msg = "opt type '%s' not allowed here"
+			raise util.Error(posnode, msg % val.type.name)
+	
 	# Constants
 	
 	def Name(self, node, scope, strict=True):
@@ -392,6 +400,8 @@ class TypeChecker(object):
 	def Attrib(self, node, scope):
 		
 		self.visit(node.obj, scope)
+		self.checkopt(node, node.obj)
+		
 		t = node.obj.type
 		if isinstance(t, types.WRAPPERS):
 			t = t.over
@@ -404,6 +414,8 @@ class TypeChecker(object):
 	def SetAttr(self, node, scope):
 		
 		self.visit(node.obj, scope)
+		self.checkopt(node, node.obj)
+		
 		t = node.obj.type
 		if isinstance(t, types.WRAPPERS):
 			t = t.over
@@ -412,8 +424,11 @@ class TypeChecker(object):
 		assert node.type is not None, 'FAIL'
 	
 	def Elem(self, node, scope):
+		
 		self.visit(node.key, scope)
 		self.visit(node.obj, scope)
+		self.checkopt(node, node.obj)
+		
 		objt = types.unwrap(node.obj.type)
 		assert objt.name.startswith('array['), objt
 		node.type = objt.attribs['data'][1].over
