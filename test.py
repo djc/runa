@@ -1,5 +1,6 @@
-import runac
 import sys, os, unittest, subprocess, json
+from runac import util
+import runac
 
 DIR = os.path.dirname(__file__)
 TEST_DIR = os.path.join(DIR, 'tests')
@@ -17,9 +18,9 @@ def compile(src, bin):
 	try:
 		runac.compile(runac.ir(src), bin)
 		return None
-	except runac.Error as e:
+	except util.Error as e:
 		return e.show()
-	except runac.ParseError as e:
+	except util.ParseError as e:
 		return e.show()
 
 def run(self, key):

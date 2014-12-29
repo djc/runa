@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import runac
 import optparse, sys, os
+from runac import util
+import runac
 
 def tokens(fn, opts):
 	with open(fn) as f:
@@ -58,11 +59,11 @@ if __name__ == '__main__':
 	
 	try:
 		find(args[0])(args[1], opts)
-	except runac.Error as e:
+	except util.Error as e:
 		if opts.traceback:
 			raise
 		sys.stderr.write(e.show())
-	except runac.ParseError as e:
+	except util.ParseError as e:
 		if opts.traceback:
 			raise
 		sys.stderr.write(e.show())
