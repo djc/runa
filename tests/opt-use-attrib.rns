@@ -1,0 +1,10 @@
+class test:
+	val: uint
+	def __init__(self, v: uint):
+		self.val = v
+
+def maybe(i: int) -> $test?:
+	return test(1) if i & 2 else None
+
+def main():
+	print(maybe(3).val)
