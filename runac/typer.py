@@ -187,7 +187,9 @@ class TypeChecker(object):
 		
 		first = defined[0].type
 		for n in defined:
-			assert n.type == first
+			if n.type != first:
+				msg = "unmatched types '%s', '%s' on incoming branches"
+				raise util.Error(node, msg % (n.type.name, first.name))
 		
 		if node.type is not None and node.type != first:
 			assert False, (node, first)
