@@ -62,6 +62,9 @@ class Specializer(object):
 	
 	# Constants
 	
+	def NoneVal(self, node, type=None):
+		pass
+	
 	def Bool(self, node, type=None):
 		pass
 	
