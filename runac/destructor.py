@@ -11,6 +11,9 @@ def destructify(code):
 	returns = {}
 	for i, bl in code.flow.blocks.iteritems():
 		
+		# For each block that returns, find the set of transitive
+		# predecessor blocks; these assignments will need freeing.
+		
 		if bl.returns:
 			returns[i], q = set(), {i}
 			while q:
@@ -20,6 +23,9 @@ def destructify(code):
 					if p.id in returns[i] or p.id in q:
 						continue
 					q.add(p.id)
+		
+		# Find assignments to owner variables; the last assignment
+		# will be freed before return, earlier ones before next assign.
 		
 		for var, steps in bl.assigns.iteritems():
 			for sid in steps:
@@ -35,6 +41,9 @@ def destructify(code):
 				
 				assert var not in left, var
 				left[var] = i, sid, type
+		
+		# Remove assignments from Phi nodes; these would result in
+		# double freeing (objects are freed through original var).
 		
 		for sid, step in enumerate(bl.steps):
 			
