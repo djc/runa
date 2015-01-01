@@ -1,138 +1,165 @@
 Inspiration
 ===========
 
-Avery Pennarun
-Three bad things: threads, garbage collection, and nondeterministic destructors
-http://apenwarr.ca/log/?m=201008#10
+* `Three bad things: threads, garbage collection, and nondeterministic destructors
+  <http://apenwarr.ca/log/?m=201008#10>`_
+  
+  Avery Pennarun
 
-Avery Pennarun
-How to design a replacement for C++
-http://apenwarr.ca/log/?m=201007#21
+* `How to design a replacement for C++
+  <http://apenwarr.ca/log/?m=201007#21>`_
+  
+  Avery Pennarun
 
-Collin Winter e.a.
-Function annotations
-http://www.python.org/dev/peps/pep-3107/
+* `Function annotations
+  <http://www.python.org/dev/peps/pep-3107/>`_
+  
+  Collin Winter e.a.
 
-Shawn O. Pearce
-Why Git is so fast (Java vs C)
-http://marc.info/?l=git&m=124111702609723&w=2
+* `Why Git is so fast (Java vs C)
+  <http://marc.info/?l=git&m=124111702609723&w=2>`_
+  
+  Shawn O. Pearce
 
-Is Fortran faster than C?
-http://stackoverflow.com/questions/146159/is-fortran-faster-than-c
+* `Is Fortran faster than C?
+  <http://stackoverflow.com/questions/146159/is-fortran-faster-than-c>`_
 
-Languages faster than C++
-http://stackoverflow.com/questions/610396/languages-faster-than-c
+* `Languages faster than C++
+  <http://stackoverflow.com/questions/610396/languages-faster-than-c>`_
 
-Paul McGuire
-A sample of a pyparsing grammar using indentation for grouping
-http://pyparsing.wikispaces.com/file/view/indentedGrammarExample.py
+* `A sample of a pyparsing grammar using indentation for grouping
+  <http://pyparsing.wikispaces.com/file/view/indentedGrammarExample.py>`_
+  
+  Paul McGuire
 
-Phil Hassey
-tinypy: parse.py (Python Pratt parser, in Python)
-http://code.google.com/p/tinypy/source/browse/trunk/tinypy/parse.py
+* `tinypy: parse.py (Python Pratt parser, in Python)
+  <http://code.google.com/p/tinypy/source/browse/trunk/tinypy/parse.py>`_
+  
+  Phil Hassey
 
-Andreas Zwinkau
-Faster than C
-http://beza1e1.tuxen.de/articles/faster_than_C.html
+* `Faster than C
+  <http://beza1e1.tuxen.de/articles/faster_than_C.html>`_
+  
+  Andreas Zwinkau
 
-Russ Cox
-Go Data Structures: Interfaces
-http://research.swtch.com/interfaces
+* `Go Data Structures: Interfaces
+  <http://research.swtch.com/interfaces>`_
+  
+  Russ Cox
 
-Ulrich Drepper
-What Every Programmer Should Know About Memory
-http://ftp.linux.org.ua/pub/docs/developer/general/cpumemory.pdf
+* `What Every Programmer Should Know About Memory
+  <http://ftp.linux.org.ua/pub/docs/developer/general/cpumemory.pdf>`_
+  
+  Ulrich Drepper
 
-Leo Meyerov
-Socio-PLT: Principles for Programming Language Adoption
-http://www.eecs.berkeley.edu/~lmeyerov/projects/socioplt/paper0413.pdf
+* `Socio-PLT: Principles for Programming Language Adoption
+  <http://www.eecs.berkeley.edu/~lmeyerov/projects/socioplt/paper0413.pdf>`_
+  
+  Leo Meyerov
 
-Periklis Akritidis et al.
-Baggy Bounds Checking
-http://research.microsoft.com/pubs/101450/baggy-usenix2009.pdf
+* `Baggy Bounds Checking
+  <http://research.microsoft.com/pubs/101450/baggy-usenix2009.pdf>`_
+  
+  Periklis Akritidis et al.
 
-John Graham-Cunning
-Things I like about programming in Go
-http://blog.jgc.org/2012/07/things-i-like-about-programming-in-go.html
+* `Things I like about programming in Go
+  <http://blog.jgc.org/2012/07/things-i-like-about-programming-in-go.html>`_
+  
+  John Graham-Cunning
 
-Niko Matsakis
-Borrowed Pointer Tutorial
-http://smallcultfollowing.com/babysteps/blog/2012/07/17/borrowed-pointer-tutorial/
+* `Borrowed Pointer Tutorial
+  <http://smallcultfollowing.com/babysteps/blog/2012/07/17/borrowed-pointer-tutorial/>`_
+  
+  Niko Matsakis
 
-Martin Sustrik
-Why I should have written ZeroMQ in C, not C++ (part II)
-http://www.250bpm.com/blog:8
+* `Why I should have written ZeroMQ in C, not C++ (part II)
+  <http://www.250bpm.com/blog:8>`_
+  
+  Martin Sustrik
 
-Yossi Kreinin
-Error codes vs exceptions: critical code vs typical code
-http://www.yosefk.com/blog/error-codes-vs-exceptions-critical-code-vs-typical-code.html
+* `Error codes vs exceptions: critical code vs typical code
+  <http://www.yosefk.com/blog/error-codes-vs-exceptions-critical-code-vs-typical-code.html>`_
+  
+  Yossi Kreinin
 
-Walter Bright
-C's Biggest Mistake
-http://www.drdobbs.com/architecture-and-design/cs-biggest-mistake/228701625
+* `C's Biggest Mistake
+  <http://www.drdobbs.com/architecture-and-design/cs-biggest-mistake/228701625>`_
+  
+  Walter Bright
 
-Mike Vanier
-Scalable computer programming languages
-http://users.cms.caltech.edu/~mvanier/hacking/rants/scalable_computer_programming_languages.html
+* `Scalable computer programming languages
+  <http://users.cms.caltech.edu/~mvanier/hacking/rants/scalable_computer_programming_languages.html>`_
+  
+  Mike Vanier
 
-Damien Katz
-The Unreasonable Effectiveness of C
-http://damienkatz.net/2013/01/the_unreasonable_effectiveness_of_c.html
+* `The Unreasonable Effectiveness of C
+  <http://damienkatz.net/2013/01/the_unreasonable_effectiveness_of_c.html>`_
+  
+  Damien Katz
 
-Job Vranish
-Exceptions and Stack Traces for C on Windows, Linux & Mac
-http://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/
+* `Exceptions and Stack Traces for C on Windows, Linux & Mac
+  <http://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/>`_
+  
+  Job Vranish
 
-Chris Lattner
-Macroscopic Data Structure Analysis and Optimization
-http://llvm.org/pubs/2005-05-04-LattnerPHDThesis.html
+* `Macroscopic Data Structure Analysis and Optimization
+  <http://llvm.org/pubs/2005-05-04-LattnerPHDThesis.html>`_
+  
+  Chris Lattner
 
-Chris Lattner et al.
-Making Context-Sensitivie Points-to Analysis with Heap Closing Practical For The Real World
-http://llvm.org/pubs/2007-06-10-PLDI-DSA.html
+* `Making Context-Sensitivie Points-to Analysis with Heap Closing Practical For The Real World
+  <http://llvm.org/pubs/2007-06-10-PLDI-DSA.html>`_
+  
+  Chris Lattner et al.
 
-Rust wiki: Bikeshed Numeric Traits
-https://github.com/mozilla/rust/wiki/Bikeshed-Numeric-Traits
+* `Rust wiki: Bikeshed Numeric Traits
+  <https://github.com/mozilla/rust/wiki/Bikeshed-Numeric-Traits>`_
 
-Introduction to Go 1.1
-https://go.googlecode.com/hg/doc/go1.1.html
+* `Introduction to Go 1.1
+  <https://go.googlecode.com/hg/doc/go1.1.html>`_
 
-Peter Cooper and Robert Nyman
-How to Spread The Word About Your Code
-https://hacks.mozilla.org/2013/05/how-to-spread-the-word-about-your-code/
+* `How to Spread The Word About Your Code
+  <https://hacks.mozilla.org/2013/05/how-to-spread-the-word-about-your-code/>`_
+  
+  Peter Cooper and Robert Nyman
 
-Josh Haberman
-Deep Wizardry: Stack Unwinding
-http://blog.reverberate.org/2013/05/deep-wizardry-stack-unwinding.html
+* `Deep Wizardry: Stack Unwinding
+  <http://blog.reverberate.org/2013/05/deep-wizardry-stack-unwinding.html>`_
+  
+  Josh Haberman
 
-Neil Brown
-Little things that matter in language design
-https://lwn.net/Articles/553131/
+* `Little things that matter in language design
+  <https://lwn.net/Articles/553131/>`_
+  
+  Neil Brown
 
-Andrey Petrov
-How to maintain a successful open source project
-https://medium.com/p/aaa2a5437d3a
+* `How to maintain a successful open source project
+  <https://medium.com/p/aaa2a5437d3a>`_
+  
+  Andrey Petrov
 
-Guido van Rossum
-Python 2 vs. Python 3: A retrospective
-https://www.dropbox.com/s/83ppa5iykqmr14z/Py2v3Hackers2013.pptx
+* `Python 2 vs. Python 3: A retrospective
+  <https://www.dropbox.com/s/83ppa5iykqmr14z/Py2v3Hackers2013.pptx>`_
+  
+  Guido van Rossum
 
-Evan Swick
-Inside Swift
-http://www.eswick.com/2014/06/inside-swift/
+* `Inside Swift
+  <http://www.eswick.com/2014/06/inside-swift/>`_
+  
+  Evan Swick
 
-Bob Ippolito
-What Python can learn from Haskell
-http://bob.ippoli.to/python-haskell-ep2014/#/title
+* `What Python can learn from Haskell
+  <http://bob.ippoli.to/python-haskell-ep2014/#/title>`_
+  
+  Bob Ippolito
 
-edA-qa mort-ora-y
-The true cost of zero cost exceptions
-http://mortoray.com/2013/09/12/the-true-cost-of-zero-cost-exceptions/
+* `The true cost of zero cost exceptions
+  <http://mortoray.com/2013/09/12/the-true-cost-of-zero-cost-exceptions/>`_
+  
+  edA-qa mort-ora-y
 
-Theofilos Petsios
-C++ Exception Handling - Base ABI
-http://theofilos.cs.columbia.edu/blog/2013/09/22/base_abi/
+* `C++ Exception Handling - Base ABI
+  <http://theofilos.cs.columbia.edu/blog/2013/09/22/base_abi/>`_
+  
+  Theofilos Petsios
 
-John Regehr et al.
-Proposal for a Friendly Dialect of C
-http://blog.regehr.org/archives/1180
