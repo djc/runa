@@ -85,8 +85,8 @@ def liveness(mod):
 	analyzer = Analyzer()
 	for fname, code in mod.code:
 		
-		refs = {}
-		for id, bl in code.flow.blocks.iteritems():
+		refs, blocks = {}, sorted(code.flow.blocks.iteritems())
+		for id, bl in blocks:
 			
 			bl.uses = {}
 			bl.assigns = {}
@@ -104,7 +104,7 @@ def liveness(mod):
 					bl.assigns.setdefault(name, set()).add(i)
 					refs.setdefault(id, []).append((i, name))
 		
-		for id, bl in sorted(code.flow.blocks.iteritems()):
+		for id, bl in blocks:
 			
 			bl.origin = {}
 			for sid, name in refs.get(id, []):
