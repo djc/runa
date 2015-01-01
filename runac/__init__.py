@@ -1,6 +1,6 @@
 from . import (
 	parser, blocks, liveness, typer, specialize,
-	escapes, destructor, codegen, util,
+	escapes, destructor, codegen, util, pretty
 )
 import os, subprocess, collections
 
@@ -23,6 +23,25 @@ def merge(mod):
 		if not fn.endswith('.rns'): continue
 		fn = os.path.join(util.CORE_DIR, fn)
 		mod.merge(blocks.module(parser.parse(fn)))
+
+def show(fn, last):
+	
+	mod = blocks.module(parser.parse(fn))
+	names = [name for (name, code) in mod.code]
+	
+	merge(mod)
+	for name, fun in PASSES.iteritems():
+		fun(mod)
+		if name == last:
+			break
+	
+	data = {}
+	for name, code in mod.code:
+		if name not in names:
+			continue
+		data[name] = pretty.prettify(name, code)
+	
+	return data
 
 def ir(fn):
 	mod = blocks.module(parser.parse(fn))
