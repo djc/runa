@@ -110,11 +110,13 @@ def liveness(mod):
 			for sid, name in refs.get(id, []):
 				
 				origin = bl.origin[name, sid] = set()
-				if name in bl.assigns and min(bl.assigns[name]) < sid:
+				assigned = bl.assigns.get(name, set())
+				if assigned and min(assigned) < sid:
 					origin.add(id)
 					continue
 				elif not bl.preds:
-					origin.add(None)
+					if not (assigned and min(assigned) == sid):
+						origin.add(None)
 					continue
 				
 				for p in bl.preds:
