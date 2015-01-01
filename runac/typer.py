@@ -198,7 +198,7 @@ class TypeChecker(object):
 		
 		first = defined[0].type
 		for n in defined:
-			if n.type != first:
+			if not types.compat(n.type, first):
 				msg = "unmatched types '%s', '%s' on incoming branches"
 				raise util.Error(node, msg % (n.type.name, first.name))
 		
