@@ -525,7 +525,7 @@ class TypeChecker(object):
 				bits = node.right.type.name, node.left.type.name
 				msg = 'incorrect assignment of %s to %s'
 			else:
-				bits = scope[node.left.name].type.name, node.right.type.name
+				bits = node.left.type.name, node.right.type.name
 				msg = "reassignment with different type ('%s' vs '%s')"
 			raise util.Error(node, msg % bits)
 		
