@@ -622,6 +622,7 @@ class CodeGen(object):
 				wrap = Value(types.ref(attr[1]), slot)
 			elif node.left.name in frame:
 				wrap = frame[node.left.name]
+				wrap.type = types.ref(val.type)
 			elif node.left.name.startswith('$'):
 				frame[node.left.name] = val
 				return
@@ -734,6 +735,14 @@ class CodeGen(object):
 		pass
 	
 	def Pass(self, node, frame):
+		pass
+	
+	def DeOpt(self, node, frame):
+		assert isinstance(node.value, ast.Name), node
+		deref = frame[node.value.name].type.over
+		frame[node.value.name].type.over = deref.over
+	
+	def NoValue(self, node, frame):
 		pass
 	
 	def Return(self, node, frame):
