@@ -1,6 +1,9 @@
 Runa
 ====
 
+.. image:: https://travis-ci.org/djc/runa.svg?branch=master
+   :target: https://travis-ci.org/djc/runa
+
 A Python-like systems programming language.
 
 Note: this is pre-alpha quality software. Use at your own peril.
