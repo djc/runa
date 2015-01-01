@@ -335,6 +335,8 @@ def compat(a, f, strict=False):
 		return True
 	elif isinstance(a, ref) and isinstance(f, owner):
 		return False
+	elif isinstance(f, opt) and not isinstance(a, opt):
+		return compat(a, f.over)
 	elif not strict and (isinstance(a, WRAPPERS) or isinstance(f, WRAPPERS)):
 		return compat(unwrap(a), unwrap(f))
 	elif strict and (isinstance(a, WRAPPERS) and isinstance(f, WRAPPERS)):
