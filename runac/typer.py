@@ -536,10 +536,13 @@ class TypeChecker(object):
 			node.left.type = types.build_tuple(ttypes)
 			return
 		
-		var = isinstance(node.left, ast.Name)
-		new = var and node.left.name not in scope
-		if not new or not var:
+		new, var = False, isinstance(node.left, ast.Name)
+		try:
 			self.visit(node.left, scope)
+		except util.Error as e:
+			if not e.msg.startswith('undefined name'):
+				raise
+			new = True
 		
 		assert node.right.type is not None
 		if not new and not types.compat(node.right.type, node.left.type):
