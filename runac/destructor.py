@@ -39,6 +39,9 @@ def destructify(code):
 				if not isinstance(type, types.owner):
 					continue
 				
+				if var in bl.escapes:
+					continue
+				
 				assert var not in left, var
 				left[var] = i, sid, type
 		
@@ -55,9 +58,6 @@ def destructify(code):
 					left.pop(step.right.left[1].name, None)
 				if isinstance(step.right.right[1].type, types.owner):
 					left.pop(step.right.right[1].name, None)
-		
-		for var, loc in bl.escapes.iteritems():
-			del left[var]
 	
 	if code.irname == 'main' and code.args:
 		left['args'] = None, None, types.get('$array[str]')
