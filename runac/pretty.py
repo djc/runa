@@ -72,6 +72,10 @@ class PrettyPrinter(object):
 		
 		self.write(']')
 	
+	def NoneVal(self, node):
+		self.write('NoneVal')
+		self.anno(node)
+	
 	def Name(self, node):
 		self.write(node.name)
 		self.anno(node)
@@ -110,6 +114,9 @@ class PrettyPrinter(object):
 	
 	def Or(self, node):
 		self.binary('Or', node)
+	
+	def Is(self, node):
+		self.binary('Is', node)
 	
 	def NE(self, node):
 		self.binary('NE', node)
