@@ -46,8 +46,7 @@ def destructify(code):
 				if var in bl.escapes:
 					continue
 				
-				assert var not in left, var
-				left[var] = i, type
+				left.setdefault(var, (type, set()))[1].add(i)
 		
 		# Remove assignments from Phi nodes; these would result in
 		# double freeing (objects are freed through original var).
@@ -64,17 +63,17 @@ def destructify(code):
 					left.pop(step.right.right[1].name, None)
 	
 	if code.irname == 'main' and code.args:
-		left['args'] = None, types.get('$array[str]')
+		left['args'] = types.get('$array[str]'), {None}
 	
 	for name, bid, sid, type in reassign:
 		node = ast.Name(name, None)
 		node.type = type
 		code.flow.blocks[bid].steps.insert(sid, Free(node))
 	
-	for name, (bl, type) in left.iteritems():
+	for name, (type, abls) in left.iteritems():
 		for rbli, reachable in returns.iteritems():
 			
-			if bl not in reachable:
+			if not (abls & reachable):
 				continue
 			
 			node = ast.Name(name, None)
