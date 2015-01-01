@@ -544,6 +544,9 @@ class TypeChecker(object):
 				raise
 			new = True
 		
+		if isinstance(node.right, blocks.NoValue):
+			node.right.type = node.right.value.type
+		
 		assert node.right.type is not None
 		if not new and not types.compat(node.right.type, node.left.type):
 			if not var:
