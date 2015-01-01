@@ -7,8 +7,7 @@ class Free(util.AttribRepr):
 
 def destructify(code):
 	
-	left = {}
-	returns = {}
+	returns, reassign, left = {}, [], {}
 	for i, bl in code.flow.blocks.iteritems():
 		
 		# For each block that returns, find the set of transitive
@@ -28,7 +27,8 @@ def destructify(code):
 		# will be freed before return, earlier ones before next assign.
 		
 		for var, steps in bl.assigns.iteritems():
-			for sid in steps:
+			assigns = sorted(steps)
+			for idx, sid in enumerate(assigns):
 
 				step = bl.steps[sid]
 				if isinstance(step, blocks.LoopHeader):
@@ -37,6 +37,10 @@ def destructify(code):
 					type = step.right.type
 				
 				if not isinstance(type, types.owner):
+					continue
+				
+				if bl.origin.get((var, sid), set()) - {None}:
+					reassign.append((var, i, sid, type))
 					continue
 				
 				if var in bl.escapes:
@@ -61,6 +65,11 @@ def destructify(code):
 	
 	if code.irname == 'main' and code.args:
 		left['args'] = None, types.get('$array[str]')
+	
+	for name, bid, sid, type in reassign:
+		node = ast.Name(name, None)
+		node.type = type
+		code.flow.blocks[bid].steps.insert(sid, Free(node))
 	
 	for name, (bl, type) in left.iteritems():
 		for rbli, reachable in returns.iteritems():
