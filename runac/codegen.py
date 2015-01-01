@@ -113,7 +113,7 @@ class CodeGen(object):
 		elif isinstance(val, tuple):
 			bits = val[0], val[1], val[0], dst, comment
 		else:
-			assert False
+			assert False, val
 		self.writeline('store %s %s, %s* %s%s' % bits)
 	
 	def gep(self, val, *args):
