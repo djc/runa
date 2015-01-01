@@ -169,6 +169,10 @@ class PrettyPrinter(object):
 		self.write('$')
 		self.visit(node.value)
 	
+	def Opt(self, node):
+		self.visit(node.value)
+		self.write('?')
+	
 	def Argument(self, node):
 		self.write(node.name.name)
 		self.anno(node)
