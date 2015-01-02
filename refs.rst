@@ -163,3 +163,7 @@ Inspiration
   
   Theofilos Petsios
 
+* `Wren: a classy little scripting language
+  <http://munificent.github.io/wren/>`_
+  
+  Robert Nystrom
