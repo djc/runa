@@ -1,5 +1,9 @@
+***********
 Inspiration
-===========
+***********
+
+Some sources of inspiration and interesting stuff to review upon further
+expansion of the language design (e.g. concurrency):
 
 * `Three bad things: threads, garbage collection, and nondeterministic destructors
   <http://apenwarr.ca/log/?m=201008#10>`_
