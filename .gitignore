@@ -3,3 +3,4 @@
 test.c
 tests/*.test
 tests/*.ll
+doc/_build
