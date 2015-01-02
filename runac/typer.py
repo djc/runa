@@ -178,7 +178,7 @@ class TypeChecker(object):
 	
 	def Name(self, node, scope, strict=True):
 		
-		defined = []
+		defined, blocks = [], []
 		for id in self.cur[0].origin[node.name, self.cur[1]]:
 			
 			if id not in self.scopes:
@@ -189,6 +189,7 @@ class TypeChecker(object):
 				if self.cur[1] <= assigned:
 					continue
 			
+			blocks.append(id)
 			defined.append(self.scopes[id].get(node.name))
 		
 		if not strict:
@@ -201,6 +202,24 @@ class TypeChecker(object):
 			if not types.compat(n.type, first):
 				msg = "unmatched types '%s', '%s' on incoming branches"
 				raise util.Error(node, msg % (n.type.name, first.name))
+		
+		# DeOpt if all opt origins end with a negative check
+		# TODO: make sure NoValues are reassigned?
+		
+		opts = [isinstance(n.type, types.opt) for n in defined]
+		if any(opts) and not all(opts):
+			for (i, opt) in enumerate(opts):
+				
+				if not opt:
+					continue
+				
+				bid = blocks[i]
+				optbl = self.flow.blocks[bid]
+				if not optbl.checks[node.name]:
+					opts[i] = False
+			
+			if not any(opts):
+				first = first.over
 		
 		if node.type is not None and node.type != first:
 			assert False, (node, first)
