@@ -1,3 +1,21 @@
+'''The code generation phase turns the CFG representation into LLVM IR.
+
+Code generation is done by another CFG walker. Each node method will generate
+LLVM IR using Python string formatting and a small set of helper functions.
+All of the IR is appended to a Python list and then returned as a string.
+
+Most methods will return a Value object, which contains the IR-level name and
+the Runa-level type. The type has an `ir` property which can be used to get
+the IR-level type, which is written out in many places in LLVM IR. Frame
+objects are used to keep a mapping of variables to Values.
+
+It might make sense to use an existing library or even the LLVM or clang
+bindings to handle code generation, but this hasn't been a priority. If I
+wanted to do so, eliminating the startup penalty for multiple clang
+instantations over the life of one Runa process would be important. (This
+should provide a big win for test suite performance, which is important.)
+'''
+
 from . import ast, types, blocks, typer, util
 import os, sys, copy, platform
 
