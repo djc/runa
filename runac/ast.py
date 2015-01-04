@@ -1,3 +1,19 @@
+'''Contains classes for all the syntax tree node types used in the parser.
+
+All classes have a `pos` field containing location information. It can be
+None in nodes that have been inserted by the compiler. Classes should have
+a `fields` attribute containing a sequence of properties that either contain
+another AST node or a list of AST nodes, so we can walk the tree somehow.
+
+Some node types are defined in other modules:
+
+- blocks: SetAttr, Branch, CondBranch, Phi, Constant, LoopSetup, LoopHeader,
+          LPad, DeOpt, NoValue
+- typer: Init
+
+For files containing source code, a Module node is at the root of the tree.
+'''
+
 from . import util
 
 # Base class
