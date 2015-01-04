@@ -5,6 +5,11 @@ Runa
    :target: https://travis-ci.org/djc/runa
 
 A Python-like systems programming language.
+This means that the design borrows as much from Python
+as makes sense in the context of a statically-typed, compiled language,
+and tries to apply the `Zen of Python`_ to everything else.
+The most important design goals for Runa are developer ergonomics
+and performance. There is no run-time.
 
 Note: this is pre-alpha quality software. Use at your own peril.
 
@@ -14,6 +19,7 @@ channel on freenode.
 
 .. _issue tracker: https://github.com/djc/runa/issues
 .. _tweet me: https://twitter.com/djco/
+.. _Zen of Python: https://www.python.org/dev/peps/pep-0020/
 
 
 Installation
