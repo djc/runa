@@ -1,3 +1,20 @@
+'''The blocks phase turns an AST into a set of CFGs. Nested expressions are
+moved into temporary variables to make subsequent passes possible.
+
+A new Module object (class in this module) is created to contain a mapping
+from names to language-level things: an object imported from another module,
+a class, a function, a trait or a constant. Both functions and class methods
+are appended to a list of code objects, represented as a tuple of a name and a
+FlowGraph object. The FlowGraph object represents a directed graph of Block
+objects, which will end up as a basic block in LLVM IR.
+
+The construction of flow graphs is done by the FlowFinder class, which is
+structured as a syntax tree walking. The important functionality here is the
+deconstruction of nested expressions into temporary variables (see the
+`inter()` method) and the transformation of the various source-level flow
+control features into a control flow graph of basic blocks.
+'''
+
 from . import ast, util
 import copy
 
