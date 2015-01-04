@@ -10,6 +10,7 @@ Some node types are defined in other modules:
 - blocks: SetAttr, Branch, CondBranch, Phi, Constant, LoopSetup, LoopHeader,
           LPad, DeOpt, NoValue
 - typer: Init
+- destructor: Free
 
 For files containing source code, a File node is at the root of the tree.
 '''
