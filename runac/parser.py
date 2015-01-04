@@ -52,7 +52,19 @@ def lexer():
 LEXER = lexer()
 
 def lex(src):
-
+	'''Takes a string containing source code and returns a generator over
+	tokens, represented by a three-element tuple:
+	
+	- Token type (from the list in lexer(), above)
+	- The literal token contents
+	- Position, as a tuple of line and column (both 1-based)
+	
+	This is mostly a wrapper around the rply lexer, but it reprocesses
+	TABS tokens (which should only appear at the start of a line) into
+	INDENT and DEDENT tokens, which only appear if the indentation
+	level increases or decreases.
+	
+	Comment tokens do not appear in the output generator.'''
 	level = 0
 	hold = []
 	for t in LEXER.lex(src):
@@ -736,7 +748,7 @@ class State(object):
 		self.lines = self.src.splitlines()
 	
 	def pos(self, t):
-		
+		'''Reprocess location information (see parse() for more details).'''
 		ln = t.source_pos.lineno - 1
 		if t.value and t.value[0] == '\n':
 			ln -= 1
@@ -746,5 +758,16 @@ class State(object):
 		return (ln, col), (ln, col + len(t.value)), line, self.fn
 
 def parse(fn):
+	'''Takes a file name and returns the AST corresponding to the source
+	contained in the file. The State thing is here mostly to reprocess
+	location information from rply into something easier to use. AST nodes
+	get a pos field containing a 4-element tuple:
+	
+	- Tuple of start location, as 0-based line and column numbers
+	- Tuple of end location, as 0-based line and column numbers
+	- The full line
+	- The file name
+	
+	This should be everything we need to build good error messages.'''
 	state = State(fn)
 	return parser.parse(lex(state.src), state=state)
