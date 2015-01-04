@@ -41,7 +41,7 @@ Type the following program into a file called ``hello.rns``:
    def main():
        print('hello, world')
 
-Make sure to use tab-based indentation; spaces are not currently supported.
+Make sure to use tabs for indentation.
 Now, run the compiler to generate a binary, then run it:
 
 .. code::
