@@ -1,3 +1,11 @@
+'''A pretty printer for Runa CFG nodes.
+
+This module implements another CFG walker, which spits out a string
+represenation of the given CFG object. This is intended as a debugging aid
+during compiler development, and can be invoked using the compiler driver's
+`show` command (parametrized with the last pass to run before printing.
+'''
+
 from . import types
 
 class PrettyPrinter(object):
