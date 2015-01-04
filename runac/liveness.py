@@ -1,3 +1,13 @@
+'''The liveness pass collects data on uses of and assignments to variables,
+and stores it in the CFG's Block objects for easy reference in further passes.
+
+Because local types are inferred and because no variable declarations are
+required, finding the assignments that dominate any given use of a variable
+isn't completely trivial. While can simply store pointers on the stack in many
+cases during code generation in order to leave analysis to LLVM, all the
+analyses we have to do still need somewhat accurate data on variable usage.
+'''
+
 from . import ast
 
 class Analyzer(object):
