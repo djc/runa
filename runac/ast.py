@@ -11,7 +11,7 @@ Some node types are defined in other modules:
           LPad, DeOpt, NoValue
 - typer: Init
 
-For files containing source code, a Module node is at the root of the tree.
+For files containing source code, a File node is at the root of the tree.
 '''
 
 from . import util
@@ -216,7 +216,7 @@ class Class(Node):
 class Trait(Node):
 	fields = 'decor', 'name', 'params', 'methods'
 
-class Module(Node):
+class File(Node):
 	fields = 'suite',
 	def __init__(self):
 		self.suite = []

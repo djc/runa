@@ -140,13 +140,13 @@ pg = rply.ParserGenerator([
 
 @pg.production('module : module-elems')
 def module(s, p):
-	res = ast.Module()
+	res = ast.File()
 	res.suite = p[0]
 	return res
 
 @pg.production('module : NL module-elems')
 def module_after_line(s, p):
-	res = ast.Module()
+	res = ast.File()
 	res.suite = p[1]
 	return res
 
