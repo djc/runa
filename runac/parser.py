@@ -51,11 +51,11 @@ def lexer():
 
 LEXER = lexer()
 
-def lex(s):
+def lex(src):
 
 	level = 0
 	hold = []
-	for t in LEXER.lex(s):
+	for t in LEXER.lex(src):
 		
 		if t.name == 'NL' and hold:
 			hold = [t]

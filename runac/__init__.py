@@ -12,8 +12,8 @@ PASSES = collections.OrderedDict((
 	('destruct', destructor.destruct),
 ))
 
-def lex(f):
-	return parser.lex(f)
+def lex(src):
+	return parser.lex(src)
 
 def parse(fn):
 	return parser.parse(fn)
