@@ -13,19 +13,27 @@ PASSES = collections.OrderedDict((
 ))
 
 def lex(src):
+	'''Takes a string containing source code, returns list of token tuples.'''
 	return parser.lex(src)
 
 def parse(fn):
+	'''Takes a string containing file name, returns an AST Module node.'''
 	return parser.parse(fn)
 
 def merge(mod):
+	'''Merge AST Modules for core library files into the given Module.'''
 	for fn in os.listdir(util.CORE_DIR):
 		if not fn.endswith('.rns'): continue
 		fn = os.path.join(util.CORE_DIR, fn)
 		mod.merge(blocks.module(parser.parse(fn)))
 
 def show(fn, last):
+	'''Show Runa high-level intermediate representation for the source code
+	in the given file name (`fn`). `last` contains the last pass from
+	PASSES to apply to the module before generating the IR.
 	
+	Returns a dict with function names (string or tuple) -> IR (string).
+	Functions from modules other than the given module are ignored.'''
 	mod = blocks.module(parser.parse(fn))
 	names = [name for (name, code) in mod.code]
 	
@@ -44,6 +52,8 @@ def show(fn, last):
 	return data
 
 def ir(fn):
+	'''Generate LLVM IR for the given module. Takes a string file name and
+	returns a string of LLVM IR, for the host architecture.'''
 	mod = blocks.module(parser.parse(fn))
 	merge(mod)
 	for name, fun in PASSES.iteritems():
@@ -51,7 +61,9 @@ def ir(fn):
 	return codegen.generate(mod)
 
 def compile(ir, outfn):
-	
+	'''Compiles LLVM IR into a binary. Takes a string file name and a string
+	output file name. Writes the IR to a temporary file, then calls clang on
+	it. (Shelling out to clang is pretty inefficient.)'''
 	name = outfn + '.ll'
 	with open(name, 'wb') as f:
 		f.write(ir)
