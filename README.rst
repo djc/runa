@@ -58,10 +58,10 @@ Hacking
 
 I think the code is fairly readable, but then I wrote most of it. Here are
 some pointers if you want to take a look around. The compiler driver
-is in ``runa``: it's a small script implementing a few useful commands. The
-code actually driving the compiler is in ``runac/__init__.py``. Here you
-can see the lexer, parser, transformation passes, codegen, and compilation
-of LLVM IR to machine code being done.
+is in ``runac/__main__.py``: it's a small script implementing a few useful
+commands. The code actually driving the compiler is in ``runac/__init__.py``.
+Here you can see the lexer, parser, transformation passes, codegen, and
+compilation of LLVM IR to machine code being done.
 
 The parser, which is based on rply, returns an AST (node classes in
 ``runac/ast.py``). This gets processed by the AST walker in
