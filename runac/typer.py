@@ -37,7 +37,7 @@ class Init(ast.Expr):
 		ast.Expr.__init__(self, None)
 		self.type = type
 
-class Module(util.AttribRepr):
+class Declarations(util.AttribRepr):
 	
 	def __init__(self, name, init):
 		self.name = name
@@ -69,27 +69,27 @@ class Decl(object):
 		atypes = ', '.join(self.atypes)
 		return '<%s(%r, %s, (%s))>' % (name, self.decl, self.rtype, atypes)
 
-ROOT = Module('', {
-	'__internal__': Module('__internal__', {
+ROOT = Declarations('', {
+	'__internal__': Declarations('__internal__', {
 		'__malloc__': Decl('runa.malloc', '$byte', ('uint',)),
 		'__free__': Decl('runa.free', 'void', ('$byte',)),
 		'__memcpy__': Decl('runa.memcpy', 'void', ('&byte', '&byte', 'uint')),
 		'__offset__': Decl('runa.offset', '&byte', ('&byte', 'uint')),
 	}),
-	'libc': Module('libc', {
-		'stdlib': Module('libc.stdlib', {
+	'libc': Declarations('libc', {
+		'stdlib': Declarations('libc.stdlib', {
 			'getenv': Decl('getenv', '&byte', ('&byte',)),
 		}),
-		'stdio': Module('libc.stdio', {
+		'stdio': Declarations('libc.stdio', {
 			'snprintf': Decl('snprintf', 'i32', (
 				'&byte', 'i32', '&byte', '...'
 			)),
 		}),
-		'string': Module('libc.string', {
+		'string': Declarations('libc.string', {
 			'strncmp': Decl('strncmp', 'i32', ('&byte', '&byte', 'uint')),
 			'strlen': Decl('strlen', 'uint', ('&byte',)),
 		}),
-		'unistd': Module('libc.unistd', {
+		'unistd': Declarations('libc.unistd', {
 			'write': Decl('write', 'int', ('i32', '&byte', 'uint')),
 		}),
 	}),
