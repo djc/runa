@@ -1,3 +1,31 @@
+'''Type inferencing and type checking pass.
+
+This pass tries to add type information to all nodes in the syntax trees. In
+order to do so, it needs to reference declarations of external modules (for
+example, functions in the tiny run-time library in core/rt.ll and libc). It
+also needs to resolve scoping issues. There should generally be three scope
+levels: global-level, for core types and functions that are always available,
+module-level, for other stuff in the module, and function-level. In addition,
+the TypeChecker analysis currently uses per-block Scope objects to track data.
+
+The core of this pass is the TypeChecker tree-walking class, which walks over
+a CFG, tries to infer types and then checks if the types make sense. Some of
+the complexity here is in resolving variables, as evidenced in the `Name()`
+method. Types are generally represented as instances of `types.base()`
+objects; compatibility is best checked using `types.compat()`.
+
+Note that inferencing and checking aren't at all the same thing, but since you
+have to do a lot of checking while inferencing anyway, it felt best to do
+both at the same time. Some variables, however, are only inferred to a type of
+`anyint` or `anyfloat` (in case no further information is present). This means
+type checking cannot always be precise in this phase, and the specialization
+phase which transforms the any* types to specific types should check.
+
+It is considered imperative to provide good error messages about type errors
+(whether inferencing or checking). Error messages should try to return good
+location information and provide enough context to be actionable.
+'''
+
 from . import types, ast, blocks, util
 
 class Object(util.AttribRepr):
