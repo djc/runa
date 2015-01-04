@@ -13,15 +13,15 @@ PASSES = collections.OrderedDict((
 ))
 
 def lex(src):
-	'''Takes a string containing source code, returns list of token tuples.'''
+	'''Takes a string containing source code, returns list of token tuples'''
 	return parser.lex(src)
 
 def parse(fn):
-	'''Takes a string containing file name, returns an AST Module node.'''
+	'''Takes a string containing file name, returns an AST Module node'''
 	return parser.parse(fn)
 
 def merge(mod):
-	'''Merge AST Modules for core library files into the given Module.'''
+	'''Merge AST Modules for core library files into the given Module'''
 	for fn in os.listdir(util.CORE_DIR):
 		if not fn.endswith('.rns'): continue
 		fn = os.path.join(util.CORE_DIR, fn)
