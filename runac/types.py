@@ -1,3 +1,20 @@
+'''Functionality for the Runa type system.
+
+The core types are outlined in this file:
+
+- void
+- bool, byte
+- i8, u8, i32, u32, int, uint, float
+- function
+- iter
+- tuple (as a `build_tuple()` constructor)
+- owner, ref, opt
+
+Actual implementations attached to these types are mostly contained in the
+core library. Additionally, helpers are provided for template types and their
+concrete variants; these are used for traits and generics support.
+'''
+
 from . import ast, util
 import copy, platform
 
