@@ -67,7 +67,20 @@ some pointers if you want to take a look around. The compiler driver
 is in ``runac/__main__.py``: it's a small script implementing a few useful
 commands. The code actually driving the compiler is in ``runac/__init__.py``.
 Here you can see the lexer, parser, transformation passes, codegen, and
-compilation of LLVM IR to machine code being done.
+compilation of LLVM IR to machine code being done. The general structure is
+like this:
+
+1. Parser phase (includes lexing and parsing), in ``runac/parser.py``
+2. AST to CFG transformation phase, in ``runac/blocks.py``
+3. Transformation passes:
+   
+   a. Liveness analysis, in ``runac/liveness.py``
+   b. Type inferencing and type checking, in ``runac/typer.py``
+   c. Type specialization, in ``runac/specialize.py``
+   d. Escape analysis, in ``runac/escapes.py``
+   e. Destructor insertion, in ``runac/destructor.py``
+   
+4. Code generation phase, in ``runac/codegen.py``
 
 The parser, which is based on rply, returns an AST (node classes in
 ``runac/ast.py``). This gets processed by the AST walker in
