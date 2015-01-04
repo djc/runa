@@ -1,3 +1,15 @@
+'''This pass inserts calls to object destructors.
+
+Owner-typed pointers represent heap-allocated memory which has no pointers
+which live outside the current function call. They should therefore be cleaned
+up before returning to the caller. Owner-typed pointers must also be cleaned
+up before a new object is assigned to the variable name (except if the owner
+was stored somewhere else -- this is probably not handled right now, TODO).
+
+This pass inserts Free nodes into the CFG, which are then expanded into
+function calls during the code generation phase.
+'''
+
 from . import ast, blocks, types, util
 
 class Free(util.AttribRepr):
