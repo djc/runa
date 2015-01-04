@@ -5,13 +5,20 @@ CORE_DIR = os.path.join(BASE, 'core')
 IGNORE = {'pos'}
 
 class AttribRepr(object):
+	'''Helper class to provide a nice __repr__ for other classes'''
 	def __repr__(self):
 		contents = sorted(self.__dict__.iteritems())
 		show = ('%s=%r' % (k, v) for (k, v) in contents if k not in IGNORE)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
 def error(fn, msg, pos):
+	'''Helper function to print useful error messages.
 	
+	Tries to mangle location information and message into a layout that's
+	easy to read and provides good data about the underlying error message.
+	
+	This is in a separate function because of the differences between Error
+	and ParseError, which both need this functionality.'''
 	if pos is None:
 		return '%s: %s\n' % (fn, msg)
 	
@@ -25,6 +32,7 @@ def error(fn, msg, pos):
 	return '\n'.join((desc, line, ' ' * spaces + '^')) + '\n'
 
 class Error(Exception):
+	'''Error class used for throwing user errors from the compiler'''
 	
 	def __init__(self, node, msg):
 		Exception.__init__(self, msg)
@@ -36,6 +44,7 @@ class Error(Exception):
 		return error(fn, self.msg, getattr(self.node, 'pos', None))
 
 class ParseError(Exception):
+	'''Parse errors, raised from rply's error handling function'''
 	
 	def __init__(self, fn, t, pos):
 		self.fn = fn
