@@ -64,12 +64,18 @@ def compile(ir, outfn):
 	'''Compiles LLVM IR into a binary. Takes a string file name and a string
 	output file name. Writes the IR to a temporary file, then calls clang on
 	it. (Shelling out to clang is pretty inefficient.)'''
+
 	name = outfn + '.ll'
 	with open(name, 'wb') as f:
 		f.write(ir)
+
+	if 'windows-msvc' in ir:
+		cmd = 'clang-cl', '-Fe' + outfn, '-m64', name, '/link', 'msvcrt.lib'
+	else:
+		cmd = 'clang', '-o', outfn, name
 	
 	try:
-		subprocess.check_call(('clang', '-o', outfn, name))
+		subprocess.check_call(cmd)
 	except OSError as e:
 		if e.errno == 2:
 			print 'error: clang not found'
