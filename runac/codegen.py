@@ -103,11 +103,6 @@ class CodeGen(object):
 			self.writeline('%s: ; %s' % (label, hint))
 		self.indent()
 	
-	def getlabel(self, prefix):
-		new = self.labels.get(prefix, 0)
-		self.labels[prefix] = new + 1
-		return '%s%i' % (prefix, new)
-	
 	# Some IR writing helpers
 	
 	def alloca(self, t):
@@ -717,31 +712,6 @@ class CodeGen(object):
 		obj = '[0 x %s]*' % et.ir, data
 		elm = self.gep(obj, 0, key)
 		return Value(types.ref(et), elm)
-	
-	def Ternary(self, node, frame):
-		
-		cond = self.visit(node.cond, frame)
-		if cond.type != types.get('bool'):
-			cond = self.coerce(cond, types.get('bool'))
-		
-		llabel = self.getlabel('T')
-		rlabel = self.getlabel('T')
-		jlabel = self.getlabel('T')
-		bits = cond.var, llabel, rlabel
-		self.writeline('br i1 %s, label %%%s, label %%%s' % bits)
-		
-		self.label(llabel, 'ternary-left')
-		leftval = self.visit(node.values[0], frame)
-		self.writeline('br label %%%s' % jlabel)
-		self.label(rlabel, 'ternary-right')
-		rightval = self.visit(node.values[1], frame)
-		self.writeline('br label %%%s' % jlabel)
-		
-		self.label(jlabel, 'ternary-join')
-		res = self.varname()
-		bits = res, leftval.type.ir, leftval.var, llabel, rightval.var, rlabel
-		self.writeline('%s = phi %s [ %s, %%%s ], [ %s, %%%s ]' % bits)
-		return Value(leftval.type, res)
 	
 	def Raise(self, node, frame):
 		val = self.visit(node.value, frame)

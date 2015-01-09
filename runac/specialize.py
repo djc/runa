@@ -236,16 +236,6 @@ class Specializer(object):
 			if not isinstance(arg, ast.Name):
 				assert not types.generic(arg.type), arg.type
 	
-	def Ternary(self, node, type=None):
-		
-		if types.generic(node.cond.type):
-			self.visit(node.cond, types.get('ToBool'))
-		
-		self.visit(node.values[0], type)
-		self.visit(node.values[1], type)
-		assert node.values[0].type == node.values[1].type
-		node.type = node.values[0].type
-	
 	def Phi(self, node, type=None):
 		
 		self.visit(node.left[1], type)
