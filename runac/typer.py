@@ -95,26 +95,6 @@ ROOT = Declarations('', {
 	}),
 })
 
-def resolve(mod, n):
-	parts = n.split('.')
-	if parts[0] in mod.scope:
-		return mod.scope[parts[0]]
-	elif parts[0] in ROOT:
-		obj = ROOT
-		for p in parts:
-			obj = obj[p]
-		return obj
-	elif parts[0] in mod.names:
-		method = mod.names[parts[0]].methods[parts[1]]
-		mt = types.function(method[1], method[2])
-		return types.FunctionDef(method[0], mt)
-	elif parts[0] in types.ALL:
-		method = types.get(parts[0]).methods[parts[1]]
-		mt = types.function(method[1], method[2])
-		return types.FunctionDef(method[0], mt)
-	else:
-		assert False, 'cannot resolve %s' % (tuple(parts),)
-
 class Scope(object):
 	
 	def __init__(self, parent=None):
