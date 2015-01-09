@@ -691,10 +691,6 @@ def process(mod, base, fun):
 	
 	for arg in fun.args:
 		
-		if arg.type is None:
-			msg = "missing type for argument '%s'"
-			raise util.Error(arg, msg % arg.name.name)
-		
 		if not isinstance(arg.type, types.base):
 			arg.type = start.resolve(arg.type)
 		
