@@ -25,12 +25,7 @@ class Analyzer(object):
 			return
 		
 		for k in node.fields:
-			attr = getattr(node, k)
-			if isinstance(attr, list):
-				for v in attr:
-					self.visit(v)
-			else:
-				self.visit(attr)
+			self.visit(getattr(node, k))
 	
 	def Name(self, node):
 		self.vars[0].add(node.name)
