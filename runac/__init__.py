@@ -2,7 +2,7 @@ from . import (
 	parser, blocks, liveness, typer, specialize,
 	escapes, destructor, codegen, util, pretty
 )
-import os, subprocess, collections
+import os, subprocess, collections, re
 
 PASSES = collections.OrderedDict((
 	('liveness', liveness.liveness),
@@ -64,15 +64,18 @@ def compile(ir, outfn):
 	'''Compiles LLVM IR into a binary. Takes a string file name and a string
 	output file name. Writes the IR to a temporary file, then calls clang on
 	it. (Shelling out to clang is pretty inefficient.)'''
-
+	
 	name = outfn + '.ll'
 	with open(name, 'wb') as f:
 		f.write(ir)
-
-	if 'windows-msvc' in ir:
-		cmd = 'clang-cl', '-Fe' + outfn, '-m64', name, '/link', 'msvcrt.lib'
+	
+	triple = re.search('triple = "(.*?)"', ir).groups()[0]
+	if 'windows-msvc' in triple:
+		cmd = ['clang-cl', '-Fe' + outfn, '-m64', name, '/link', 'msvcrt.lib']
 	else:
-		cmd = 'clang', '-o', outfn, name
+		cmd = ['clang', '-o', outfn]
+		cmd.append('-m64' if triple.split('-')[0] == 'x86_64' else '-m32')
+		cmd.append(name)
 	
 	try:
 		subprocess.check_call(cmd)
