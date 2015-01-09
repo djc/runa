@@ -3,6 +3,8 @@ Runa
 
 .. image:: https://travis-ci.org/djc/runa.svg?branch=master
    :target: https://travis-ci.org/djc/runa
+.. image:: https://coveralls.io/repos/djc/runa/badge.png?branch=master
+   :target: https://coveralls.io/r/djc/runa?branch=master
 
 A Python-like systems programming language.
 This means that the design borrows as much from Python
