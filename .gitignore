@@ -1,4 +1,5 @@
 **.pyc
+.coverage
 test.c
 tests/*.test
 tests/*.ll
