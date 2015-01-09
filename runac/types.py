@@ -142,7 +142,7 @@ class template(ReprId):
 	
 	@property
 	def ir(self):
-		raise TypeError('not a concrete type')
+		assert False, 'not a concrete type'
 	
 	def __repr__(self):
 		return '<template: %s>' % self.__class__.__name__
@@ -219,7 +219,7 @@ class anyint(base):
 	
 	@property
 	def ir(self):
-		raise TypeError('not a concrete type')
+		assert False, 'not a concrete type'
 
 class anyfloat(base):
 	
@@ -228,7 +228,7 @@ class anyfloat(base):
 	
 	@property
 	def ir(self):
-		raise TypeError('not a concrete type')
+		assert False, 'not a concrete type'
 
 WORD_SIZE = int(platform.architecture()[0][:2])
 
