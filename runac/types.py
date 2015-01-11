@@ -430,6 +430,8 @@ def get(t, stubs={}):
 		return owner(get(t.value, stubs))
 	elif isinstance(t, ast.Ref):
 		return ref(get(t.value, stubs))
+	elif isinstance(t, ast.Opt):
+		return opt(get(t.value, stubs))
 	else:
 		assert False, 'no type %s' % t
 
