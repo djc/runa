@@ -43,9 +43,10 @@ target triple (just change 10.10 to 10.9).
 
 Preliminary testing has been done on 64-bit Windows 7 as well. This seems
 to work okay when compiling against mingw-w64, although the test suite fails
-because newlines get rewritten to `\r\n` when using `write()` with `stdout`.
-Compiling against the MS platform libs has been tried (through `clang-cl`),
-but I have not been able to fix all the undefined symbol errors.
+because newlines get rewritten to ``\r\n`` when using ``write()`` with
+``stdout``. Compiling against the MS platform libs has been tried (through
+``clang-cl``), but I have not yet been able to fix all the undefined symbol
+errors.
 
 
 How to get started
