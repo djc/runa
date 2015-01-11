@@ -1,0 +1,3 @@
+elem-proto.rns [3.12]: incorrect type for element protocol: anyint
+    print(a[0])
+           ^
