@@ -457,7 +457,10 @@ class TypeChecker(object):
 		self.checkopt(node, node.obj)
 		
 		objt = types.unwrap(node.obj.type)
-		assert objt.name.startswith('array['), objt
+		if not objt.name.startswith('array['):
+			msg = 'incorrect type for element protocol: %s'
+			raise util.Error(node, msg % objt.name)
+		
 		node.type = objt.attribs['data'][1].over
 	
 	def Call(self, node, scope):
