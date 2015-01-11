@@ -35,10 +35,17 @@ Dependencies:
 * rply (tested with 0.7.2)
 * Clang (tested with 3.3 and 3.4)
 
-So far, it has only been tested on 64-bits OS X and Linux and 32-bits Linux.
-The LLVM IR targets Yosemite on OS X, this could cause warnings on older
+The compiler is being tested on 64-bits OS X and Linux and 32-bits Linux.
+
+On OS X, the LLVM IR targets Yosemite; this could cause warnings on older
 versions. Look at the final lines of ``runac/codegen.py`` to change the
-target triple.
+target triple (just change 10.10 to 10.9).
+
+Preliminary testing has been done on 64-bit Windows 7 as well. This seems
+to work okay when compiling against mingw-w64, although the test suite fails
+because newlines get rewritten to `\r\n` when using `write()` with `stdout`.
+Compiling against the MS platform libs has been tried (through `clang-cl`),
+but I have not been able to fix all the undefined symbol errors.
 
 
 How to get started
