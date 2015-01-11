@@ -239,6 +239,7 @@ BASIC = {
 	'u8': 'i8',
 	'i32': 'i32',
 	'u32': 'i32',
+	'u64': 'i64',
 	'int': 'i%i' % WORD_SIZE,
 	'uint': 'i%i' % WORD_SIZE,
 	'float': 'double',
@@ -249,6 +250,7 @@ INTEGERS = {
 	'u8': (False, 8),
 	'i32': (True, 32),
 	'u32': (False, 32),
+	'u64': (False, 64),
 	'int': (True, WORD_SIZE),
 	'uint': (False, WORD_SIZE),
 }
