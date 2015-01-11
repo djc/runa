@@ -120,7 +120,7 @@ def liveness(mod):
 					origin.add(id)
 					continue
 				elif not bl.preds:
-					if not (assigned and min(assigned) == sid):
+					if not (assigned and min(assigned) < sid):
 						origin.add(None)
 					continue
 				
