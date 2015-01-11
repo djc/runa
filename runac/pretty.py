@@ -104,6 +104,14 @@ class PrettyPrinter(object):
 		self.write(repr(node.val))
 		self.anno(node)
 	
+	def Tuple(self, node):
+		self.write('(')
+		for i, n in enumerate(node.values):
+			if i:
+				self.write(', ')
+			self.visit(n)
+		self.write(')')
+	
 	def binary(self, op, node):
 		self.write(op + ' ')
 		self.visit(node.left)
