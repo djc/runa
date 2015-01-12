@@ -38,3 +38,13 @@ def binary():
 	print('a' != 'b')
 	print('c' == 'c')
 
+def range(end: int) -> iter[int]:
+	i = 0 as int
+	while i < end:
+		yield i
+		i = i + 1
+
+def loop(args: array[str]):
+	print(args[0])
+	for i in range(3):
+		print(i)
