@@ -382,7 +382,7 @@ class TypeChecker(object):
 	
 	def Yield(self, node, scope):
 		self.visit(node.value, scope)
-		assert self.fun.rtype.params[0] == node.value.type
+		assert types.compat(node.value.type, self.fun.rtype.params[0])
 	
 	def LoopSetup(self, node, scope):
 		
