@@ -30,12 +30,19 @@ def run(self, key):
 	bin = base + '.test'
 	
 	spec = getspec(fullname)
-	out = compile(fullname, bin)
+	type = spec.get('type', 'test')
+	if type == 'show':
+		out = '\n'.join(runac.show(fullname, None).values()) + '\n'
+	else:
+		out = compile(fullname, bin)
+	
 	if not out:
 		cmd = [bin] + spec.get('args', [])
 		opts = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
 		proc = subprocess.Popen(cmd, **opts)
 		res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
+	elif type == 'show':
+		res = [0, out, '']
 	else:
 		res = [0, '', out]
 	
