@@ -1,0 +1,40 @@
+# test: {"type": "show"}
+
+class test:
+	val: uint
+	def __init__(self, v: uint):
+		self.val = v
+
+def maybe(i: int) -> $test?:
+	return test(1) if i & 2 else None
+
+def multi() -> (uint, uint):
+	return 4, 5
+
+def opt_check():
+	
+	obj = maybe(1)
+	if obj is None:
+		print('no val')
+	else:
+		print(False)
+	
+	obj = maybe(3)
+	if obj is None:
+		print('no val')
+	else:
+		print(obj.val)
+
+def math():
+	print(3 + 4 - 5 * 6 / 7)
+	print(0.1)
+	print(5 > 3)
+	print(6 < 4)
+
+def binary():
+	print(3 & 1)
+	print(2 | 6)
+	print('' and 'b' or 'c')
+	print('a' != 'b')
+	print('c' == 'c')
+

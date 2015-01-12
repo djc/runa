@@ -1,0 +1,92 @@
+def binary() -> void:
+   0: [entry]
+ {00} $0 [int] = BWAnd 3 [int] 1 [int]
+ {01} print($0 [int]) [void]
+ {02} $1 [int] = BWOr 2 [int] 6 [int]
+ {03} print($1 [int]) [void]
+ {04} $4 [$str] = '' [&str]
+ {05} $5 [$str] = 'b' [&str]
+ {06} $3 [$str] = And $4 [$str] $5 [$str]
+ {07} $6 [$str] = 'c' [&str]
+ {08} $2 [$str] = Or $3 [$str] $6 [$str]
+ {09} print($2 [$str]) [void]
+ {10} $8 [$str] = 'a' [&str]
+ {11} $9 [$str] = 'b' [&str]
+ {12} $7 [bool] = NE $8 [$str] $9 [$str]
+ {13} print($7 [bool]) [void]
+ {14} $11 [$str] = 'c' [&str]
+ {15} $12 [$str] = 'c' [&str]
+ {16} $10 [bool] = EQ $11 [$str] $12 [$str]
+ {17} print($10 [bool]) [void]
+ {18} Free($2 [$str])
+ {19} Free($3 [$str])
+ {20} Return
+
+def multi() -> tuple[uint, uint]:
+   0: [entry]
+ {00} $0 [tuple[uint, uint]] = (4 [int], 5 [int])
+ {01} Return $0 [tuple[uint, uint]]
+
+def test.__init__(self [&test], v [uint]) -> void:
+   0: [entry]
+ {00} self [&test] . val [uint] = v [uint]
+ {01} Return
+
+def maybe(i [int]) -> $test?:
+   0: [entry]
+ {00} $1 [int] = BWAnd i [int] 2 [int]
+ {01} CondBranch $1 [int] ? 1 : 2
+   1: [ternary-left]
+ {00} $2 [$test] = test.__init__(Init $test, 1 [uint]) [$test]
+ {01} Branch 3
+   2: [ternary-right]
+ {00} Branch 3
+   3: [ternary-exit]
+ {00} $0 [$test?] = Phi 1:$2 [$test], 2:NoneVal [$test?]
+ {01} Return $0 [$test?]
+
+def opt_check() -> void:
+   0: [entry]
+ {00} obj [$test?] = maybe(1 [int]) [$test?]
+ {01} $0 [bool] = Is obj [$test?] NoneVal [NoType]
+ {02} CondBranch $0 [bool] ? 1 : 2
+   1: [if-suite]
+ {00} NoValue obj [$test?]
+ {01} $1 [$str] = 'no val' [&str]
+ {02} print($1 [$str]) [void]
+ {03} Branch 3
+   2: [if-suite]
+ {00} DeOpt obj [$test?]
+ {01} print(False [bool]) [void]
+ {02} Branch 3
+   3: [if-exit]
+ {00} obj [$test?] = maybe(3 [int]) [$test?]
+ {01} $2 [bool] = Is obj [$test?] NoneVal [NoType]
+ {02} CondBranch $2 [bool] ? 4 : 5
+   4: [if-suite]
+ {00} NoValue obj [$test?]
+ {01} $3 [$str] = 'no val' [&str]
+ {02} print($3 [$str]) [void]
+ {03} Branch 6
+   5: [if-suite]
+ {00} DeOpt obj [$test?]
+ {01} $4 [uint] = obj [$test] . val [uint]
+ {02} print($4 [uint]) [void]
+ {03} Branch 6
+   6: [if-exit]
+ {00} Return
+
+def math() -> void:
+   0: [entry]
+ {00} $1 [int] = Add 3 [int] 4 [int]
+ {01} $3 [int] = Mul 5 [int] 6 [int]
+ {02} $2 [int] = Div $3 [int] 7 [int]
+ {03} $0 [int] = Sub $1 [int] $2 [int]
+ {04} print($0 [int]) [void]
+ {05} print(0.1 [float]) [void]
+ {06} $4 [bool] = GT 5 [int] 3 [int]
+ {07} print($4 [bool]) [void]
+ {08} $5 [bool] = LT 6 [int] 4 [int]
+ {09} print($5 [bool]) [void]
+ {10} Return
+
