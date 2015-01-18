@@ -44,6 +44,10 @@ class int:
 		return str(len as uint, data)
 
 class uint:
+	
+	def __bool__(self) -> bool:
+		return self != 0
+	
 	def __str__(self) -> $str:
 		data = __malloc__(20)
 		len = snprintf(data, 20, '%lu\0'.data, self)
