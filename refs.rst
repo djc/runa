@@ -167,3 +167,8 @@ Inspiration
   <http://munificent.github.io/wren/>`_
   
   Robert Nystrom
+
+* `Faster, more memory efficient and more ordered dictionaries on PyPy
+  <http://morepypy.blogspot.nl/2015/01/faster-more-memory-efficient-and-more.html>`_
+  
+  The PyPy team
