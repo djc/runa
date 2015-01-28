@@ -172,3 +172,8 @@ Inspiration
   <http://morepypy.blogspot.nl/2015/01/faster-more-memory-efficient-and-more.html>`_
   
   The PyPy team
+
+* `Statements and Expressions
+  <http://stupidpythonideas.blogspot.com.au/2015/01/statements-and-expressions.html>`_
+  
+  Andrew Barnert
