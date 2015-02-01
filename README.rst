@@ -33,7 +33,7 @@ Dependencies:
 
 * Python 2.7
 * rply (tested with 0.7.2)
-* Clang (tested with 3.3 and 3.4)
+* Clang (tested with 3.3 and later)
 
 The compiler is being tested on 64-bits OS X and Linux and 32-bits Linux.
 
