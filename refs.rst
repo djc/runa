@@ -177,3 +177,8 @@ Inspiration
   <http://stupidpythonideas.blogspot.com.au/2015/01/statements-and-expressions.html>`_
   
   Andrew Barnert
+
+* `Syntax across languages
+  <http://rigaux.org/language-study/syntax-across-languages/>`_
+  
+  Pascal Rigaux
