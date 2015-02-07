@@ -182,3 +182,8 @@ Inspiration
   <http://rigaux.org/language-study/syntax-across-languages/>`_
   
   Pascal Rigaux
+
+* `C++ Seasoning
+  <http://channel9.msdn.com/Events/GoingNative/2013/Cpp-Seasoning>`_
+  
+  Sean Parent
