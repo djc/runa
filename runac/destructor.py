@@ -82,8 +82,8 @@ def destructify(code):
 		node.type = type
 		code.flow.blocks[bid].steps.insert(sid, Free(node))
 	
-	for name, (type, abls) in util.items(left):
-		for rbli, reachable in util.items(returns):
+	for name, (type, abls) in sorted(util.items(left)):
+		for rbli, reachable in sorted(util.items(returns)):
 			
 			if not (abls & reachable):
 				continue
