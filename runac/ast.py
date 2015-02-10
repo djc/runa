@@ -31,7 +31,7 @@ class Node(util.AttribRepr):
 	def __init__(self, pos):
 		self.pos = pos
 	def __hash__(self):
-		values = tuple(sorted((k, v) for (k, v) in self.__dict__.iteritems()))
+		values = tuple(sorted((k, v) for (k, v) in util.items(self.__dict__)))
 		return hash((self.__class__.__name__,) + values)
 
 class Expr(Node):

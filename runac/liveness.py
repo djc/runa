@@ -8,7 +8,7 @@ cases during code generation in order to leave analysis to LLVM, all the
 analyses we have to do still need somewhat accurate data on variable usage.
 '''
 
-from . import ast
+from . import ast, util
 
 class Analyzer(object):
 	
@@ -90,7 +90,7 @@ def liveness(mod):
 	analyzer = Analyzer()
 	for fname, code in mod.code:
 		
-		refs, blocks = {}, sorted(code.flow.blocks.iteritems())
+		refs, blocks = {}, sorted(util.items(code.flow.blocks))
 		for id, bl in blocks:
 			
 			bl.uses = {}

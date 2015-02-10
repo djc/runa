@@ -11,7 +11,7 @@ where data on survival requirements becomes part of the function type.
 For example, "argument 3 must live at least as long as argument 1".
 '''
 
-from . import ast, blocks, types
+from . import ast, blocks, types, util
 
 class EscapeFinder(object):
 	
@@ -224,7 +224,7 @@ class EscapeFinder(object):
 		ls.append((self.cur[1], val.type))
 	
 	def find(self):
-		for bl in reversed(self.cfg.blocks.values()):
+		for bl in reversed(list(util.values(self.cfg.blocks))):
 			for i, step in reversed(list(enumerate(bl.steps))):
 				self.cur = bl, i
 				self.visit(step)

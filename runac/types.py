@@ -161,7 +161,7 @@ class template(ReprId):
 		})
 		
 		trans = {k: v for (k, v) in zip(self.params, params)}
-		for k, v in self.attribs.iteritems():
+		for k, v in util.items(self.attribs):
 			if isinstance(v[1], Stub):
 				cls.attribs[k] = v[0], trans[v[1].name]
 			elif isinstance(v[1], WRAPPERS) and isinstance(v[1].over, Stub):
@@ -169,7 +169,7 @@ class template(ReprId):
 			else:
 				cls.attribs[k] = v[0], v[1]
 		
-		for k, mtypes in self.methods.iteritems():
+		for k, mtypes in util.items(self.methods):
 			for method in mtypes:
 				
 				rtype = method.type.over[0]
@@ -364,7 +364,7 @@ def compat(a, f, strict=False):
 		return a.bits < f.bits
 	elif isinstance(f, trait):
 		
-		for k, malts in f.methods.iteritems():
+		for k, malts in util.items(f.methods):
 			
 			if k not in a.methods:
 				return False
@@ -436,13 +436,13 @@ def get(t, stubs={}):
 		assert False, 'no type %s' % t
 
 ALL = {}
-for k in globals().keys():
+for k in list(util.keys(globals())):
 	obj = globals()[k]
 	if type(obj) == type and issubclass(obj, (base, template)):
 		ALL[k] = globals()[k]
 
-for k, cls in ALL.iteritems():
-	for m, mdata in cls.methods.iteritems():
+for k, cls in util.items(ALL):
+	for m, mdata in util.items(cls.methods):
 		rtype = get(mdata[1])
 		atypes = [(n, get(t)) for (n, t) in mdata[2]]
 		cls.methods[m] = (m[0], rtype, atypes)

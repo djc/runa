@@ -43,7 +43,7 @@ class Declarations(util.AttribRepr):
 		self.name = name
 		self.attribs = init
 		self.type = types.module(name)
-		for k, val in init.iteritems():
+		for k, val in util.items(init):
 			if isinstance(val, types.FunctionDef):
 				self.type.functions[k] = val.type
 				val.name = '%s.%s' % (name, k)
@@ -56,6 +56,9 @@ class Declarations(util.AttribRepr):
 	
 	def iteritems(self):
 		return self.attribs.iteritems()
+	
+	def items(self):
+		return self.attribs.items()
 
 class Decl(object):
 	
@@ -165,7 +168,7 @@ class TypeChecker(object):
 	
 	def check(self, scope):
 		self.scopes[None] = scope
-		for i, b in sorted(self.flow.blocks.iteritems()):
+		for i, b in sorted(util.items(self.flow.blocks)):
 			scope = self.scopes[i] = Scope()
 			for sid, step in enumerate(b.steps):
 				self.cur = b, sid
@@ -722,13 +725,13 @@ def process(mod, base, fun):
 
 def typer(mod):
 	
-	for k, v in mod.names.iteritems():
+	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
 			types.add(v)
 	
 	base = Scope()
 	base['iter'] = types.iter()
-	for name, obj in mod.names.iteritems():
+	for name, obj in util.items(mod.names):
 		
 		if not isinstance(obj, basestring):
 			continue
@@ -744,7 +747,7 @@ def typer(mod):
 		
 		mod.names[name] = base[name] = val
 	
-	for k, v in mod.names.iteritems():
+	for k, v in util.items(mod.names):
 		if not isinstance(v, blocks.Constant):
 			continue
 		if isinstance(v.node, ast.String):
@@ -755,11 +758,11 @@ def typer(mod):
 			assert False, v.node
 		base[k] = v.node
 	
-	for k, v in mod.names.iteritems():
+	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
 			base[k] = mod.names[k] = types.fill(v)
 	
-	for k, v in mod.names.iteritems():
+	for k, v in util.items(mod.names):
 		if isinstance(v, ast.Decl):
 			base[k] = mod.names[k] = types.realize(v)
 	

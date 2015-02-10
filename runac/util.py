@@ -1,13 +1,28 @@
-import os
+import os, sys
 
 BASE = os.path.dirname(os.path.dirname(__file__))
 CORE_DIR = os.path.join(BASE, 'core')
 IGNORE = {'pos'}
 
+if sys.version_info[0] < 3:
+	def keys(d):
+		return d.iterkeys()
+	def values(d):
+		return d.itervalues()
+	def items(d):
+		return d.iteritems()
+else:
+	def keys(d):
+		return d.keys()
+	def values(d):
+		return d.values()
+	def items(d):
+		return d.items()
+
 class AttribRepr(object):
 	'''Helper class to provide a nice __repr__ for other classes'''
 	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
+		contents = sorted(util.items(self.__dict__))
 		show = ('%s=%r' % (k, v) for (k, v) in contents if k not in IGNORE)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 

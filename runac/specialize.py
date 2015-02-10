@@ -9,7 +9,7 @@ see if it makes sense to change int to be i32. Currently, we only have
 a single float type; it seems like float == f64 might make sense.
 '''
 
-from . import ast, types
+from . import ast, types, util
 
 class Specializer(object):
 	
@@ -269,7 +269,7 @@ class Specializer(object):
 		pass
 	
 	def propagate(self):
-		for i, bl in self.cfg.blocks.iteritems():
+		for i, bl in util.items(self.cfg.blocks):
 			for step in reversed(bl.steps):
 				self.visit(step)
 

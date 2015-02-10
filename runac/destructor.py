@@ -20,7 +20,7 @@ class Free(util.AttribRepr):
 def destructify(code):
 	
 	returns, reassign, left = {}, [], {}
-	for i, bl in code.flow.blocks.iteritems():
+	for i, bl in util.items(code.flow.blocks):
 		
 		# For each block that returns, find the set of transitive
 		# predecessor blocks; these assignments will need freeing.
@@ -38,7 +38,7 @@ def destructify(code):
 		# Find assignments to owner variables; the last assignment
 		# will be freed before return, earlier ones before next assign.
 		
-		for var, steps in bl.assigns.iteritems():
+		for var, steps in util.items(bl.assigns):
 			assigns = sorted(steps)
 			for idx, sid in enumerate(assigns):
 
@@ -82,8 +82,8 @@ def destructify(code):
 		node.type = type
 		code.flow.blocks[bid].steps.insert(sid, Free(node))
 	
-	for name, (type, abls) in left.iteritems():
-		for rbli, reachable in returns.iteritems():
+	for name, (type, abls) in util.items(left):
+		for rbli, reachable in util.items(returns):
 			
 			if not (abls & reachable):
 				continue

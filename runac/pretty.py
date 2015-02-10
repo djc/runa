@@ -6,7 +6,7 @@ during compiler development, and can be invoked using the compiler driver's
 `show` command (parametrized with the last pass to run before printing.
 '''
 
-from . import types
+from . import types, util
 
 class PrettyPrinter(object):
 	
@@ -48,7 +48,7 @@ class PrettyPrinter(object):
 		self.write(':')
 		self.newline()
 		
-		for i, bl in fun.flow.blocks.iteritems():
+		for i, bl in util.items(fun.flow.blocks):
 			self.writeline('  %2i: [%s]' % (i, bl.anno))
 			for sid, step in enumerate(bl.steps):
 				self.write(' {%02i} ' % sid)
@@ -274,7 +274,7 @@ class PrettyPrinter(object):
 	
 	def LPad(self, node):
 		self.write('LPad: {')
-		for k, v in node.map.iteritems():
+		for k, v in util.items(node.map):
 			self.visit(k)
 			self.write(': ' + str(v))
 		self.write('}')

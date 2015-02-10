@@ -38,7 +38,7 @@ def show(fn, last):
 	names = [name for (name, code) in mod.code]
 	
 	merge(mod)
-	for name, fun in PASSES.iteritems():
+	for name, fun in util.items(PASSES):
 		fun(mod)
 		if name == last:
 			break
@@ -56,7 +56,7 @@ def ir(fn):
 	returns a string of LLVM IR, for the host architecture.'''
 	mod = blocks.module(parser.parse(fn))
 	merge(mod)
-	for name, fun in PASSES.iteritems():
+	for name, fun in util.items(PASSES):
 		fun(mod)
 	return codegen.generate(mod)
 

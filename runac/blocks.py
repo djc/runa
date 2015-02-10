@@ -522,7 +522,7 @@ class FlowFinder(object):
 		exit = self.cur = self.flow.block('try-exit')
 		last[1].callbr = exit.id, pad.id
 		self.flow.edge(last[0], exit.id)
-		for id in map.itervalues():
+		for id in util.values(map):
 			self.flow.blocks[id].push(Branch(exit.id))
 			self.flow.edge(id, exit.id)
 
@@ -535,12 +535,12 @@ class Module(object):
 		self.scope = None # populated by type inferencing pass
 	
 	def __repr__(self):
-		contents = sorted(self.__dict__.iteritems())
+		contents = sorted(util.items(self.__dict__))
 		show = ('%s=%s' % (k, v) for (k, v) in contents)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	
 	def merge(self, mod):
-		for k, v in mod.names.iteritems():
+		for k, v in util.items(mod.names):
 			assert k not in self.names, k
 			self.names[k] = v
 		self.code += mod.code
@@ -606,7 +606,7 @@ def module(node):
 			final.steps.append(auto)
 			final.returns = True
 		
-		for src, dsts in cfg.edges.iteritems():
+		for src, dsts in util.items(cfg.edges):
 			for dst in dsts:
 				cfg.blocks[dst].preds.append(cfg.blocks[src])
 	

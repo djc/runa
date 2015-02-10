@@ -219,7 +219,7 @@ class CodeGen(object):
 		self.writeline('%s = alloca %s' % (vt, vtt))
 		
 		t = types.unwrap(trait)
-		for i, (k, tmalts) in enumerate(sorted(t.methods.iteritems())):
+		for i, (k, tmalts) in enumerate(sorted(util.items(t.methods))):
 			
 			# trait methods overloading TODO
 			assert len(tmalts) == 1
@@ -292,7 +292,7 @@ class CodeGen(object):
 		
 		t = types.unwrap(node.type)
 		literal = node.val
-		for c, sub in sorted(ESCAPES.iteritems()):
+		for c, sub in sorted(util.items(ESCAPES)):
 			literal = literal.replace(c, sub)
 		
 		length = len(node.val.decode('string_escape'))
@@ -777,7 +777,7 @@ class CodeGen(object):
 			return
 		
 		t = types.unwrap(val.type)
-		for name, (idx, atype) in t.attribs.iteritems():
+		for name, (idx, atype) in util.items(t.attribs):
 			
 			if not isinstance(atype, types.owner):
 				continue
@@ -882,7 +882,7 @@ class CodeGen(object):
 			slot = self.gep(self.intercept, 0, 0)
 			addr = self.load(Value(types.get('&&byte'), slot))
 			
-			targets = [0] + node.flow.yields.values()
+			targets = [0] + list(util.values(node.flow.yields))
 			labels = ', '.join('label %%L%s' % v for v in targets)
 			bits = addr.type.ir, addr.var, labels
 			self.writeline('indirectbr %s %s, [ %s ]' % bits)
@@ -914,7 +914,7 @@ class CodeGen(object):
 				self.store((arg.type, '%' + arg.name.name), addr.var)
 		
 		self.main = node if irname == 'main' else None
-		for i, block in sorted(node.flow.blocks.iteritems()):
+		for i, block in sorted(util.items(node.flow.blocks)):
 			self.visit(block, frame)
 		
 		self.dedent()
@@ -938,7 +938,7 @@ class CodeGen(object):
 		slen = len(val.val.decode('string_escape'))
 		dtype = '[%i x i8]' % slen
 		literal = val.val
-		for c, sub in sorted(ESCAPES.iteritems()):
+		for c, sub in sorted(util.items(ESCAPES)):
 			literal = literal.replace(c, sub)
 			
 		bits = name, dtype, literal
@@ -983,7 +983,7 @@ class CodeGen(object):
 			self.writeline('%s = type { %s }' % (name, ', '.join(ttypes)))
 			return
 		
-		fields = sorted(type.attribs.itervalues())
+		fields = sorted(util.values(type.attribs))
 		s = ', '.join([i[1].ir for i in fields])
 		self.writeline('%s = type { %s }' % (type.ir, s))
 		
@@ -996,7 +996,7 @@ class CodeGen(object):
 	def trait(self, t):
 		
 		mtypes = []
-		for name, malts in sorted(t.methods.iteritems()):
+		for name, malts in sorted(util.items(t.methods)):
 			for fun in malts:
 				
 				args = []
@@ -1021,7 +1021,7 @@ class CodeGen(object):
 		
 		assert fun is not None
 		vars = {}
-		for i, bl in fun.flow.blocks.iteritems():
+		for i, bl in util.items(fun.flow.blocks):
 			for step in bl.steps:
 				nodes = [step]
 				node = nodes.pop(0)
@@ -1039,28 +1039,28 @@ class CodeGen(object):
 					node = None if not nodes else nodes.pop(0)
 		
 		t.attribs['$label'] = 0, types.get('&byte')
-		for i, (name, type) in enumerate(vars.iteritems()):
+		for i, (name, type) in enumerate(util.items(vars)):
 			t.attribs[name] = i + 1, type
 		
 		self.type(t)
 	
 	def Module(self, mod):
 		
-		for k, v in mod.names.iteritems():
+		for k, v in util.items(mod.names):
 			if isinstance(v, types.FunctionDef):
 				self.declare(v)
 		
 		self.newline()
 		deps = {}
-		for k, v in mod.names.iteritems():
+		for k, v in util.items(mod.names):
 			if k in types.BASIC:
 				deps[k] = None
 			elif isinstance(v, types.base):
-				atypes = {a[1] for a in v.attribs.itervalues()}
+				atypes = {a[1] for a in util.values(v.attribs)}
 				tdeps = {types.unwrap(t) for t in atypes}
 				deps[k] = v, {t for t in tdeps if t.name not in types.BASIC}
 		
-		remains = {k for (k, v) in deps.iteritems() if v is not None}
+		remains = {k for (k, v) in util.items(deps) if v is not None}
 		while remains:
 			
 			done = set()
@@ -1077,7 +1077,7 @@ class CodeGen(object):
 			
 			remains -= {t.name for t in done}
 		
-		for k, v in mod.names.iteritems():
+		for k, v in util.items(mod.names):
 			if isinstance(v, types.trait):
 				self.trait(v)
 		
@@ -1088,7 +1088,7 @@ class CodeGen(object):
 				self.type(var)
 		
 		frame = Frame()
-		for k, v in mod.names.iteritems():
+		for k, v in util.items(mod.names):
 			if isinstance(v, blocks.Constant):
 				self.const(k, v.node, frame)
 		
