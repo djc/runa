@@ -44,11 +44,11 @@ def show(fn, last):
 		if name == last:
 			break
 	
-	data = {}
+	data = []
 	for name, code in mod.code:
 		if name not in names:
 			continue
-		data[name] = pretty.prettify(name, code)
+		data.append(pretty.prettify(name, code))
 	
 	return data
 

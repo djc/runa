@@ -33,7 +33,7 @@ def run(self, key):
 	spec = getspec(fullname)
 	type = spec.get('type', 'test')
 	if type == 'show':
-		out = '\n'.join(runac.show(fullname, None).values()) + '\n'
+		out = '\n'.join(runac.show(fullname, None)) + '\n'
 	else:
 		out = compile(fullname, bin)
 	
