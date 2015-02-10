@@ -21,6 +21,12 @@ import os, sys, copy, platform
 
 ESCAPES = {'\\n': '\\0a', '\\0': '\\00'}
 
+def literal_length(node):
+	if sys.version_info[0] < 3:
+		return len(node.val.decode('string_escape'))
+	else:
+		return len(node.val.encode('utf-8').decode('unicode_escape'))
+
 class Value(util.AttribRepr):
 	def __init__(self, type, var):
 		self.type = type
@@ -295,7 +301,7 @@ class CodeGen(object):
 		for c, sub in sorted(util.items(ESCAPES)):
 			literal = literal.replace(c, sub)
 		
-		length = len(node.val.decode('string_escape'))
+		length = literal_length(node)
 		dtype = '[%i x i8]' % length
 		if not node.escapes:
 			
@@ -935,7 +941,7 @@ class CodeGen(object):
 			frame[name] = Value(val.type, '@%s' % name)
 			return
 		
-		slen = len(val.val.decode('string_escape'))
+		slen = literal_length(val)
 		dtype = '[%i x i8]' % slen
 		literal = val.val
 		for c, sub in sorted(util.items(ESCAPES)):
