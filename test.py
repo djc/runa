@@ -45,6 +45,8 @@ def run(self, key):
 		opts = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
 		proc = subprocess.Popen(cmd, **opts)
 		res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
+		proc.stdout.close()
+		proc.stderr.close()
 	elif type == 'show':
 		res = [0, out, bytes()]
 	else:
