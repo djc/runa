@@ -31,7 +31,7 @@ Installation
 
 Dependencies:
 
-* Python 2.7
+* Python 2.7 or 3.3 (3.4 probably works as well)
 * rply (tested with 0.7.2)
 * Clang (tested with 3.3 and later)
 
