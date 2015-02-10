@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, os, unittest, subprocess, json
 from runac import util
 import runac
@@ -128,14 +129,14 @@ def leaks():
 			if out is not None:
 				continue
 		
-		print 'Running %s...' % bin,
+		print('Running %s...' % bin, end=' ')
 		count = valgrind(bin, getspec(test))
-		print ' ' * (40 - len(bin)), '%3i' % count
+		print(' ' * (40 - len(bin)), '%3i' % count)
 
 if __name__ == '__main__':
 	if len(sys.argv) > 1 and sys.argv[1] == '--leaks':
 		leaks()
 	elif len(sys.argv) > 1:
-		print run(None, sys.argv[1])
+		print(run(None, sys.argv[1]))
 	else:
 	    unittest.main(defaultTest='suite')

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from . import (
 	parser, blocks, liveness, typer, specialize,
 	escapes, destructor, codegen, util, pretty
@@ -81,7 +82,7 @@ def compile(ir, outfn):
 		subprocess.check_call(cmd)
 	except OSError as e:
 		if e.errno == 2:
-			print 'error: clang not found'
+			print('error: clang not found')
 		else:
 			raise
 	except subprocess.CalledProcessError:
