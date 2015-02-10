@@ -50,7 +50,8 @@ def run(self, key):
 	expected = [spec.get('ret', 0), '', '']
 	for i, ext in enumerate(('.out', '.err')):
 		if os.path.exists(base + ext):
-			expected[i + 1] = open(base + ext).read()
+			with open(base + ext, 'rb') as f:
+				expected[i + 1] = f.read()
 	
 	if self is None:
 		return res == expected
