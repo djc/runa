@@ -409,15 +409,15 @@ def get(t, stubs={}):
 		return VarArgs()
 	elif isinstance(t, base):
 		return t
-	elif isinstance(t, basestring) and t[0] == '$':
+	elif isinstance(t, str) and t[0] == '$':
 		return owner(get(t[1:], stubs))
-	elif isinstance(t, basestring) and t[0] == '&':
+	elif isinstance(t, str) and t[0] == '&':
 		return ref(get(t[1:], stubs))
-	elif isinstance(t, basestring) and '[' in t:
+	elif isinstance(t, str) and '[' in t:
 		ext = t.partition('[')
 		assert ext[2][-1] == ']'
 		return get(ext[0])[get(ext[2][:-1])]
-	elif isinstance(t, basestring):
+	elif isinstance(t, str):
 		return stubs[t] if t in stubs else ALL[t]()
 	elif isinstance(t, ast.Name):
 		return stubs[t.name] if t.name in stubs else ALL[t.name]()

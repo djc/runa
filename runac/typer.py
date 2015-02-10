@@ -733,7 +733,7 @@ def typer(mod):
 	base['iter'] = types.iter()
 	for name, obj in util.items(mod.names):
 		
-		if not isinstance(obj, basestring):
+		if not isinstance(obj, str):
 			continue
 		
 		ns = ROOT
@@ -768,7 +768,7 @@ def typer(mod):
 	
 	for k, fun in mod.code:
 		
-		if not isinstance(k, basestring):
+		if not isinstance(k, str):
 			continue
 		
 		atypes = []
