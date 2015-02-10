@@ -68,7 +68,7 @@ def compile(ir, outfn):
 	
 	name = outfn + '.ll'
 	with open(name, 'wb') as f:
-		f.write(ir)
+		f.write(ir.encode('ascii'))
 	
 	triple = re.search('triple = "(.*?)"', ir).groups()[0]
 	if 'windows-msvc' in triple:
