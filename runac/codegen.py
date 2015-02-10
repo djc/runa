@@ -1125,7 +1125,7 @@ def generate(mod):
 	
 	with open(os.path.join(util.CORE_DIR, 'rt.ll')) as f:
 		src = f.read().replace('{{ WORD }}', word)
-		src = src.replace('{{ BYTES }}', str(int(arch[:2]) / 8))
+		src = src.replace('{{ BYTES }}', str(int(arch[:2]) // 8))
 		code.append(src)
 	
 	code += gen.buf
