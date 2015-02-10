@@ -37,17 +37,20 @@ def run(self, key):
 	else:
 		out = compile(fullname, bin)
 	
+	if out and sys.version_info[0] > 2:
+		out = out.encode('utf-8')
+	
 	if not out:
 		cmd = [bin] + spec.get('args', [])
 		opts = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
 		proc = subprocess.Popen(cmd, **opts)
 		res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
 	elif type == 'show':
-		res = [0, out, '']
+		res = [0, out, bytes()]
 	else:
-		res = [0, '', out]
+		res = [0, bytes(), out]
 	
-	expected = [spec.get('ret', 0), '', '']
+	expected = [spec.get('ret', 0), bytes(), bytes()]
 	for i, ext in enumerate(('.out', '.err')):
 		if os.path.exists(base + ext):
 			with open(base + ext, 'rb') as f:
