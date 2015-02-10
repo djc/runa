@@ -36,7 +36,7 @@ class Specializer(object):
 				dst = types.unwrap(dst)
 				node.type = dst
 				if not dst.signed:
-					assert node.val >= 0
+					assert int(node.val) >= 0
 			else:
 				assert False, (node.type, dst)
 		elif node.type == types.anyfloat() and types.unwrap(dst) in types.FLOATS:
