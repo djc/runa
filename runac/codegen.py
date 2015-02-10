@@ -1101,8 +1101,8 @@ class CodeGen(object):
 
 TRIPLES = {
 	('64bit', 'darwin'): 'x86_64-apple-macosx10.10.0',
-	('64bit', 'linux2'): 'x86_64-pc-linux-gnu',
-	('32bit', 'linux2'): 'i386-pc-linux-gnu',
+	('64bit', 'linux'): 'x86_64-pc-linux-gnu',
+	('32bit', 'linux'): 'i386-pc-linux-gnu',
 	('64bit', 'win32'): 'x86_64-pc-windows-gnu',
 }
 
@@ -1113,6 +1113,7 @@ def generate(mod):
 	gen = CodeGen(word)
 	gen.Module(mod)
 	
+	os_key = 'linux' if os_key.startswith('linux') else os_key
 	code = ['target triple = "%s"\n\n' % TRIPLES[arch, os_key]]
 	code += gen.typedecls
 	
