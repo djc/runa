@@ -522,9 +522,28 @@ class FlowFinder(object):
 			self.flow.blocks[id].push(Branch(exit.id))
 			self.flow.edge(id, exit.id)
 	
-	def build(self, node):
-		self.visit(node)
-		return self.flow
+	def find_flow(self, node):
+		
+		self.visit(node.suite)
+		flow = node.flow = self.flow
+		
+		final = flow.blocks[len(flow.blocks) - 1]
+		callbr, branch = False, False
+		if final.steps:
+			last = final.steps[-1]
+			callbr = isinstance(last, ast.Call) and last.callbr
+			branch = isinstance(last, FINAL)
+		
+		if not final.steps or not (callbr or branch):
+			auto = ast.Return(None)
+			auto.value = None
+			auto.pos = node.pos
+			final.steps.append(auto)
+			final.returns = True
+		
+		for src, dsts in util.items(flow.edges):
+			for dst in dsts:
+				flow.blocks[dst].preds.append(flow.blocks[src])
 
 class Module(object):
 	
@@ -590,24 +609,6 @@ def module(node):
 			assert False, n
 	
 	for name, node in mod.code:
-		
-		cfg = node.flow = FlowFinder().build(node.suite)
-		final = cfg.blocks[len(cfg.blocks) - 1]
-		callbr, branch = False, False
-		if final.steps:
-			last = final.steps[-1]
-			callbr = isinstance(last, ast.Call) and last.callbr
-			branch = isinstance(last, FINAL)
-		
-		if not final.steps or not (callbr or branch):
-			auto = ast.Return(None)
-			auto.value = None
-			auto.pos = node.pos
-			final.steps.append(auto)
-			final.returns = True
-		
-		for src, dsts in util.items(cfg.edges):
-			for dst in dsts:
-				cfg.blocks[dst].preds.append(cfg.blocks[src])
+		FlowFinder().find_flow(node)
 	
 	return mod
