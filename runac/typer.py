@@ -771,27 +771,25 @@ def typer(mod):
 		if not isinstance(k, str):
 			continue
 		
-		atypes = []
-		anames = []
+		args = []
 		for arg in fun.args:
 			if arg.type is None:
 				msg = "missing type for argument '%s'"
 				raise util.Error(arg, msg % arg.name.name)
-			atypes.append(base.resolve(arg.type))
-			anames.append(arg.name.name)
+			args.append((base.resolve(arg.type), arg.name.name))
 		
 		rtype = types.void() if fun.rtype is None else base.resolve(fun.rtype)
-		type = types.function(rtype, atypes)
-		type.args = anames
+		type = types.function(rtype, tuple(i[0] for i in args))
+		type.args = tuple(i[1] for i in args)
 		base[fun.name.name] = types.FunctionDef(fun.name.name, type)
 		fun.irname = fun.name.name
 		
-		if k == 'main' and atypes and atypes[0] != types.ref(base['str']):
+		if k == 'main' and args and args[0][0] != types.ref(base['str']):
 			msg = '1st argument to main() must be of type &str'
 			raise util.Error(fun.args[0].type, msg)
 		
 		compare = types.ref(base['array'][base['str']])
-		if k == 'main' and atypes and atypes[1] != compare:
+		if k == 'main' and args and args[1][0] != compare:
 			msg = '2nd argument to main() must be of type &array[str]'
 			raise util.Error(fun.args[1].type, msg)
 		
