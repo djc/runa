@@ -74,10 +74,10 @@ class Decl(object):
 
 ROOT = Declarations('', {
 	'__internal__': Declarations('__internal__', {
-		'__malloc__': Decl('runa.malloc', '$byte', ('uint',)),
-		'__free__': Decl('runa.free', 'void', ('$byte',)),
-		'__memcpy__': Decl('runa.memcpy', 'void', ('&byte', '&byte', 'uint')),
-		'__offset__': Decl('runa.offset', '&byte', ('&byte', 'uint')),
+		'__malloc__': Decl('Runa.rt.malloc', '$byte', ('uint',)),
+		'__free__': Decl('Runa.rt.free', 'void', ('$byte',)),
+		'__memcpy__': Decl('Runa.rt.memcpy', 'void', ('&byte', '&byte', 'uint')),
+		'__offset__': Decl('Runa.rt.offset', '&byte', ('&byte', 'uint')),
 	}),
 	'libc': Declarations('libc', {
 		'stdlib': Declarations('libc.stdlib', {

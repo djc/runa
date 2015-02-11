@@ -7,35 +7,35 @@ declare void @llvm.memcpy.p0i8.p0i8.{{ WORD }}(i8*, i8*, {{ WORD }}, i32, i1)
 @fmt_MALLOC = constant [16 x i8] c"malloc(%ld) %p\0a\00"
 @fmt_FREE = constant [10 x i8] c"free(%p)\0a\00"
 
-define i8* @runa.malloc({{ WORD }} %sz) alwaysinline {
+define i8* @Runa.rt.malloc({{ WORD }} %sz) alwaysinline {
 	%ptr = call i8* @malloc({{ WORD }} %sz)
 	; %fmt = getelementptr inbounds [16 x i8]* @fmt_MALLOC, i32 0, i32 0
 	; call i32 (i8*, ...)* @printf(i8* %fmt, {{ WORD }} %sz, i8* %ptr)
 	ret i8* %ptr
 }
 
-define void @runa.free(i8* %ptr) alwaysinline {
+define void @Runa.rt.free(i8* %ptr) alwaysinline {
 	; %fmt = getelementptr inbounds [10 x i8]* @fmt_FREE, i32 0, i32 0
 	; call i32 (i8*, ...)* @printf(i8* %fmt, i8* %ptr)
 	call void @free(i8* %ptr)
 	ret void
 }
 
-define i8* @runa.offset(i8* %base, {{ WORD }} %offset) alwaysinline {
+define i8* @Runa.rt.offset(i8* %base, {{ WORD }} %offset) alwaysinline {
 	%i = ptrtoint i8* %base to {{ WORD }}
 	%new = add {{ WORD }} %i, %offset
 	%res = inttoptr {{ WORD }} %new to i8*
 	ret i8* %res
 }
 
-define void @runa.memcpy(i8* %dst, i8* %src, {{ WORD }} %len) alwaysinline {
+define void @Runa.rt.memcpy(i8* %dst, i8* %src, {{ WORD }} %len) alwaysinline {
 	call void @llvm.memcpy.p0i8.p0i8.{{ WORD }}(i8* %dst, i8* %src, {{ WORD }} %len, i32 1, i1 0)
 	ret void
 }
 
 %array$str = type { {{ WORD }}, [0 x %str] }
 
-define %array$str* @args(i32 %argc, i8** %argv) {
+define %array$str* @Runa.rt.args(i32 %argc, i8** %argv) {
 	
 	%c64 = sext i32 %argc to {{ WORD }}
 	%num = sub {{ WORD }} %c64, 1
@@ -43,7 +43,7 @@ define %array$str* @args(i32 %argc, i8** %argv) {
 	%str.size = load {{ WORD }}* @str.size
 	%arsz = mul {{ WORD }} %num, %str.size
 	%objsz = add {{ WORD }} {{ BYTES }}, %arsz
-	%array.raw = call i8* @runa.malloc({{ WORD }} %objsz)
+	%array.raw = call i8* @Runa.rt.malloc({{ WORD }} %objsz)
 	%array = bitcast i8* %array.raw to %array$str*
 	
 	%array.data = getelementptr %array$str* %array, i32 0, i32 1
@@ -85,7 +85,7 @@ declare i32 @_Unwind_RaiseException(%UnwEx*)
 @Unhandled = constant [21 x i8] c"Unhandled Exception: "
 @NL = constant [1 x i8] c"\0a"
 
-define void @runa.unhandled(%Exception* %exc) {
+define void @Runa.rt.unhandled(%Exception* %exc) {
 	%prefix = getelementptr inbounds [21 x i8]* @Unhandled, i32 0, i32 0
 	call {{ WORD }} @write(i32 2, i8* %prefix, {{ WORD }} 21)
 	%msg.slot = getelementptr %Exception* %exc, i32 0, i32 4
@@ -100,7 +100,7 @@ define void @runa.unhandled(%Exception* %exc) {
 	ret void
 }
 
-define void @runa.clean(i32 %reason, %UnwEx* %exc) {
+define void @Runa.rt.clean(i32 %reason, %UnwEx* %exc) {
 	%cond = icmp eq i32 %reason, 1 ; _URC_FOREIGN_EXCEPTION_CAUGHT
 	br i1 %cond, label %Foreign, label %Normal
 Foreign:
@@ -114,18 +114,18 @@ Normal:
 	ret void
 }
 
-define void @runa.raise(%Exception* %obj) {
+define void @Runa.rt.raise(%Exception* %obj) {
 	%exc = bitcast %Exception* %obj to %UnwEx*
 	%class = getelementptr %UnwEx* %exc, i32 0, i32 0
 	store i64 19507889121949010, i64* %class ; 'RunaRNE\x00'
 	%slot = getelementptr %UnwEx* %exc, i32 0, i32 1
-	%clean = bitcast %UnwExClean @runa.clean to i8*
+	%clean = bitcast %UnwExClean @Runa.rt.clean to i8*
 	store i8* %clean, i8** %slot
 	%err = call i32 @_Unwind_RaiseException(%UnwEx* %exc)
 	%cond = icmp eq i32 %err, 5 ; _URC_END_OF_STACK
 	br i1 %cond, label %Unhandled, label %Other
 Unhandled:
-	call void @runa.unhandled(%Exception* %obj)
+	call void @Runa.rt.unhandled(%Exception* %obj)
 	br label %End
 Other:
 	%msg = getelementptr inbounds [44 x i8]* @ExcErr, i32 0, i32 0

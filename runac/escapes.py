@@ -180,7 +180,7 @@ class EscapeFinder(object):
 	
 	def Call(self, node, escape=None):
 		
-		if node.fun.name == 'runa.free' and self.fun.name.name == '__del__':
+		if node.fun.name == 'Runa.rt.free' and self.fun.name.name == '__del__':
 			return
 		
 		for i, arg in enumerate(node.fun.type.over[1]):
@@ -193,7 +193,7 @@ class EscapeFinder(object):
 		if not escape:
 			return
 		
-		if node.fun.name == 'runa.malloc':
+		if node.fun.name == 'Runa.rt.malloc':
 			node.escapes = True
 			return
 		

@@ -258,7 +258,7 @@ class CodeGen(object):
 	def free(self, val):
 		bits = self.varname(), val.type.ir, val.var
 		self.writeline('%s = bitcast %s %s to i8*' % bits)
-		self.writeline('call void @runa.free(i8* %s)' % bits[0])
+		self.writeline('call void @Runa.rt.free(i8* %s)' % bits[0])
 	
 	# Node visitation methods
 	
@@ -320,7 +320,7 @@ class CodeGen(object):
 			size = self.load(Value(types.get('&uint'), '@str.size'))
 			tmp = self.varname()
 			bits = tmp, self.word, size.var
-			self.writeline('%s = call i8* @runa.malloc(%s %s)' % bits)
+			self.writeline('%s = call i8* @Runa.rt.malloc(%s %s)' % bits)
 			
 			full = self.varname()
 			self.writeline('%s = bitcast i8* %s to %%str*' % (full, tmp))
@@ -328,7 +328,7 @@ class CodeGen(object):
 			
 			data = self.varname()
 			bits = data, self.word, length
-			self.writeline('%s = call i8* @runa.malloc(%s %s)' % bits)
+			self.writeline('%s = call i8* @Runa.rt.malloc(%s %s)' % bits)
 			
 			tmp = self.varname()
 			bits = tmp, data, dtype
@@ -352,7 +352,7 @@ class CodeGen(object):
 		size = self.load(Value(types.get('&int'), sizevar))
 		
 		bits = self.varname(), self.word, size.var
-		self.writeline('%s = call i8* @runa.malloc(%s %s)' % bits)
+		self.writeline('%s = call i8* @Runa.rt.malloc(%s %s)' % bits)
 		
 		res = self.varname()
 		bits = res, bits[0], node.type.ir
@@ -722,7 +722,7 @@ class CodeGen(object):
 	def Raise(self, node, frame):
 		val = self.visit(node.value, frame)
 		bits = val.type.ir, val.var
-		self.writeline('call void @runa.raise(%s %s) noreturn' % bits)
+		self.writeline('call void @Runa.rt.raise(%s %s) noreturn' % bits)
 		self.writeline('unreachable')
 	
 	def LPad(self, node, frame):
@@ -908,7 +908,7 @@ class CodeGen(object):
 			
 			args = self.alloca(types.get('$array[str]'))
 			direct = self.varname()
-			call = '%s = call %%array$str* @args(i32 %%argc, i8** %%argv)'
+			call = '%s = call %%array$str* @Runa.rt.args(i32 %%argc, i8** %%argv)'
 			self.writeline(call % direct)
 			self.store(('%array$str*', direct), args.var)
 			frame['args'] = args
@@ -956,7 +956,7 @@ class CodeGen(object):
 	
 	def declare(self, ref):
 		
-		if ref.decl.startswith('runa.'):
+		if ref.decl.startswith('Runa.rt'):
 			return
 		
 		rtype = ref.type.over[0].ir
