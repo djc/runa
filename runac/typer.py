@@ -385,8 +385,12 @@ class TypeChecker(object):
 	
 	def Yield(self, node, scope):
 		self.visit(node.value, scope)
-		assert types.compat(node.value.type, self.fun.rtype.params[0])
-	
+		if not types.compat(node.value.type, self.fun.rtype.params[0]):
+			msg = 'yield value type does not match declared type\n'
+			msg += "    '%s' vs '%s'"
+			bits = node.value.type.name, self.fun.rtype.params[0].name
+			raise util.Error(node.value, msg % bits)
+
 	def LoopSetup(self, node, scope):
 		
 		self.visit(node.loop.source, scope)
