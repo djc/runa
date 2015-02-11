@@ -22,7 +22,7 @@ else:
 class AttribRepr(object):
 	'''Helper class to provide a nice __repr__ for other classes'''
 	def __repr__(self):
-		contents = sorted(util.items(self.__dict__))
+		contents = sorted(items(self.__dict__))
 		show = ('%s=%r' % (k, v) for (k, v) in contents if k not in IGNORE)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 
