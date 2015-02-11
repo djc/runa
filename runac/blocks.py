@@ -137,10 +137,6 @@ class FlowFinder(object):
 		self.tmp += 1
 		return '$%s' % (self.tmp - 1)
 	
-	def build(self, node):
-		self.visit(node)
-		return self.flow
-	
 	def visit(self, node):
 		return getattr(self, node.__class__.__name__)(node)
 	
@@ -525,6 +521,10 @@ class FlowFinder(object):
 		for id in util.values(map):
 			self.flow.blocks[id].push(Branch(exit.id))
 			self.flow.edge(id, exit.id)
+	
+	def build(self, node):
+		self.visit(node)
+		return self.flow
 
 class Module(object):
 	
