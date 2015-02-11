@@ -1,0 +1,4 @@
+yield-type.rns [2.11]: yield value type does not match declared type
+    'anyint' vs 'bool'
+    yield 0
+          ^

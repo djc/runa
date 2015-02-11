@@ -1,0 +1,4 @@
+def start() -> iter[bool]:
+	yield 0
+	yield 1
+	yield 2
