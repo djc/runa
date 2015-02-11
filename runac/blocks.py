@@ -589,9 +589,9 @@ def module(node):
 		else:
 			assert False, n
 	
-	for k, v in mod.code:
+	for name, node in mod.code:
 		
-		cfg = v.flow = FlowFinder().build(v.suite)
+		cfg = node.flow = FlowFinder().build(node.suite)
 		final = cfg.blocks[len(cfg.blocks) - 1]
 		callbr, branch = False, False
 		if final.steps:
@@ -602,7 +602,7 @@ def module(node):
 		if not final.steps or not (callbr or branch):
 			auto = ast.Return(None)
 			auto.value = None
-			auto.pos = v.pos
+			auto.pos = node.pos
 			final.steps.append(auto)
 			final.returns = True
 		
