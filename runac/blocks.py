@@ -568,7 +568,7 @@ FINAL = ast.Return, ast.Raise, Branch, CondBranch, ast.Yield, LoopHeader, LPad
 
 def module(node):
 	
-	mod = Module()
+	mod, code = Module(), []
 	for n in node.suite:
 		
 		if isinstance(n, ast.RelImport):
@@ -590,10 +590,10 @@ def module(node):
 		elif isinstance(n, ast.Class):
 			mod.names[n.name.name] = n
 			for m in n.methods:
-				mod.code.append(((n.name.name, m.name.name), m))
+				code.append(((n.name.name, m.name.name), m))
 		
 		elif isinstance(n, ast.Function):
-			mod.code.append((n.name.name, n))
+			code.append((n.name.name, n))
 		
 		elif isinstance(n, ast.Trait):
 			mod.names[n.name.name] = n
@@ -608,7 +608,8 @@ def module(node):
 		else:
 			assert False, n
 	
-	for name, node in mod.code:
+	for name, node in code:
 		FlowFinder().find_flow(node)
+		mod.code.append((name, node))
 	
 	return mod
