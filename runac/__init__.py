@@ -26,7 +26,7 @@ def merge(mod):
 	for fn in os.listdir(util.CORE_DIR):
 		if not fn.endswith('.rns'): continue
 		fn = os.path.join(util.CORE_DIR, fn)
-		mod.merge(blocks.module(parser.parse(fn)))
+		mod.merge(parser.parse(fn))
 
 def show(fn, last):
 	'''Show Runa high-level intermediate representation for the source code
@@ -35,7 +35,7 @@ def show(fn, last):
 	
 	Returns a dict with function names (string or tuple) -> IR (string).
 	Functions from modules other than the given module are ignored.'''
-	mod = blocks.module(parser.parse(fn))
+	mod = blocks.Module(parser.parse(fn))
 	names = [name for (name, code) in mod.code]
 	
 	merge(mod)
@@ -55,7 +55,7 @@ def show(fn, last):
 def ir(fn):
 	'''Generate LLVM IR for the given module. Takes a string file name and
 	returns a string of LLVM IR, for the host architecture.'''
-	mod = blocks.module(parser.parse(fn))
+	mod = blocks.Module(parser.parse(fn))
 	merge(mod)
 	for name, fun in util.items(PASSES):
 		fun(mod)

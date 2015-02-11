@@ -545,71 +545,65 @@ class FlowFinder(object):
 			for dst in dsts:
 				flow.blocks[dst].preds.append(flow.blocks[src])
 
+FINAL = ast.Return, ast.Raise, Branch, CondBranch, ast.Yield, LoopHeader, LPad
+
 class Module(object):
 	
-	def __init__(self):
+	def __init__(self, node=None):
 		self.names = {}
 		self.code = []
 		self.variants = set() # populated by type inferencing pass
 		self.scope = None # populated by type inferencing pass
+		if node is not None:
+			self.merge(node)
 	
 	def __repr__(self):
 		contents = sorted(util.items(self.__dict__))
 		show = ('%s=%s' % (k, v) for (k, v) in contents)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	
-	def merge(self, mod):
-		for k, v in util.items(mod.names):
-			assert k not in self.names, k
-			self.names[k] = v
-		self.code += mod.code
-
-FINAL = ast.Return, ast.Raise, Branch, CondBranch, ast.Yield, LoopHeader, LPad
-
-def module(node):
-	
-	mod, code = Module(), []
-	for n in node.suite:
+	def merge(self, node):
 		
-		if isinstance(n, ast.RelImport):
-			for name in n.names:
-				
-				if isinstance(n.base, ast.Name):
-					base = n.base.name
-				else:
-					start = n.base
-					res = []
-					while isinstance(start, ast.Attrib):
-						res.append(start.attrib)
-						start = start.obj
-					res.append(start.name)
-					base = '.'.join(reversed(res))
-				
-				mod.names[name.name] = base + '.' + name.name
+		code = []
+		for n in node.suite:
+			
+			if isinstance(n, ast.RelImport):
+				for name in n.names:
+					
+					if isinstance(n.base, ast.Name):
+						base = n.base.name
+					else:
+						start = n.base
+						res = []
+						while isinstance(start, ast.Attrib):
+							res.append(start.attrib)
+							start = start.obj
+						res.append(start.name)
+						base = '.'.join(reversed(res))
+					
+					self.names[name.name] = base + '.' + name.name
+			
+			elif isinstance(n, ast.Class):
+				self.names[n.name.name] = n
+				for m in n.methods:
+					code.append(((n.name.name, m.name.name), m))
+			
+			elif isinstance(n, ast.Function):
+				code.append((n.name.name, n))
+			
+			elif isinstance(n, ast.Trait):
+				self.names[n.name.name] = n
+			
+			elif isinstance(n, ast.Assign):
+				assert isinstance(n.left, ast.Name), n.left
+				self.names[n.left.name] = Constant(n.right)
+			
+			elif isinstance(n, ast.Decl):
+				self.names[n.name.name] = n
+			
+			else:
+				assert False, n
 		
-		elif isinstance(n, ast.Class):
-			mod.names[n.name.name] = n
-			for m in n.methods:
-				code.append(((n.name.name, m.name.name), m))
-		
-		elif isinstance(n, ast.Function):
-			code.append((n.name.name, n))
-		
-		elif isinstance(n, ast.Trait):
-			mod.names[n.name.name] = n
-		
-		elif isinstance(n, ast.Assign):
-			assert isinstance(n.left, ast.Name), n.left
-			mod.names[n.left.name] = Constant(n.right)
-		
-		elif isinstance(n, ast.Decl):
-			mod.names[n.name.name] = n
-		
-		else:
-			assert False, n
-	
-	for name, node in code:
-		FlowFinder().find_flow(node)
-		mod.code.append((name, node))
-	
-	return mod
+		for name, node in code:
+			FlowFinder().find_flow(node)
+			self.code.append((name, node))
