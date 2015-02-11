@@ -1004,12 +1004,10 @@ class CodeGen(object):
 		mtypes = []
 		for name, malts in sorted(util.items(t.methods)):
 			for fun in malts:
-				
-				args = []
-				for an, at in zip(fun.type.args, fun.type.over[1]):
-					args.append(types.get('&byte') if an == 'self' else at)
-				
-				mtypes.append(types.function(fun.type.over[0], args).ir)
+				ftype = copy.copy(fun.type)
+				atypes = (types.get('&byte'),) + ftype.over[1][1:]
+				ftype.over = ftype.over[0], atypes
+				mtypes.append(ftype.ir)
 		
 		self.writeline('%%%s.vt = type { %s }' % (t.name, ', '.join(mtypes)))
 		self.writeline('%%%s.wrap = type { %%%s.vt*, i8* }' % (t.name, t.name))
