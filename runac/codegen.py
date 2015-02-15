@@ -695,8 +695,11 @@ class CodeGen(object):
 		frame[node.left.name] = wrap
 	
 	def Attrib(self, node, frame):
+		
 		obj = self.visit(node.obj, frame)
 		t = types.unwrap(obj.type)
+		assert node.attrib in t.attribs, node
+		
 		idx, type = t.attribs[node.attrib]
 		name = self.gep(obj, 0, idx)
 		return Value(types.ref(type), name)
