@@ -30,13 +30,18 @@ def math():
 	print(0.1)
 	print(5 > 3)
 	print(6 < 4)
+	print(4 % 3)
 
 def binary():
 	print(3 & 1)
 	print(2 | 6)
+	print(3 ^ 2)
 	print('' and 'b' or 'c')
 	print('a' != 'b')
 	print('c' == 'c')
+	print(not '')
+	if 7:
+		pass
 
 def range(end: int) -> iter[int]:
 	i = 0 as int
@@ -48,3 +53,6 @@ def loop(args: array[str]):
 	print(args[0])
 	for i in range(3):
 		print(i)
+
+def raises():
+	raise Exception('foo')

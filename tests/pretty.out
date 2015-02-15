@@ -60,7 +60,9 @@ def math() -> void:
  {07} print($4 [bool]) [void]
  {08} $5 [bool] = LT 6 [int] 4 [int]
  {09} print($5 [bool]) [void]
- {10} Return
+ {10} $6 [int] = Mod 4 [int] 3 [int]
+ {11} print($6 [int]) [void]
+ {12} Return
 
 def binary() -> void:
    0: [entry]
@@ -68,23 +70,33 @@ def binary() -> void:
  {01} print($0 [int]) [void]
  {02} $1 [int] = BWOr 2 [int] 6 [int]
  {03} print($1 [int]) [void]
- {04} $4 [$str] = '' [&str]
- {05} $5 [$str] = 'b' [&str]
- {06} $3 [$str] = And $4 [$str] $5 [$str]
- {07} $6 [$str] = 'c' [&str]
- {08} $2 [$str] = Or $3 [$str] $6 [$str]
- {09} print($2 [$str]) [void]
- {10} $8 [$str] = 'a' [&str]
- {11} $9 [$str] = 'b' [&str]
- {12} $7 [bool] = NE $8 [$str] $9 [$str]
- {13} print($7 [bool]) [void]
- {14} $11 [$str] = 'c' [&str]
- {15} $12 [$str] = 'c' [&str]
- {16} $10 [bool] = EQ $11 [$str] $12 [$str]
- {17} print($10 [bool]) [void]
- {18} Free($2 [$str])
- {19} Free($3 [$str])
- {20} Return
+ {04} $2 [int] = BWXor 3 [int] 2 [int]
+ {05} print($2 [int]) [void]
+ {06} $5 [$str] = '' [&str]
+ {07} $6 [$str] = 'b' [&str]
+ {08} $4 [$str] = And $5 [$str] $6 [$str]
+ {09} $7 [$str] = 'c' [&str]
+ {10} $3 [$str] = Or $4 [$str] $7 [$str]
+ {11} print($3 [$str]) [void]
+ {12} $9 [$str] = 'a' [&str]
+ {13} $10 [$str] = 'b' [&str]
+ {14} $8 [bool] = NE $9 [$str] $10 [$str]
+ {15} print($8 [bool]) [void]
+ {16} $12 [$str] = 'c' [&str]
+ {17} $13 [$str] = 'c' [&str]
+ {18} $11 [bool] = EQ $12 [$str] $13 [$str]
+ {19} print($11 [bool]) [void]
+ {20} $15 [$str] = '' [&str]
+ {21} $14 [bool] = Not $15 [$str]
+ {22} print($14 [bool]) [void]
+ {23} CondBranch 7 [int] ? 1 : 2
+   1: [if-suite]
+ {00} Pass
+ {01} Branch 2
+   2: [if-exit]
+ {00} Free($3 [$str])
+ {01} Free($4 [$str])
+ {02} Return
 
 def range(end [int]) -> iter[int]:
    0: [entry]
@@ -114,4 +126,8 @@ def loop(args [array[str]]) -> void:
  {01} Branch 1
    3: [for-exit]
  {00} Return
+
+def raises() -> void:
+   0: [entry]
+ {00} Raise Exception.__init__(Init $Exception, 'foo' [$str:E]) [$Exception]
 
