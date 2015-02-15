@@ -218,15 +218,18 @@ class TypeChecker(object):
 		# TODO: make sure NoValues are reassigned?
 		
 		opts = [isinstance(n.type, types.opt) for n in defined]
-		if any(opts) and not all(opts):
+		if any(opts):
 			for (i, opt) in enumerate(opts):
 				
 				if not opt:
 					continue
 				
 				bid = blocks[i]
-				optbl = self.flow.blocks[bid]
-				if not optbl.checks[node.name]:
+				if bid == self.cur[0].id:
+					continue
+				
+				checks = self.flow.checks.get((bid, self.cur[0].id), {})
+				if checks.get(node.name):
 					opts[i] = False
 			
 			if not any(opts):
@@ -607,14 +610,10 @@ class TypeChecker(object):
 	
 	def DeOpt(self, node, scope):
 		self.visit(node.value, scope)
-		assert isinstance(node.value.type, types.opt), node.value
-		assert isinstance(node.value, ast.Name), node.value
 		self.checked[self.cur[0].id, node.value.name] = True
 	
 	def NoValue(self, node, scope):
 		self.visit(node.value, scope)
-		assert isinstance(node.value.type, types.opt), node.value
-		assert isinstance(node.value, ast.Name), node.value
 		self.checked[self.cur[0].id, node.value.name] = False
 	
 	def Phi(self, node, scope):

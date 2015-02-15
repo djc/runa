@@ -262,10 +262,18 @@ class CodeGen(object):
 	
 	# Node visitation methods
 	
+	def deopt(self, var):
+		if isinstance(var.type, types.opt):
+			var.type = var.type.over
+		elif isinstance(var.type, types.ref):
+			if isinstance(var.type.over, types.opt):
+				var.type = types.ref(var.type.over.over)
+	
 	def Name(self, node, frame):
 		
 		if self.intercept is None:
 			var = frame[node.name]
+			self.deopt(var)
 			return var if node.name.startswith('$') else self.load(var)
 		
 		attr = types.unwrap(self.intercept.type).attribs[node.name]
@@ -735,9 +743,7 @@ class CodeGen(object):
 		pass
 	
 	def DeOpt(self, node, frame):
-		assert isinstance(node.value, ast.Name), node
-		deref = frame[node.value.name].type.over
-		frame[node.value.name].type.over = deref.over
+		pass
 	
 	def NoValue(self, node, frame):
 		pass
