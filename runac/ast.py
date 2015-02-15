@@ -8,7 +8,7 @@ another AST node or a list of AST nodes, so we can walk the tree somehow.
 Some node types are defined in other modules:
 
 - blocks: SetAttr, Branch, CondBranch, Phi, Constant, LoopSetup, LoopHeader,
-          LPad, DeOpt, NoValue
+          LPad
 - typer: Init
 - destructor: Free
 

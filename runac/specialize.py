@@ -256,12 +256,6 @@ class Specializer(object):
 		
 		assert False, (node.left[1].type, node.right[1].type)
 	
-	def NoValue(self, node, type=None):
-		pass
-	
-	def DeOpt(self, node, type=None):
-		pass
-	
 	def Branch(self, node, type=None):
 		pass
 	

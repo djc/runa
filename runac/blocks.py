@@ -64,16 +64,6 @@ class LPad(util.AttribRepr):
 	def __init__(self, map):
 		self.map = map
 
-class DeOpt(util.AttribRepr):
-	fields = 'value',
-	def __init__(self, node):
-		self.value = node
-
-class NoValue(util.AttribRepr):
-	fields = 'value',
-	def __init__(self, node):
-		self.value = node
-
 class Block(util.AttribRepr):
 	
 	def __init__(self, id, anno=None):
@@ -93,19 +83,6 @@ class Block(util.AttribRepr):
 	
 	def needbranch(self):
 		return not self.steps or not isinstance(self.steps[-1], ast.Return)
-	
-	def checked(self, checked, steps=None):
-		
-		if steps is not None:
-			self.steps = []
-		
-		for node, chk in checked:
-			assert isinstance(node, ast.Name)
-			value = copy.copy(node)
-			self.steps.append(DeOpt(value) if chk else NoValue(value))
-		
-		if steps is not None:
-			self.steps += steps
 
 class FlowGraph(util.AttribRepr):
 	
@@ -374,7 +351,6 @@ class FlowFinder(object):
 					check = True
 				
 				prevcond.checks = {n.name: chk for (n, chk) in checked}
-				self.cur.checked(checked, self.cur.steps)
 				self.flow.edge(prevcond.id, self.cur.id, checked)
 				self.cur.push(CondBranch(condvar, None, None))
 				self.cur, prevcond = tmp, self.cur
@@ -392,7 +368,6 @@ class FlowFinder(object):
 					checked.append((cond.left, False))
 					check = True
 				
-				block.checked(checked)
 				self.cur.checks = {n.name: chk for (n, chk) in checked}
 				self.flow.edge(self.cur.id, block.id, checked)
 				self.cur.push(CondBranch(condvar, block.id, None))
@@ -402,7 +377,6 @@ class FlowFinder(object):
 				assert isinstance(prevcond.steps[-1], CondBranch)
 				prevcond.steps[-1].tg2 = block.id
 				prevcond.checks = {n.name: chk for (n, chk) in checked}
-				block.checked(checked)
 				self.flow.edge(prevcond.id, block.id, checked)
 				prevcond = None
 			

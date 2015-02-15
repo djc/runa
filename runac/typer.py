@@ -584,9 +584,6 @@ class TypeChecker(object):
 				raise
 			new = True
 		
-		if isinstance(node.right, blocks.NoValue):
-			node.right.type = node.right.value.type
-		
 		assert node.right.type is not None
 		if not new and not types.compat(node.right.type, node.left.type):
 			if not var:
@@ -607,14 +604,6 @@ class TypeChecker(object):
 		if node.left.type != node.right.type:
 			bits = node.right.type.name, node.left.type.name
 			raise util.Error(node, "cannot add '%s' to '%s'" % bits)
-	
-	def DeOpt(self, node, scope):
-		self.visit(node.value, scope)
-		self.checked[self.cur[0].id, node.value.name] = True
-	
-	def NoValue(self, node, scope):
-		self.visit(node.value, scope)
-		self.checked[self.cur[0].id, node.value.name] = False
 	
 	def Phi(self, node, scope):
 		

@@ -742,12 +742,6 @@ class CodeGen(object):
 	def Pass(self, node, frame):
 		pass
 	
-	def DeOpt(self, node, frame):
-		pass
-	
-	def NoValue(self, node, frame):
-		pass
-	
 	def Return(self, node, frame):
 		
 		if self.main is not None and self.main.args:
