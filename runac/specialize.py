@@ -183,6 +183,12 @@ class Specializer(object):
 	def Pass(self, node, type=None):
 		pass
 	
+	def LPad(self, node, type=None):
+		pass
+	
+	def Resume(self, node, type=None):
+		pass
+	
 	def As(self, node, type=None):
 		self.visit(node.left)
 	
