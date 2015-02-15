@@ -180,6 +180,9 @@ class Specializer(object):
 	
 	# Miscellaneous
 	
+	def Pass(self, node, type=None):
+		pass
+	
 	def As(self, node, type=None):
 		self.visit(node.left)
 	
