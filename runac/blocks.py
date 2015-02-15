@@ -359,11 +359,6 @@ class FlowFinder(object):
 		prevcond, exits, check, checked = None, [], False, []
 		for i, (cond, suite) in enumerate(node.blocks):
 			
-			if checked and check:
-				invert = checked[-1][0], not checked[-1][1]
-				checked = checked[:-1] + [invert]
-				check = False
-			
 			if i and cond is not None:
 				
 				assert isinstance(prevcond.steps[-1], CondBranch)
@@ -412,6 +407,11 @@ class FlowFinder(object):
 			self.visit(suite)
 			if self.cur.needbranch():
 				exits.append(self.cur)
+			
+			if checked and check:
+				invert = checked[-1][0], not checked[-1][1]
+				checked = checked[:-1] + [invert]
+				check = False
 		
 		if prevcond is None and not exits:
 			return
