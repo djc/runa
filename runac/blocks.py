@@ -113,14 +113,17 @@ class FlowGraph(util.AttribRepr):
 		self.blocks = {0: Block(0, 'entry')}
 		self.edges = {}
 		self.yields = {}
+		self.checks = {}
 	
 	def block(self, anno=None):
 		id = len(self.blocks)
 		self.blocks[id] = Block(id, anno)
 		return self.blocks[id]
 	
-	def edge(self, src, dst):
+	def edge(self, src, dst, checked=None):
 		self.edges.setdefault(src, []).append(dst)
+		if checked:
+			self.checks[src, dst] = {n.name: chk for (n, chk) in checked}
 
 ATOMIC = ast.NoneVal, ast.Bool, ast.Int, ast.Float, ast.Name
 
@@ -372,7 +375,7 @@ class FlowFinder(object):
 				
 				prevcond.checks = {n.name: chk for (n, chk) in checked}
 				self.cur.checked(checked, self.cur.steps)
-				self.flow.edge(prevcond.id, self.cur.id)
+				self.flow.edge(prevcond.id, self.cur.id, checked)
 				self.cur.push(CondBranch(condvar, None, None))
 				self.cur, prevcond = tmp, self.cur
 			
@@ -380,7 +383,7 @@ class FlowFinder(object):
 			if i and cond is not None:
 				assert isinstance(prevcond.steps[-1], CondBranch)
 				prevcond.steps[-1].tg1 = block.id
-				self.flow.edge(prevcond.id, block.id)
+				self.flow.edge(prevcond.id, block.id, checked)
 			
 			if not i:
 				
@@ -391,7 +394,7 @@ class FlowFinder(object):
 				
 				block.checked(checked)
 				self.cur.checks = {n.name: chk for (n, chk) in checked}
-				self.flow.edge(self.cur.id, block.id)
+				self.flow.edge(self.cur.id, block.id, checked)
 				self.cur.push(CondBranch(condvar, block.id, None))
 				prevcond = self.cur
 			
@@ -400,7 +403,7 @@ class FlowFinder(object):
 				prevcond.steps[-1].tg2 = block.id
 				prevcond.checks = {n.name: chk for (n, chk) in checked}
 				block.checked(checked)
-				self.flow.edge(prevcond.id, block.id)
+				self.flow.edge(prevcond.id, block.id, checked)
 				prevcond = None
 			
 			self.cur = block
@@ -420,13 +423,13 @@ class FlowFinder(object):
 		if prevcond:
 			assert isinstance(prevcond.steps[-1], CondBranch)
 			prevcond.steps[-1].tg2 = self.cur.id
-			self.flow.edge(prevcond.id, self.cur.id)
+			self.flow.edge(prevcond.id, self.cur.id, checked)
 		
 		for block in exits:
 			if block.steps and isinstance(block.steps[-1], FINAL):
 				continue
 			block.push(Branch(self.cur.id))
-			self.flow.edge(block.id, self.cur.id)
+			self.flow.edge(block.id, self.cur.id, checked)
 	
 	def While(self, node):
 		
