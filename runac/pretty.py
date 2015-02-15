@@ -177,18 +177,6 @@ class PrettyPrinter(object):
 		self.write('Init ')
 		self.visit(node.type)
 	
-	def Ref(self, node):
-		self.write('&')
-		self.visit(node.value)
-	
-	def Owner(self, node):
-		self.write('$')
-		self.visit(node.value)
-	
-	def Opt(self, node):
-		self.visit(node.value)
-		self.write('?')
-	
 	def Argument(self, node):
 		self.write(node.name.name)
 		self.anno(node)
