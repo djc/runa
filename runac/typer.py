@@ -716,9 +716,13 @@ def process(mod, base, fun):
 
 def typer(mod):
 	
+	# Start by adding types to type dictionary
+	
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
 			types.add(v)
+	
+	# Next, set up module scope and imported redirections
 	
 	base = Scope()
 	base['iter'] = types.iter()
@@ -738,6 +742,8 @@ def typer(mod):
 		
 		mod.names[name] = base[name] = val
 	
+	# Add constants to module scope
+	
 	for k, v in util.items(mod.names):
 		if not isinstance(v, blocks.Constant):
 			continue
@@ -749,13 +755,20 @@ def typer(mod):
 			assert False, v.node
 		base[k] = v.node
 	
+	# Build types for classes and traits
+	
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
 			base[k] = mod.names[k] = types.fill(v)
 	
+	# Build function definitions from declarations
+	
 	for k, v in util.items(mod.names):
 		if isinstance(v, ast.Decl):
 			base[k] = mod.names[k] = types.realize(v)
+	
+	# Process module-level functions: build function definition object,
+	# set IR name and check for types (in particular for "main")
 	
 	for k, fun in mod.code:
 		
@@ -787,9 +800,12 @@ def typer(mod):
 		if k == 'main' and rtype not in {types.void(), base['i32']}:
 			raise util.Error(fun, 'main() return type must be i32')
 	
+	# Handle type checking and inference on all code objects
+	
 	mod.scope = base
 	for k, fun in mod.code:
 		
+		# Check type invariants on methods
 		if isinstance(k, tuple) and k[1] != '__new__':
 			if not fun.args:
 				raise util.Error(fun, "missing 'self' argument")
@@ -801,6 +817,7 @@ def typer(mod):
 					msg = "first method argument must be of type '%s'"
 					raise util.Error(fun.args[0].type, msg % k[0])
 		
+		# Pass self as owner to __del__ methods
 		if fun.args and fun.args[0].type is None:
 			if fun.name.name == '__del__':
 				fun.args[0].type = types.owner(base[k[0]])
