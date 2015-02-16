@@ -607,6 +607,12 @@ class CodeGen(object):
 		if left.type.ir == node.type.ir:
 			return Value(node.type, left.var)
 		
+		if left.type.name.startswith('lump'):
+			if node.type.name.startswith('lump'):
+				bits = self.varname(), left.type.ir, left.var, node.type.ir
+				self.writeline('%s = bitcast %s %s to %s' % bits)
+				return Value(node.type, bits[0])
+		
 		if left.type in types.INTS and node.type in types.INTS:
 			assert left.type.bits <= node.type.bits
 			assert left.type in types.SINTS and node.type in types.UINTS
