@@ -163,7 +163,7 @@ expansion of the language design (e.g. concurrency):
   edA-qa mort-ora-y
 
 * `C++ Exception Handling - Base ABI
-  <http://theofilos.cs.columbia.edu/blog/2013/09/22/base_abi/>`_
+  <http://www.deadp0rk.com/2013/09/22/base_abi/>`_
   
   Theofilos Petsios
 
