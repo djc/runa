@@ -435,17 +435,12 @@ def get(t, stubs={}):
 	else:
 		assert False, 'no type %s' % t
 
-ALL = {}
-for k in list(util.keys(globals())):
-	obj = globals()[k]
-	if type(obj) == type and issubclass(obj, (base, template)):
-		ALL[k] = globals()[k]
-
-for k, cls in util.items(ALL):
-	for m, mdata in util.items(cls.methods):
-		rtype = get(mdata[1])
-		atypes = [(n, get(t)) for (n, t) in mdata[2]]
-		cls.methods[m] = (m[0], rtype, atypes)
+ALL = {
+	'void': void,
+	'anyint': anyint,
+	'anyfloat': anyfloat,
+	'iter': iter,
+}
 
 SINTS = {anyint()}
 UINTS = set()
