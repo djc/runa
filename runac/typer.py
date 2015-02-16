@@ -214,8 +214,7 @@ class TypeChecker(object):
 				msg = "unmatched types '%s', '%s' on incoming branches"
 				raise util.Error(node, msg % (n.type.name, first.name))
 		
-		# DeOpt if all opt origins end with a negative check
-		# TODO: make sure NoValues are reassigned?
+		# Deopt for all incoming edges where check is True
 		
 		opts = [isinstance(n.type, types.opt) for n in defined]
 		if any(opts):
