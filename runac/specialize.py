@@ -190,7 +190,10 @@ class Specializer(object):
 		pass
 	
 	def As(self, node, type=None):
-		self.visit(node.left)
+		if types.generic(node.left.type):
+			self.visit(node.left, node.type)
+		else:
+			self.visit(node.left)
 	
 	def LoopSetup(self, node, type=None):
 		self.visit(node.loop.source, type)
