@@ -191,3 +191,11 @@ expansion of the language design (e.g. concurrency):
   <http://channel9.msdn.com/Events/GoingNative/2013/Cpp-Seasoning>`_
   
   Sean Parent
+
+* `.eh_frame
+  <http://www.airs.com/blog/archives/460>`_
+  Ian Lance Taylor
+
+* `.gcc_except_table
+  <http://www.airs.com/blog/archives/464>`_
+  Ian Lance Taylor
