@@ -62,7 +62,8 @@ class Frame(object):
 
 class CodeGen(object):
 	
-	def __init__(self, word):
+	def __init__(self, mod, word):
+		self.mod = mod
 		self.word = word
 		self.level = 0
 		self.start = True
@@ -75,6 +76,9 @@ class CodeGen(object):
 	
 	def visit(self, node, frame):
 		return getattr(self, node.__class__.__name__)(node, frame)
+	
+	def generate(self):
+		self.Module(self.mod)
 	
 	# Output helper methods
 	
@@ -1122,8 +1126,8 @@ def generate(mod):
 	
 	arch, os_key = platform.architecture()[0], sys.platform
 	word = 'i' + arch[:2]
-	gen = CodeGen(word)
-	gen.Module(mod)
+	gen = CodeGen(mod, word)
+	gen.generate()
 	
 	os_key = 'linux' if os_key.startswith('linux') else os_key
 	code = ['target triple = "%s"\n\n' % TRIPLES[arch, os_key]]
