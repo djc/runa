@@ -19,11 +19,12 @@ Note: this is pre-alpha quality software. Use at your own peril.
 
 All feedback welcome. Feel free to file bugs, requests for documentation and
 any other feedback to the `issue tracker`_, `tweet me`_ or join the #runa
-channel on freenode.
+channel on freenode. Also, check out the `website`_.
 
 .. _issue tracker: https://github.com/djc/runa/issues
 .. _tweet me: https://twitter.com/djco/
 .. _Zen of Python: https://www.python.org/dev/peps/pep-0020/
+.. _website: http://runa-lang.org/
 
 
 Installation
