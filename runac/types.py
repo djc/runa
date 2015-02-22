@@ -186,21 +186,6 @@ def apply(tpl, params):
 	
 	return cls()
 
-def build_tuple(params):
-	
-	params = tuple(params)
-	name = 'tuple[%s]' % ', '.join(p.name for p in params)
-	internal = name.replace('%', '_').replace('.', '_')
-	cls = ALL[('tuple', params)] = type(internal, (concrete,), {
-		'ir': '%tuple$' + '.'.join(wrangle(t.name) for t in params),
-		'name': name,
-		'params': params,
-		'methods': {'v%i' % i: (i, t) for (i, t) in enumerate(params)},
-		'attribs': {},
-	})
-	
-	return cls()
-
 class iter(template):
 	params = 'T',
 	attribs = {}
@@ -526,6 +511,31 @@ class TypeMap(object):
 			self['anyfloat'].methods.update(cls.methods)
 		
 		return obj
+	
+	def realize(self, n):
+		if isinstance(n, ast.Decl):
+			rtype = self.get(n.rtype)
+			atypes = [self.get(a.type) for a in n.args]
+			return FunctionDef(n.name.name, function(rtype, atypes))
+		else:
+			rtype = self.get(n.rtype)
+			atypes = [self.get(t) for t in n.atypes]
+			return FunctionDef(n.decl, function(rtype, atypes))
+	
+	def build_tuple(self, params):
+		
+		params = tuple(params)
+		name = 'tuple[%s]' % ', '.join(p.name for p in params)
+		internal = name.replace('%', '_').replace('.', '_')
+		cls = self[('tuple', params)] = type(internal, (concrete,), {
+			'ir': '%tuple$' + '.'.join(wrangle(t.name) for t in params),
+			'name': name,
+			'params': params,
+			'methods': {'v%i' % i: (i, t) for (i, t) in enumerate(params)},
+			'attribs': {},
+		})
+		
+		return cls()
 
 def get(t, stubs={}):
 	return ALL.get(t, stubs)
@@ -535,6 +545,12 @@ def add(node):
 
 def fill(node):
 	return ALL.fill(node)
+
+def realize(n):
+	return ALL.realize(n)
+
+def build_tuple(params):
+	return ALL.build_tuple(params)
 
 ALL = TypeMap()
 
@@ -550,13 +566,3 @@ def wrangle(s):
 	s = s.replace('[', 'BT')
 	s = s.replace(']', 'ET')
 	return s
-
-def realize(n):
-	if isinstance(n, ast.Decl):
-		rtype = get(n.rtype)
-		atypes = [get(a.type) for a in n.args]
-		return FunctionDef(n.name.name, function(rtype, atypes))
-	else:
-		rtype = get(n.rtype)
-		atypes = [get(t) for t in n.atypes]
-		return FunctionDef(n.decl, function(rtype, atypes))
