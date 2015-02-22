@@ -141,31 +141,6 @@ class Scope(object):
 	
 	def get(self, key, default=None):
 		return self[key] if key in self else default
-	
-	def resolve(self, mod, node):
-		if isinstance(node, ast.Name) and node.name not in self:
-			raise util.Error(node, "type '%s' not found" % node.name)
-		if isinstance(node, ast.Name):
-			assert self[node.name].type == types.Type()
-			return self[node.name]
-		elif isinstance(node, ast.Elem):
-			outer = self[node.obj.name]
-			if isinstance(outer, types.template):
-				if node.key.name in outer.params:
-					return outer
-			inner = self.resolve(mod, node.key)
-			return mod.types.apply(self[node.obj.name], inner)
-		elif isinstance(node, ast.Tuple):
-			params = tuple(self.resolve(types, v) for v in node.values)
-			return mod.types.build_tuple(params)
-		elif isinstance(node, ast.Ref):
-			return types.ref(self.resolve(mod, node.value))
-		elif isinstance(node, ast.Owner):
-			return types.owner(self.resolve(mod, node.value))
-		elif isinstance(node, ast.Opt):
-			return types.opt(self.resolve(mod, node.value))
-		else:
-			assert False
 
 class TypeChecker(object):
 	
@@ -437,7 +412,7 @@ class TypeChecker(object):
 	
 	def As(self, node, scope):
 		self.visit(node.left, scope)
-		node.type = self.scopes[None].resolve(self.mod, node.right)
+		node.type = self.mod.types.get(node.right)
 		# TODO: check if the conversion makes sense
 	
 	def Raise(self, node, scope):
@@ -694,13 +669,13 @@ def process(mod, base, fun):
 	if fun.rtype is None:
 		fun.rtype = types.void()
 	if not isinstance(fun.rtype, types.base):
-		fun.rtype = start.resolve(mod, fun.rtype)
+		fun.rtype = mod.types.get(fun.rtype)
 		variant(mod, fun.rtype)
 	
 	for arg in fun.args:
 		
 		if not isinstance(arg.type, types.base):
-			arg.type = start.resolve(mod, arg.type)
+			arg.type = mod.types.get(arg.type)
 		
 		start[arg.name.name] = arg
 		variant(mod, arg.type)
@@ -791,11 +766,11 @@ def typer(mod):
 			if arg.type is None:
 				msg = "missing type for argument '%s'"
 				raise util.Error(arg, msg % arg.name.name)
-			args.append((base.resolve(mod, arg.type), arg.name.name))
+			args.append((mod.types.get(arg.type), arg.name.name))
 		
 		rtype = types.void()
 		if fun.rtype is not None:
-			rtype = base.resolve(mod, fun.rtype)
+			rtype = mod.types.get(fun.rtype)
 		
 		type = types.function(rtype, tuple(i[0] for i in args))
 		type.args = tuple(i[1] for i in args)
