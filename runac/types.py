@@ -472,12 +472,69 @@ class TypeMap(object):
 			fields['byval'] = True
 		
 		self[node.name.name] = type(node.name.name, (parent,), fields)
+	
+	def fill(self, node):
+		
+		cls = self[node.name.name]
+		stubs = {}
+		if not isinstance(node, ast.Trait):
+			cls.params = tuple(n.name for n in node.params)
+			stubs = {n.name: Stub(n.name) for n in node.params}
+			for i, (atype, name) in enumerate(node.attribs):
+				cls.attribs[name.name] = i, self.get(atype, stubs)
+		
+		for method in node.methods:
+			
+			name = method.name.name
+			rtype = void()
+			if method.rtype is not None:
+				rtype = self.get(method.rtype, stubs)
+			
+			args = []
+			for i, arg in enumerate(method.args):
+				if not i and arg.name.name == 'self':
+					wrapper = owner if name == '__del__' else ref
+					args.append(('self', wrapper(self.get(node.name, stubs))))
+				else:
+					args.append((arg.name.name, self.get(arg.type, stubs)))
+			
+			irname = '%s.%s' % (node.name.name, name)
+			if name in cls.methods:
+				irname = irname + '$' + '.'.join(wrangle(a[1].name) for a in args)
+				assert rtype == cls.methods[name][0].type.over[0]
+			
+			fun = FunctionDef(irname, function(rtype, tuple(a[1] for a in args)))
+			fun.type.args = [a[0] for a in args]
+			cls.methods.setdefault(name, []).append(fun)
+			method.irname = irname
+		
+		obj = cls()
+		if node.name.name in INTEGERS:
+			
+			cls.signed, cls.bits = INTEGERS[node.name.name]
+			INTS.add(obj)
+			if cls.signed:
+				SINTS.add(obj)
+			else:
+				UINTS.add(obj)
+			
+			self['anyint'].methods.update(cls.methods)
+		
+		elif node.name.name in BASIC_FLOATS:
+			cls.bits = BASIC_FLOATS[node.name.name]
+			FLOATS.add(obj)
+			self['anyfloat'].methods.update(cls.methods)
+		
+		return obj
 
 def get(t, stubs={}):
 	return ALL.get(t, stubs)
 
 def add(node):
 	ALL.add(node)
+
+def fill(node):
+	return ALL.fill(node)
 
 ALL = TypeMap()
 
@@ -493,58 +550,6 @@ def wrangle(s):
 	s = s.replace('[', 'BT')
 	s = s.replace(']', 'ET')
 	return s
-
-def fill(node):
-	
-	cls = ALL[node.name.name]
-	stubs = {}
-	if not isinstance(node, ast.Trait):
-		cls.params = tuple(n.name for n in node.params)
-		stubs = {n.name: Stub(n.name) for n in node.params}
-		for i, (atype, name) in enumerate(node.attribs):
-			cls.attribs[name.name] = i, get(atype, stubs)
-	
-	for method in node.methods:
-		
-		name = method.name.name
-		rtype = void() if method.rtype is None else get(method.rtype, stubs)
-		
-		args = []
-		for i, arg in enumerate(method.args):
-			if not i and arg.name.name == 'self':
-				wrapper = owner if name == '__del__' else ref
-				args.append(('self', wrapper(get(node.name, stubs))))
-			else:
-				args.append((arg.name.name, get(arg.type, stubs)))
-		
-		irname = '%s.%s' % (node.name.name, name)
-		if name in cls.methods:
-			irname = irname + '$' + '.'.join(wrangle(a[1].name) for a in args)
-			assert rtype == cls.methods[name][0].type.over[0]
-		
-		fun = FunctionDef(irname, function(rtype, tuple(a[1] for a in args)))
-		fun.type.args = [a[0] for a in args]
-		cls.methods.setdefault(name, []).append(fun)
-		method.irname = irname
-	
-	obj = cls()
-	if node.name.name in INTEGERS:
-		
-		cls.signed, cls.bits = INTEGERS[node.name.name]
-		INTS.add(obj)
-		if cls.signed:
-			SINTS.add(obj)
-		else:
-			UINTS.add(obj)
-		
-		ALL['anyint'].methods.update(cls.methods)
-	
-	elif node.name.name in BASIC_FLOATS:
-		cls.bits = BASIC_FLOATS[node.name.name]
-		FLOATS.add(obj)
-		ALL['anyfloat'].methods.update(cls.methods)
-	
-	return obj
 
 def realize(n):
 	if isinstance(n, ast.Decl):
