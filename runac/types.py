@@ -410,6 +410,8 @@ class TypeMap(object):
 			return ref(self.get(t.value, stubs))
 		elif isinstance(t, ast.Opt):
 			return opt(self.get(t.value, stubs))
+		elif isinstance(t, ast.Tuple):
+			return self.build_tuple(tuple(self.get(v) for v in t.values))
 		else:
 			assert False, 'no type %s' % t
 	
