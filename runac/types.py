@@ -450,9 +450,34 @@ class TypeMap(object):
 			return opt(self.get(t.value, stubs))
 		else:
 			assert False, 'no type %s' % t
+	
+	def add(self, node):
+		
+		if isinstance(node, ast.Trait):
+			parent = trait
+		elif node.params:
+			parent = template
+		else:
+			parent = base
+		
+		if isinstance(node, ast.Trait):
+			fields = {'methods': {}}
+		elif node.params:
+			fields = {'methods': {}, 'attribs': {}, 'params': {}}
+		else:
+			fields = {'methods': {}, 'attribs': {}}
+		
+		if node.name.name in BASIC:
+			fields['ir'] = BASIC[node.name.name]
+			fields['byval'] = True
+		
+		self[node.name.name] = type(node.name.name, (parent,), fields)
 
 def get(t, stubs={}):
 	return ALL.get(t, stubs)
+
+def add(node):
+	ALL.add(node)
 
 ALL = TypeMap()
 
@@ -461,28 +486,6 @@ UINTS = set()
 INTS = {anyint()}
 FLOATS = {anyfloat()}
 WRAPPERS = owner, ref
-
-def add(node):
-	
-	if isinstance(node, ast.Trait):
-		parent = trait
-	elif node.params:
-		parent = template
-	else:
-		parent = base
-	
-	if isinstance(node, ast.Trait):
-		fields = {'methods': {}}
-	elif node.params:
-		fields = {'methods': {}, 'attribs': {}, 'params': {}}
-	else:
-		fields = {'methods': {}, 'attribs': {}}
-	
-	if node.name.name in BASIC:
-		fields['ir'] = BASIC[node.name.name]
-		fields['byval'] = True
-	
-	ALL[node.name.name] = type(node.name.name, (parent,), fields)
 
 def wrangle(s):
 	s = s.replace('&', 'R')
