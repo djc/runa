@@ -41,3 +41,45 @@ where LLVM IR is generated. This can then be passed into ``clang``.
 A regression test suite is implemented in the ``tests/`` dir, where each
 source file (``rns`` extension) represents a single test case. Execute the
 entire suite by executing ``make test`` in the root directory.
+
+
+AST to CFG transformation
+=========================
+
+.. automodule:: runac.blocks
+
+
+Liveness analysis
+=================
+
+.. automodule:: runac.liveness
+
+
+Type inference and type checking
+================================
+
+.. automodule:: runac.typer
+
+
+Type specialization
+===================
+
+.. automodule:: runac.specialize
+
+
+Escape analysis
+===============
+
+.. automodule:: runac.escapes
+
+
+Destructor insertion
+====================
+
+.. automodule:: runac.destructor
+
+
+Code generation
+===============
+
+.. automodule:: runac.codegen
