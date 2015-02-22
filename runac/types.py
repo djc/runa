@@ -147,44 +147,44 @@ class template(ReprId):
 	def __repr__(self):
 		return '<template: %s>' % self.__class__.__name__
 	
-	def __getitem__(self, params):
+def apply(tpl, params):
 		
-		params = params if isinstance(params, tuple) else (params,)
-		name = '%s[%s]' % (self.name, ', '.join(p.name for p in params))
-		internal = name.replace('$', '_').replace('.', '_')
-		cls = ALL[(self.name, params)] = type(internal, (concrete,), {
-			'ir': '%' + self.name + '$' + '.'.join(t.name for t in params),
-			'name': name,
-			'params': params,
-			'methods': {},
-			'attribs': {},
-		})
-		
-		trans = {k: v for (k, v) in zip(self.params, params)}
-		for k, v in util.items(self.attribs):
-			if isinstance(v[1], Stub):
-				cls.attribs[k] = v[0], trans[v[1].name]
-			elif isinstance(v[1], WRAPPERS) and isinstance(v[1].over, Stub):
-				cls.attribs[k] = v[0], v[1].__class__(trans[v[1].over.name])
-			else:
-				cls.attribs[k] = v[0], v[1]
-		
-		for k, mtypes in util.items(self.methods):
-			for method in mtypes:
-				
-				rtype = method.type.over[0]
-				if rtype == self:
-					rtype = cls()
-				
-				formal = method.type.over[1]
-				formal = (ref(cls()),) + formal[1:]
-				t = function(rtype, formal)
-				
-				pmd = self.name + '$' + '.'.join(t.name for t in params)
-				decl = method.decl.replace(self.name, pmd)
-				cls.methods.setdefault(k, []).append(FunctionDef(decl, t))
-		
-		return cls()
+	params = params if isinstance(params, tuple) else (params,)
+	name = '%s[%s]' % (tpl.name, ', '.join(p.name for p in params))
+	internal = name.replace('$', '_').replace('.', '_')
+	cls = ALL[(tpl.name, params)] = type(internal, (concrete,), {
+		'ir': '%' + tpl.name + '$' + '.'.join(t.name for t in params),
+		'name': name,
+		'params': params,
+		'methods': {},
+		'attribs': {},
+	})
+	
+	trans = {k: v for (k, v) in zip(tpl.params, params)}
+	for k, v in util.items(tpl.attribs):
+		if isinstance(v[1], Stub):
+			cls.attribs[k] = v[0], trans[v[1].name]
+		elif isinstance(v[1], WRAPPERS) and isinstance(v[1].over, Stub):
+			cls.attribs[k] = v[0], v[1].__class__(trans[v[1].over.name])
+		else:
+			cls.attribs[k] = v[0], v[1]
+	
+	for k, mtypes in util.items(tpl.methods):
+		for method in mtypes:
+			
+			rtype = method.type.over[0]
+			if rtype == tpl:
+				rtype = cls()
+			
+			formal = method.type.over[1]
+			formal = (ref(cls()),) + formal[1:]
+			t = function(rtype, formal)
+			
+			pmd = tpl.name + '$' + '.'.join(t.name for t in params)
+			decl = method.decl.replace(tpl.name, pmd)
+			cls.methods.setdefault(k, []).append(FunctionDef(decl, t))
+	
+	return cls()
 
 def build_tuple(params):
 	
@@ -416,7 +416,7 @@ def get(t, stubs={}):
 	elif isinstance(t, str) and '[' in t:
 		ext = t.partition('[')
 		assert ext[2][-1] == ']'
-		return get(ext[0])[get(ext[2][:-1])]
+		return apply(get(ext[0]), get(ext[2][:-1]))
 	elif isinstance(t, str):
 		return stubs[t] if t in stubs else ALL[t]()
 	elif isinstance(t, ast.Name):
@@ -425,7 +425,7 @@ def get(t, stubs={}):
 		if isinstance(get(t.obj.name, stubs), template):
 			if t.key.name in stubs:
 				return get(t.obj.name, stubs)
-		return ALL[t.obj.name]()[get(t.key, stubs)]
+		return apply(ALL[t.obj.name](), get(t.key, stubs))
 	elif isinstance(t, ast.Owner):
 		return owner(get(t.value, stubs))
 	elif isinstance(t, ast.Ref):

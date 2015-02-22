@@ -154,7 +154,7 @@ class Scope(object):
 				if node.key.name in outer.params:
 					return outer
 			inner = self.resolve(node.key)
-			return self[node.obj.name][inner]
+			return types.apply(self[node.obj.name], inner)
 		elif isinstance(node, ast.Tuple):
 			return types.build_tuple(self.resolve(v) for v in node.values)
 		elif isinstance(node, ast.Ref):
@@ -802,7 +802,7 @@ def typer(mod):
 			msg = '1st argument to main() must be of type &str'
 			raise util.Error(fun.args[0].type, msg)
 		
-		compare = types.ref(base['array'][base['str']])
+		compare = types.ref(types.apply(base['array'], base['str']))
 		if k == 'main' and args and args[1][0] != compare:
 			msg = '2nd argument to main() must be of type &array[str]'
 			raise util.Error(fun.args[1].type, msg)
