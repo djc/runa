@@ -371,6 +371,9 @@ class TypeMap(object):
 			'iter': iter,
 		}
 	
+	def __contains__(self, key):
+		return key in self.map
+	
 	def __getitem__(self, key):
 		return self.map[key]
 	
