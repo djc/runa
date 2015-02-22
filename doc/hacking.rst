@@ -11,16 +11,16 @@ and compilation of LLVM IR to machine code being done.
 The general structure is like this:
 
 1. Parser phase (includes lexing and parsing), in ``runac/parser.py``
-2. AST to CFG transformation phase, in ``runac/blocks.py``
+2. :ref:`blocks`, in ``runac/blocks.py``
 3. Transformation passes:
    
-   a. Liveness analysis, in ``runac/liveness.py``
-   b. Type inferencing and type checking, in ``runac/typer.py``
-   c. Type specialization, in ``runac/specialize.py``
-   d. Escape analysis, in ``runac/escapes.py``
-   e. Destructor insertion, in ``runac/destructor.py``
+   a. :ref:`liveness`, in ``runac/liveness.py``
+   b. :ref:`typer`, in ``runac/typer.py``
+   c. :ref:`specialize`, in ``runac/specialize.py``
+   d. :ref:`escapes`, in ``runac/escapes.py``
+   e. :ref:`destructor`, in ``runac/destructor.py``
    
-4. Code generation phase, in ``runac/codegen.py``
+4. :ref:`codegen`, in ``runac/codegen.py``
 
 The parser, which is based on rply, returns an AST (node classes in
 ``runac/ast.py``). This gets processed by the AST walker in
@@ -43,11 +43,15 @@ source file (``rns`` extension) represents a single test case. Execute the
 entire suite by executing ``make test`` in the root directory.
 
 
+.. _blocks:
+
 AST to CFG transformation
 =========================
 
 .. automodule:: runac.blocks
 
+
+.. _liveness:
 
 Liveness analysis
 =================
@@ -55,11 +59,15 @@ Liveness analysis
 .. automodule:: runac.liveness
 
 
+.. _typer:
+
 Type inference and type checking
 ================================
 
 .. automodule:: runac.typer
 
+
+.. _specialize:
 
 Type specialization
 ===================
@@ -67,17 +75,23 @@ Type specialization
 .. automodule:: runac.specialize
 
 
+.. _escapes:
+
 Escape analysis
 ===============
 
 .. automodule:: runac.escapes
 
 
+.. _destructor:
+
 Destructor insertion
 ====================
 
 .. automodule:: runac.destructor
 
+
+.. _codegen:
 
 Code generation
 ===============
