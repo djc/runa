@@ -18,6 +18,33 @@ concrete variants; these are used for traits and generics support.
 from . import ast, util
 import copy, platform
 
+WORD_SIZE = int(platform.architecture()[0][:2])
+
+BASIC = {
+	'bool': 'i1',
+	'byte': 'i8',
+	'i8': 'i8',
+	'u8': 'i8',
+	'i32': 'i32',
+	'u32': 'i32',
+	'u64': 'i64',
+	'int': 'i%i' % WORD_SIZE,
+	'uint': 'i%i' % WORD_SIZE,
+	'float': 'double',
+}
+
+INTEGERS = {
+	'i8': (True, 8),
+	'u8': (False, 8),
+	'i32': (True, 32),
+	'u32': (False, 32),
+	'u64': (False, 64),
+	'int': (True, WORD_SIZE),
+	'uint': (False, WORD_SIZE),
+}
+
+BASIC_FLOATS = {'float': 64}
+
 class Type(object):
 	def __eq__(self, other):
 		return self.__class__ == other.__class__
@@ -176,33 +203,6 @@ class anyfloat(base):
 	def ir(self):
 		assert False, 'not a concrete type'
 
-WORD_SIZE = int(platform.architecture()[0][:2])
-
-BASIC = {
-	'bool': 'i1',
-	'byte': 'i8',
-	'i8': 'i8',
-	'u8': 'i8',
-	'i32': 'i32',
-	'u32': 'i32',
-	'u64': 'i64',
-	'int': 'i%i' % WORD_SIZE,
-	'uint': 'i%i' % WORD_SIZE,
-	'float': 'double',
-}
-
-INTEGERS = {
-	'i8': (True, 8),
-	'u8': (False, 8),
-	'i32': (True, 32),
-	'u32': (False, 32),
-	'u64': (False, 64),
-	'int': (True, WORD_SIZE),
-	'uint': (False, WORD_SIZE),
-}
-
-BASIC_FLOATS = {'float': 64}
-
 class module(base):
 	def __init__(self, path=None):
 		self.path = path
@@ -256,6 +256,12 @@ class opt(base):
 	def __repr__(self):
 		return '<type: %s?>' % (self.over.name)
 
+SINTS = {anyint()}
+UINTS = set()
+INTS = {anyint()}
+FLOATS = {anyfloat()}
+WRAPPERS = owner, ref
+
 class function(base):
 	
 	def __init__(self, rtype, formal):
@@ -281,6 +287,13 @@ def unwrap(t):
 
 def generic(t):
 	return isinstance(unwrap(t), (anyint, anyfloat))
+
+def wrangle(s):
+	s = s.replace('&', 'R')
+	s = s.replace('$', 'O')
+	s = s.replace('[', 'BT')
+	s = s.replace(']', 'ET')
+	return s
 
 def compat(a, f, strict=False):
 	
@@ -536,6 +549,8 @@ class TypeMap(object):
 				cls.methods.setdefault(k, []).append(FunctionDef(decl, t))
 		
 		return cls()
+
+ALL = TypeMap()
 	
 def get(t, stubs={}):
 	return ALL.get(t, stubs)
@@ -554,18 +569,3 @@ def build_tuple(params):
 
 def apply(tpl, params):
 	return ALL.apply(tpl, params)
-
-ALL = TypeMap()
-
-SINTS = {anyint()}
-UINTS = set()
-INTS = {anyint()}
-FLOATS = {anyfloat()}
-WRAPPERS = owner, ref
-
-def wrangle(s):
-	s = s.replace('&', 'R')
-	s = s.replace('$', 'O')
-	s = s.replace('[', 'BT')
-	s = s.replace(']', 'ET')
-	return s
