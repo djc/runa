@@ -398,7 +398,11 @@ class TypeMap(object):
 		elif isinstance(t, str):
 			return stubs[t] if t in stubs else self[t]()
 		elif isinstance(t, ast.Name):
-			return stubs[t.name] if t.name in stubs else self[t.name]()
+			if t.name in stubs:
+				return stubs[t.name]
+			if t.name not in self:
+				raise util.Error(t, "type '%s' not found" % t.name)
+			return self[t.name]()
 		elif isinstance(t, ast.Elem):
 			if isinstance(self.get(t.obj.name, stubs), template):
 				if t.key.name in stubs:
