@@ -402,40 +402,8 @@ class VarArgs(base):
 	def ir(self):
 		return '...'
 
-def get(t, stubs={}):
-	if t is None:
-		return void()
-	elif t == '...':
-		return VarArgs()
-	elif isinstance(t, base):
-		return t
-	elif isinstance(t, str) and t[0] == '$':
-		return owner(get(t[1:], stubs))
-	elif isinstance(t, str) and t[0] == '&':
-		return ref(get(t[1:], stubs))
-	elif isinstance(t, str) and '[' in t:
-		ext = t.partition('[')
-		assert ext[2][-1] == ']'
-		return apply(get(ext[0]), get(ext[2][:-1]))
-	elif isinstance(t, str):
-		return stubs[t] if t in stubs else ALL[t]()
-	elif isinstance(t, ast.Name):
-		return stubs[t.name] if t.name in stubs else ALL[t.name]()
-	elif isinstance(t, ast.Elem):
-		if isinstance(get(t.obj.name, stubs), template):
-			if t.key.name in stubs:
-				return get(t.obj.name, stubs)
-		return apply(ALL[t.obj.name](), get(t.key, stubs))
-	elif isinstance(t, ast.Owner):
-		return owner(get(t.value, stubs))
-	elif isinstance(t, ast.Ref):
-		return ref(get(t.value, stubs))
-	elif isinstance(t, ast.Opt):
-		return opt(get(t.value, stubs))
-	else:
-		assert False, 'no type %s' % t
-
 class TypeMap(object):
+	
 	def __init__(self):
 		self.map = {
 			'void': void,
@@ -443,10 +411,48 @@ class TypeMap(object):
 			'anyfloat': anyfloat,
 			'iter': iter,
 		}
+	
 	def __getitem__(self, key):
 		return self.map[key]
+	
 	def __setitem__(self, key, val):
 		self.map[key] = val
+	
+	def get(self, t, stubs={}):
+		if t is None:
+			return void()
+		elif t == '...':
+			return VarArgs()
+		elif isinstance(t, base):
+			return t
+		elif isinstance(t, str) and t[0] == '$':
+			return owner(self.get(t[1:], stubs))
+		elif isinstance(t, str) and t[0] == '&':
+			return ref(self.get(t[1:], stubs))
+		elif isinstance(t, str) and '[' in t:
+			ext = t.partition('[')
+			assert ext[2][-1] == ']'
+			return apply(self.get(ext[0]), self.get(ext[2][:-1]))
+		elif isinstance(t, str):
+			return stubs[t] if t in stubs else self[t]()
+		elif isinstance(t, ast.Name):
+			return stubs[t.name] if t.name in stubs else self[t.name]()
+		elif isinstance(t, ast.Elem):
+			if isinstance(self.get(t.obj.name, stubs), template):
+				if t.key.name in stubs:
+					return self.get(t.obj.name, stubs)
+			return apply(self[t.obj.name](), self.get(t.key, stubs))
+		elif isinstance(t, ast.Owner):
+			return owner(self.get(t.value, stubs))
+		elif isinstance(t, ast.Ref):
+			return ref(self.get(t.value, stubs))
+		elif isinstance(t, ast.Opt):
+			return opt(self.get(t.value, stubs))
+		else:
+			assert False, 'no type %s' % t
+
+def get(t, stubs={}):
+	return ALL.get(t, stubs)
 
 ALL = TypeMap()
 
