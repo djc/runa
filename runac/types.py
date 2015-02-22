@@ -435,12 +435,20 @@ def get(t, stubs={}):
 	else:
 		assert False, 'no type %s' % t
 
-ALL = {
-	'void': void,
-	'anyint': anyint,
-	'anyfloat': anyfloat,
-	'iter': iter,
-}
+class TypeMap(object):
+	def __init__(self):
+		self.map = {
+			'void': void,
+			'anyint': anyint,
+			'anyfloat': anyfloat,
+			'iter': iter,
+		}
+	def __getitem__(self, key):
+		return self.map[key]
+	def __setitem__(self, key, val):
+		self.map[key] = val
+
+ALL = TypeMap()
 
 SINTS = {anyint()}
 UINTS = set()
