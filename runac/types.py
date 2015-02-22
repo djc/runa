@@ -549,23 +549,3 @@ class TypeMap(object):
 				cls.methods.setdefault(k, []).append(FunctionDef(decl, t))
 		
 		return cls()
-
-ALL = TypeMap()
-	
-def get(t, stubs={}):
-	return ALL.get(t, stubs)
-
-def add(node):
-	ALL.add(node)
-
-def fill(node):
-	return ALL.fill(node)
-
-def realize(n):
-	return ALL.realize(n)
-
-def build_tuple(params):
-	return ALL.build_tuple(params)
-
-def apply(tpl, params):
-	return ALL.apply(tpl, params)

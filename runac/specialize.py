@@ -27,9 +27,9 @@ class Specializer(object):
 		if node.type == dst:
 			return
 		elif node.type == types.anyint() and dst is None:
-			node.type = types.get('int')
+			node.type = self.mod.types.get('int')
 		elif node.type == types.anyfloat() and dst is None:
-			node.type = types.get('float')
+			node.type = self.mod.types.get('float')
 		elif dst is None:
 			return
 		elif node.type == types.anyint() and types.unwrap(dst) in types.INTS:
@@ -50,12 +50,12 @@ class Specializer(object):
 			for i, e in enumerate(node.type.params):
 				assert types.compat(e, dst.params[i])
 				ttypes.append(dst.params[i])
-			node.type = types.build_tuple(ttypes)
+			node.type = self.mod.types.build_tuple(ttypes)
 		elif isinstance(types.unwrap(dst), types.trait):
 			if node.type == types.anyint():
-				node.type = types.get('int')
+				node.type = self.mod.types.get('int')
 			elif node.type == types.anyfloat():
-				node.type = types.get('float')
+				node.type = self.mod.types.get('float')
 			else:
 				assert False, 'specialize %s to trait' % node.type
 		else:
@@ -105,7 +105,7 @@ class Specializer(object):
 		for i, e in enumerate(node.values):
 			if types.generic(e.type):
 				self.specialize(e, ttypes[i])
-		node.type = types.build_tuple(n.type for n in node.values)
+		node.type = self.mod.types.build_tuple(n.type for n in node.values)
 	
 	def Init(self, node, type=None):
 		pass
@@ -203,7 +203,7 @@ class Specializer(object):
 		self.visit(node.lvar, self.track.get(node.lvar.name))
 	
 	def CondBranch(self, node, type=None):
-		self.visit(node.cond, types.get('ToBool'))
+		self.visit(node.cond, self.mod.types.get('ToBool'))
 	
 	def Assign(self, node, type=None):
 		if isinstance(node.left, ast.Name):
@@ -258,11 +258,11 @@ class Specializer(object):
 			node.type = node.left[1].type
 			return
 		
-		if node.left[1].type == types.get('NoType'):
+		if node.left[1].type == self.mod.types.get('NoType'):
 			assert node.type == types.opt(node.right[1].type)
 			node.left[1].type = node.type
 			return
-		elif node.right[1].type == types.get('NoType'):
+		elif node.right[1].type == self.mod.types.get('NoType'):
 			assert node.type == types.opt(node.left[1].type)
 			node.right[1].type = node.type
 			return

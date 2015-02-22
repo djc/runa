@@ -142,7 +142,7 @@ class Scope(object):
 	def get(self, key, default=None):
 		return self[key] if key in self else default
 	
-	def resolve(self, node):
+	def resolve(self, mod, node):
 		if isinstance(node, ast.Name) and node.name not in self:
 			raise util.Error(node, "type '%s' not found" % node.name)
 		if isinstance(node, ast.Name):
@@ -153,16 +153,17 @@ class Scope(object):
 			if isinstance(outer, types.template):
 				if node.key.name in outer.params:
 					return outer
-			inner = self.resolve(node.key)
-			return types.apply(self[node.obj.name], inner)
+			inner = self.resolve(mod, node.key)
+			return mod.types.apply(self[node.obj.name], inner)
 		elif isinstance(node, ast.Tuple):
-			return types.build_tuple(self.resolve(v) for v in node.values)
+			params = tuple(self.resolve(types, v) for v in node.values)
+			return mod.types.build_tuple(params)
 		elif isinstance(node, ast.Ref):
-			return types.ref(self.resolve(node.value))
+			return types.ref(self.resolve(mod, node.value))
 		elif isinstance(node, ast.Owner):
-			return types.owner(self.resolve(node.value))
+			return types.owner(self.resolve(mod, node.value))
 		elif isinstance(node, ast.Opt):
-			return types.opt(self.resolve(node.value))
+			return types.opt(self.resolve(mod, node.value))
 		else:
 			assert False
 
@@ -250,10 +251,10 @@ class TypeChecker(object):
 		node.type = first
 	
 	def NoneVal(self, node, scope):
-		node.type = types.get('NoType')
+		node.type = self.mod.types.get('NoType')
 	
 	def Bool(self, node, scope):
-		node.type = types.get('bool')
+		node.type = self.mod.types.get('bool')
 	
 	def Int(self, node, scope):
 		node.type = types.anyint()
@@ -262,18 +263,18 @@ class TypeChecker(object):
 		node.type = types.anyfloat()
 	
 	def String(self, node, scope):
-		node.type = types.owner(types.get('str'))
+		node.type = types.owner(self.mod.types.get('str'))
 	
 	def Tuple(self, node, scope):
 		for v in node.values:
 			self.visit(v, scope)
-		node.type = types.build_tuple(v.type for v in node.values)
+		node.type = self.mod.types.build_tuple(v.type for v in node.values)
 	
 	# Boolean operators
 	
 	def Not(self, node, scope):
 		self.visit(node.value, scope)
-		node.type = types.get('bool')
+		node.type = self.mod.types.get('bool')
 	
 	def boolean(self, op, node, scope):
 		self.visit(node.left, scope)
@@ -281,7 +282,7 @@ class TypeChecker(object):
 		if node.left.type == node.right.type:
 			node.type = node.left.type
 		else:
-			node.type = types.get('bool')
+			node.type = self.mod.types.get('bool')
 	
 	def And(self, node, scope):
 		self.boolean('and', node, scope)
@@ -300,7 +301,7 @@ class TypeChecker(object):
 		if not isinstance(node.left.type, types.opt):
 			assert isinstance(node.left.type, types.WRAPPERS), node.left
 		
-		node.type = types.get('bool')
+		node.type = self.mod.types.get('bool')
 	
 	def compare(self, op, node, scope):
 		
@@ -309,7 +310,7 @@ class TypeChecker(object):
 		
 		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
 		if node.left.type == node.right.type:
-			node.type = types.get('bool')
+			node.type = self.mod.types.get('bool')
 		elif lt in types.INTS and rt not in types.INTS:
 			msg = "value of type '%s' may only be compared to integer type"
 			raise util.Error(node, msg % node.left.type.name)
@@ -320,7 +321,7 @@ class TypeChecker(object):
 			msg = "types '%s' and '%s' cannot be compared"
 			raise util.Error(node, msg % (lt.name, rt.name))
 		
-		node.type = types.get('bool')
+		node.type = self.mod.types.get('bool')
 	
 	def EQ(self, node, scope):
 		self.compare('eq', node, scope)
@@ -419,7 +420,7 @@ class TypeChecker(object):
 			node.loop.source = call
 		
 		name = node.loop.source.fun.name + '$ctx'
-		node.type = types.get(name)
+		node.type = self.mod.types.get(name)
 		self.mod.variants.add(node.type)
 	
 	def LoopHeader(self, node, scope):
@@ -436,7 +437,7 @@ class TypeChecker(object):
 	
 	def As(self, node, scope):
 		self.visit(node.left, scope)
-		node.type = self.scopes[None].resolve(node.right)
+		node.type = self.scopes[None].resolve(self.mod, node.right)
 		# TODO: check if the conversion makes sense
 	
 	def Raise(self, node, scope):
@@ -582,7 +583,7 @@ class TypeChecker(object):
 				dst.type = t
 				ttypes.append(t)
 			
-			node.left.type = types.build_tuple(ttypes)
+			node.left.type = self.mod.types.build_tuple(ttypes)
 			return
 		
 		new, var = False, isinstance(node.left, ast.Name)
@@ -630,7 +631,7 @@ class TypeChecker(object):
 			node.type = node.left[1].type
 			return
 		
-		no_type = types.get('NoType').__class__
+		no_type = self.mod.types.get('NoType').__class__
 		if isinstance(node.left[1].type, no_type):
 			node.type = types.opt(node.right[1].type)
 			return
@@ -643,7 +644,7 @@ class TypeChecker(object):
 	
 	def LPad(self, node, scope):
 		for type in node.map:
-			t = types.get(type)
+			t = self.mod.types.get(type)
 			assert t.name == 'Exception'
 	
 	def Branch(self, node, scope):
@@ -693,13 +694,13 @@ def process(mod, base, fun):
 	if fun.rtype is None:
 		fun.rtype = types.void()
 	if not isinstance(fun.rtype, types.base):
-		fun.rtype = start.resolve(fun.rtype)
+		fun.rtype = start.resolve(mod, fun.rtype)
 		variant(mod, fun.rtype)
 	
 	for arg in fun.args:
 		
 		if not isinstance(arg.type, types.base):
-			arg.type = start.resolve(arg.type)
+			arg.type = start.resolve(mod, arg.type)
 		
 		start[arg.name.name] = arg
 		variant(mod, arg.type)
@@ -713,7 +714,7 @@ def process(mod, base, fun):
 			defn = base[fun.name.name]
 		
 		name = fun.irname + '$ctx'
-		types.ALL[name] = type(name, (types.concrete,), {
+		mod.types[name] = type(name, (types.concrete,), {
 			'name': name,
 			'ir': '%' + name,
 			'yields': fun.rtype.params[0],
@@ -730,7 +731,7 @@ def typer(mod):
 	
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
-			types.add(v)
+			mod.types.add(v)
 	
 	# Next, set up module scope and imported redirections
 	
@@ -748,7 +749,7 @@ def typer(mod):
 		
 		val = ns.attribs[path[0]]
 		if isinstance(val, Decl):
-			val = types.realize(val)
+			val = mod.types.realize(val)
 		
 		mod.names[name] = base[name] = val
 	
@@ -758,9 +759,9 @@ def typer(mod):
 		if not isinstance(v, blocks.Constant):
 			continue
 		if isinstance(v.node, ast.String):
-			v.node.type = types.get('&str')
+			v.node.type = mod.types.get('&str')
 		elif isinstance(v.node, ast.Int):
-			v.node.type = types.get('&int')
+			v.node.type = mod.types.get('&int')
 		else:
 			assert False, v.node
 		base[k] = v.node
@@ -769,13 +770,13 @@ def typer(mod):
 	
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
-			base[k] = mod.names[k] = types.fill(v)
+			base[k] = mod.names[k] = mod.types.fill(v)
 	
 	# Build function definitions from declarations
 	
 	for k, v in util.items(mod.names):
 		if isinstance(v, ast.Decl):
-			base[k] = mod.names[k] = types.realize(v)
+			base[k] = mod.names[k] = mod.types.realize(v)
 	
 	# Process module-level functions: build function definition object,
 	# set IR name and check for types (in particular for "main")
@@ -790,9 +791,12 @@ def typer(mod):
 			if arg.type is None:
 				msg = "missing type for argument '%s'"
 				raise util.Error(arg, msg % arg.name.name)
-			args.append((base.resolve(arg.type), arg.name.name))
+			args.append((base.resolve(mod, arg.type), arg.name.name))
 		
-		rtype = types.void() if fun.rtype is None else base.resolve(fun.rtype)
+		rtype = types.void()
+		if fun.rtype is not None:
+			rtype = base.resolve(mod, fun.rtype)
+		
 		type = types.function(rtype, tuple(i[0] for i in args))
 		type.args = tuple(i[1] for i in args)
 		base[fun.name.name] = types.FunctionDef(fun.name.name, type)
@@ -802,7 +806,7 @@ def typer(mod):
 			msg = '1st argument to main() must be of type &str'
 			raise util.Error(fun.args[0].type, msg)
 		
-		compare = types.ref(types.apply(base['array'], base['str']))
+		compare = types.ref(mod.types.apply(base['array'], base['str']))
 		if k == 'main' and args and args[1][0] != compare:
 			msg = '2nd argument to main() must be of type &array[str]'
 			raise util.Error(fun.args[1].type, msg)

@@ -20,7 +20,7 @@ and the transformation of the various source-level flow control features
 into a control flow graph of basic blocks.
 '''
 
-from . import ast, util
+from . import ast, util, types
 import copy
 
 class SetAttr(ast.Attrib):
@@ -536,6 +536,7 @@ class Module(object):
 		self.code = []
 		self.variants = set() # populated by type inferencing pass
 		self.scope = None # populated by type inferencing pass
+		self.types = types.TypeMap()
 		if node is not None:
 			self.merge(node)
 	

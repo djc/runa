@@ -19,7 +19,7 @@ class Free(util.AttribRepr):
 	def __init__(self, value):
 		self.value = value
 
-def destructify(code):
+def destructify(mod, code):
 	
 	returns, reassign, left = {}, [], {}
 	for i, bl in util.items(code.flow.blocks):
@@ -77,7 +77,7 @@ def destructify(code):
 					left.pop(step.right.right[1].name, None)
 	
 	if code.irname == 'main' and code.args:
-		left['args'] = types.get('$array[str]'), {None}
+		left['args'] = mod.types.get('$array[str]'), {None}
 	
 	for name, bid, sid, type in reassign:
 		node = ast.Name(name, None)
@@ -97,4 +97,4 @@ def destructify(code):
 
 def destruct(mod):
 	for name, code in mod.code:
-		destructify(code)
+		destructify(mod, code)
