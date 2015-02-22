@@ -31,5 +31,6 @@ Table of contents
 .. toctree::
    :maxdepth: 2
    
+   hacking.rst
    refs.rst
    notes.rst
