@@ -1,12 +1,13 @@
-'''Specialize any* types and traits, where necessary. Propagate type
-information so that imprecisely typed variables get a concrete type.
+'''Specialize any* types and traits, where necessary.
+Propagate type information so that imprecisely typed variables
+get a concrete type.
 In cases where no specific information is available for number types,
-we just pick int (word-sized) or float (C double, so 64 bits).
+we just pick ``int`` (word-sized) or ``float`` (C double, so 64 bits).
 
 TODO: Rust has changed their defaults a number of times. Read up on
 http://discuss.rust-lang.org/t/restarting-the-int-uint-discussion/1131,
-see if it makes sense to change int to be i32. Currently, we only have
-a single float type; it seems like float == f64 might make sense.
+see if it makes sense to change int to be ``i32``. Currently, we only have
+a single float type; it seems like ``float`` == ``f64`` might make sense.
 '''
 
 from . import ast, types, util

@@ -1,10 +1,13 @@
 '''The escapes pass marks objects that will escape the function.
 
-This pass exists for memory management purposes. We want to free
-heap-allocated objects that do not survive the current function call, so we
-must know which objects are returned to the caller or stored in an object.
-This can either be a returned object, or something that was passed in that
-survives this call. Escaping objects will not be freed before returning.
+This pass exists for memory management purposes.
+We want to free heap-allocated objects that
+do not survive the current function call,
+so we must know which objects are returned to the caller or
+stored in an object.
+This can either be a returned object,
+or something that was passed in that survives this call.
+Escaping objects will not be freed before returning.
 
 This data is also important for our survival analysis (yet to be implemented),
 where data on survival requirements becomes part of the function type.
