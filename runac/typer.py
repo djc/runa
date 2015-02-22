@@ -48,27 +48,9 @@ class Init(ast.Expr):
 		self.type = type
 
 class Declarations(util.AttribRepr):
-	
 	def __init__(self, name, init):
 		self.name = name
 		self.attribs = init
-		self.type = types.module(name)
-		for k, val in util.items(init):
-			if isinstance(val, types.FunctionDef):
-				self.type.functions[k] = val.type
-				val.name = '%s.%s' % (name, k)
-	
-	def __getitem__(self, key):
-		return self.attribs[key]
-	
-	def __contains__(self, key):
-		return key in self.attribs
-	
-	def iteritems(self):
-		return self.attribs.iteritems()
-	
-	def items(self):
-		return self.attribs.items()
 
 class Decl(object):
 	
