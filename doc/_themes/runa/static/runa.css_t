@@ -2,7 +2,7 @@
    http://paletton.com/#uid=13J0u0ksIM7d8ZwlWTX-TtPy5b+
 */
 
-* {
+html, body, div, p, footer, header, nav, li {
   box-sizing: border-box;
   font-family: 'PT Sans', sans-serif;
 }
@@ -19,6 +19,14 @@ a, a:visited {
 
 a:hover, a:active {
   color: #900;
+}
+
+tt, code {
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 11pt;
+  padding: 0.1em 0.3em;
+  font-size: 85%;
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .container {
