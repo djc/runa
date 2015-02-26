@@ -208,10 +208,10 @@ class TypeChecker(object):
 		node.type = first
 	
 	def NoneVal(self, node, scope):
-		node.type = self.mod.types.get('NoType')
+		node.type = self.mod.type('NoType')
 	
 	def Bool(self, node, scope):
-		node.type = self.mod.types.get('bool')
+		node.type = self.mod.type('bool')
 	
 	def Int(self, node, scope):
 		node.type = types.anyint()
@@ -220,7 +220,7 @@ class TypeChecker(object):
 		node.type = types.anyfloat()
 	
 	def String(self, node, scope):
-		node.type = types.owner(self.mod.types.get('str'))
+		node.type = types.owner(self.mod.type('str'))
 	
 	def Tuple(self, node, scope):
 		for v in node.values:
@@ -231,7 +231,7 @@ class TypeChecker(object):
 	
 	def Not(self, node, scope):
 		self.visit(node.value, scope)
-		node.type = self.mod.types.get('bool')
+		node.type = self.mod.type('bool')
 	
 	def boolean(self, op, node, scope):
 		self.visit(node.left, scope)
@@ -239,7 +239,7 @@ class TypeChecker(object):
 		if node.left.type == node.right.type:
 			node.type = node.left.type
 		else:
-			node.type = self.mod.types.get('bool')
+			node.type = self.mod.type('bool')
 	
 	def And(self, node, scope):
 		self.boolean('and', node, scope)
@@ -258,7 +258,7 @@ class TypeChecker(object):
 		if not isinstance(node.left.type, types.opt):
 			assert isinstance(node.left.type, types.WRAPPERS), node.left
 		
-		node.type = self.mod.types.get('bool')
+		node.type = self.mod.type('bool')
 	
 	def compare(self, op, node, scope):
 		
@@ -267,7 +267,7 @@ class TypeChecker(object):
 		
 		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
 		if node.left.type == node.right.type:
-			node.type = self.mod.types.get('bool')
+			node.type = self.mod.type('bool')
 		elif lt in types.INTS and rt not in types.INTS:
 			msg = "value of type '%s' may only be compared to integer type"
 			raise util.Error(node, msg % node.left.type.name)
@@ -278,7 +278,7 @@ class TypeChecker(object):
 			msg = "types '%s' and '%s' cannot be compared"
 			raise util.Error(node, msg % (lt.name, rt.name))
 		
-		node.type = self.mod.types.get('bool')
+		node.type = self.mod.type('bool')
 	
 	def EQ(self, node, scope):
 		self.compare('eq', node, scope)
@@ -377,7 +377,7 @@ class TypeChecker(object):
 			node.loop.source = call
 		
 		name = node.loop.source.fun.name + '$ctx'
-		node.type = self.mod.types.get(name)
+		node.type = self.mod.type(name)
 		self.mod.variants.add(node.type)
 	
 	def LoopHeader(self, node, scope):
@@ -394,7 +394,7 @@ class TypeChecker(object):
 	
 	def As(self, node, scope):
 		self.visit(node.left, scope)
-		node.type = self.mod.types.get(node.right)
+		node.type = self.mod.type(node.right)
 		# TODO: check if the conversion makes sense
 	
 	def Raise(self, node, scope):
@@ -588,7 +588,7 @@ class TypeChecker(object):
 			node.type = node.left[1].type
 			return
 		
-		no_type = self.mod.types.get('NoType').__class__
+		no_type = self.mod.type('NoType').__class__
 		if isinstance(node.left[1].type, no_type):
 			node.type = types.opt(node.right[1].type)
 			return
@@ -601,7 +601,7 @@ class TypeChecker(object):
 	
 	def LPad(self, node, scope):
 		for type in node.map:
-			t = self.mod.types.get(type)
+			t = self.mod.type(type)
 			assert t.name == 'Exception'
 	
 	def Branch(self, node, scope):
@@ -651,13 +651,13 @@ def process(mod, base, fun):
 	if fun.rtype is None:
 		fun.rtype = types.void()
 	if not isinstance(fun.rtype, types.base):
-		fun.rtype = mod.types.get(fun.rtype)
+		fun.rtype = mod.type(fun.rtype)
 		variant(mod, fun.rtype)
 	
 	for arg in fun.args:
 		
 		if not isinstance(arg.type, types.base):
-			arg.type = mod.types.get(arg.type)
+			arg.type = mod.type(arg.type)
 		
 		start[arg.name.name] = arg
 		variant(mod, arg.type)
@@ -705,8 +705,8 @@ def typer(mod):
 		
 		val = ns.attribs[path[0]]
 		if isinstance(val, Decl):
-			rtype = mod.types.get(val.rtype)
-			atypes = [mod.types.get(t) for t in val.atypes]
+			rtype = mod.type(val.rtype)
+			atypes = [mod.type(t) for t in val.atypes]
 			val = types.FunctionDef(val.decl, types.function(rtype, atypes))
 		else:
 			assert False, val
@@ -719,9 +719,9 @@ def typer(mod):
 		if not isinstance(v, blocks.Constant):
 			continue
 		if isinstance(v.node, ast.String):
-			v.node.type = mod.types.get('&str')
+			v.node.type = mod.type('&str')
 		elif isinstance(v.node, ast.Int):
-			v.node.type = mod.types.get('&int')
+			v.node.type = mod.type('&int')
 		else:
 			assert False, v.node
 		base[k] = v.node
@@ -745,11 +745,11 @@ def typer(mod):
 			if arg.type is None:
 				msg = "missing type for argument '%s'"
 				raise util.Error(arg, msg % arg.name.name)
-			args.append((mod.types.get(arg.type), arg.name.name))
+			args.append((mod.type(arg.type), arg.name.name))
 		
 		rtype = types.void()
 		if fun.rtype is not None:
-			rtype = mod.types.get(fun.rtype)
+			rtype = mod.type(fun.rtype)
 		
 		type = types.function(rtype, tuple(i[0] for i in args))
 		type.args = tuple(i[1] for i in args)
@@ -760,7 +760,7 @@ def typer(mod):
 			msg = '1st argument to main() must be of type &str'
 			raise util.Error(fun.args[0].type, msg)
 		
-		compare = mod.types.get('&array[str]')
+		compare = mod.type('&array[str]')
 		if k == 'main' and args and args[1][0] != compare:
 			msg = '2nd argument to main() must be of type &array[str]'
 			raise util.Error(fun.args[1].type, msg)

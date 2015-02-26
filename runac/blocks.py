@@ -545,6 +545,9 @@ class Module(object):
 		show = ('%s=%s' % (k, v) for (k, v) in contents)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	
+	def type(self, t, stubs={}):
+		return self.types.get(t, stubs)
+	
 	def merge(self, node):
 		
 		code = []

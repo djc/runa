@@ -176,7 +176,7 @@ class CodeGen(object):
 		while isinstance(dt[0], types.WRAPPERS):
 			dt = dt[0].over, dt[1] + 1
 		
-		boolt = self.mod.types.get('bool')
+		boolt = self.mod.type('bool')
 		if dst == boolt:
 			
 			if vt[0] == boolt:
@@ -227,7 +227,7 @@ class CodeGen(object):
 		assert isinstance(val.type, types.WRAPPERS)
 		assert isinstance(trait, types.WRAPPERS)
 		
-		ptrt = self.mod.types.get('&byte')
+		ptrt = self.mod.type('&byte')
 		wrap = self.alloca(types.unwrap(trait))
 		vtt = '%' + trait.over.name + '.vt'
 		vt = self.varname()
@@ -300,7 +300,7 @@ class CodeGen(object):
 	def NoneVal(self, node, frame):
 		assert isinstance(node.type, types.opt)
 		assert isinstance(node.type.over, types.WRAPPERS)
-		return Value(self.mod.types.get('NoType'), 'null')
+		return Value(self.mod.type('NoType'), 'null')
 	
 	def Bool(self, node, frame):
 		return Value(node.type, 'true' if node.val else 'false')
@@ -334,7 +334,7 @@ class CodeGen(object):
 			
 		else:
 			
-			size = self.load(Value(self.mod.types.get('&uint'), '@str.size'))
+			size = self.load(Value(self.mod.type('&uint'), '@str.size'))
 			tmp = self.varname()
 			bits = tmp, self.word, size.var
 			self.writeline('%s = call i8* @Runa.rt.malloc(%s %s)' % bits)
@@ -366,7 +366,7 @@ class CodeGen(object):
 		
 		assert isinstance(node.type, types.owner), 'escaping %s' % node.type
 		sizevar = '@%s.size' % node.type.over.ir[1:]
-		size = self.load(Value(self.mod.types.get('&int'), sizevar))
+		size = self.load(Value(self.mod.type('&int'), sizevar))
 		
 		bits = self.varname(), self.word, size.var
 		self.writeline('%s = call i8* @Runa.rt.malloc(%s %s)' % bits)
@@ -389,7 +389,7 @@ class CodeGen(object):
 			t = left.type.over
 		
 		bool = left.var
-		if t != self.mod.types.get('bool'):
+		if t != self.mod.type('bool'):
 			bool = self.varname()
 			fun = t.methods['__bool__'][0]
 			arg = self.coerce(left, fun.type.over[1][0])
@@ -409,12 +409,12 @@ class CodeGen(object):
 	def Not(self, node, frame):
 		
 		val = self.visit(node.value, frame)
-		if types.unwrap(val.type) != self.mod.types.get('bool'):
-			val = self.coerce(val, self.mod.types.get('bool'))
+		if types.unwrap(val.type) != self.mod.type('bool'):
+			val = self.coerce(val, self.mod.type('bool'))
 		
 		bits = self.varname(), val.var
 		self.writeline('%s = select i1 %s, i1 false, i1 true' % bits)
-		return Value(self.mod.types.get('bool'), bits[0])
+		return Value(self.mod.type('bool'), bits[0])
 	
 	def And(self, node, frame):
 		return self.boolean('and', node, frame)
@@ -429,14 +429,14 @@ class CodeGen(object):
 		tmp = self.varname()
 		bits = tmp, left.type.ir, left.var
 		self.writeline('%s = icmp eq %s %s, null' % bits)
-		return Value(self.mod.types.get('bool'), tmp)
+		return Value(self.mod.type('bool'), tmp)
 	
 	def compare(self, op, node, frame):
 		
 		left = self.visit(node.left, frame)
 		right = self.visit(node.right, frame)
 		
-		vtypes = {self.mod.types.get('bool')} | types.INTS | types.FLOATS
+		vtypes = {self.mod.type('bool')} | types.INTS | types.FLOATS
 		if types.unwrap(left.type) in vtypes:
 			
 			if isinstance(left.type, types.WRAPPERS):
@@ -454,7 +454,7 @@ class CodeGen(object):
 			tmp = self.varname()
 			bits = tmp, inst, op, left.type.ir, left.var, right.var
 			self.writeline('%s = %s %s %s %s, %s' % bits)
-			return Value(self.mod.types.get('bool'), tmp)
+			return Value(self.mod.type('bool'), tmp)
 		
 		assert left.type == right.type, (left.type, right.type)
 		inv = False
@@ -468,13 +468,13 @@ class CodeGen(object):
 		bits = self.varname(), fun.type.over[0].ir, fun.decl, ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
 		
-		val = Value(self.mod.types.get('bool'), bits[0])
+		val = Value(self.mod.type('bool'), bits[0])
 		if not inv:
 			return val
 		
 		bits = self.varname(), val.var
 		self.writeline('%s = select i1 %s, i1 false, i1 true' % bits)
-		return Value(self.mod.types.get('bool'), bits[0])
+		return Value(self.mod.type('bool'), bits[0])
 	
 	def EQ(self, node, frame):
 		return self.compare('eq', node, frame)
@@ -619,8 +619,8 @@ class CodeGen(object):
 	def CondBranch(self, node, frame):
 		
 		cond = self.visit(node.cond, frame)
-		if cond.type != self.mod.types.get('bool'):
-			cond = self.coerce(cond, self.mod.types.get('bool'))
+		if cond.type != self.mod.type('bool'):
+			cond = self.coerce(cond, self.mod.type('bool'))
 		
 		bits = cond.var, node.tg1, node.tg2
 		self.writeline('br i1 %s, label %%L%s, label %%L%s' % bits)
@@ -732,7 +732,7 @@ class CodeGen(object):
 		et = t.attribs['data'][1].over
 		
 		key = self.visit(node.key, frame)
-		assert key.type == self.mod.types.get('int'), (key.type, node)
+		assert key.type == self.mod.type('int'), (key.type, node)
 		
 		data = self.gep(obj, 0, 1)
 		obj = '[0 x %s]*' % et.ir, data
@@ -826,7 +826,7 @@ class CodeGen(object):
 			
 			val = wrapped = self.visit(arg, frame)
 			vtp = self.gep(val, 0, 1)
-			args.append(self.load(Value(self.mod.types.get('&&byte'), vtp)))
+			args.append(self.load(Value(self.mod.type('&&byte'), vtp)))
 		
 		type, name = rtype, '@' + node.fun.decl
 		if atypes and atypes[-1] == types.VarArgs():
@@ -841,7 +841,7 @@ class CodeGen(object):
 			fp = self.gep((vtt, vt), 0, 0)
 			
 			ft = copy.copy(node.fun.type)
-			ft.over = ft.over[0], (self.mod.types.get('&byte'),) + ft.over[1][1:]
+			ft.over = ft.over[0], (self.mod.type('&byte'),) + ft.over[1][1:]
 			fun = self.load(Value(types.ref(ft), fp))
 			type, name = fun.type, fun.var
 		
@@ -898,7 +898,7 @@ class CodeGen(object):
 			
 			self.label('Prologue')
 			slot = self.gep(self.intercept, 0, 0)
-			addr = self.load(Value(self.mod.types.get('&&byte'), slot))
+			addr = self.load(Value(self.mod.type('&&byte'), slot))
 			
 			targets = [0] + list(util.values(node.flow.yields))
 			labels = ', '.join('label %%L%s' % v for v in targets)
@@ -908,9 +908,9 @@ class CodeGen(object):
 		self.label('L0', 'entry')
 		if irname == 'main' and node.args:
 			
-			strt = self.mod.types.get('&str')
+			strt = self.mod.type('&str')
 			addrp = self.gep(('i8**', '%argv'), 0)
-			addr = self.load(Value(self.mod.types.get('&&byte'), addrp))
+			addr = self.load(Value(self.mod.type('&&byte'), addrp))
 			name = self.alloca(strt.over)
 			
 			wrapfun = '@str.__init__$Rstr.Obyte'
@@ -918,7 +918,7 @@ class CodeGen(object):
 			self.writeline('call void %s(%s %s, i8* %s)' % bits)
 			frame['name'] = name
 			
-			args = self.alloca(self.mod.types.get('$array[str]'))
+			args = self.alloca(self.mod.type('$array[str]'))
 			direct = self.varname()
 			call = '%s = call %%array$str* @Runa.rt.args(i32 %%argc, i8** %%argv)'
 			self.writeline(call % direct)
@@ -947,7 +947,7 @@ class CodeGen(object):
 	
 	def const(self, name, val, frame):
 		
-		if types.unwrap(val.type) != self.mod.types.get('str'):
+		if types.unwrap(val.type) != self.mod.type('str'):
 			bits = name, types.unwrap(val.type).ir, val.val
 			self.writeline('@%s = constant %s %s' % bits)
 			frame[name] = Value(val.type, '@%s' % name)
@@ -1017,7 +1017,7 @@ class CodeGen(object):
 		for name, malts in sorted(util.items(t.methods)):
 			for fun in malts:
 				ftype = copy.copy(fun.type)
-				atypes = (self.mod.types.get('&byte'),) + ftype.over[1][1:]
+				atypes = (self.mod.type('&byte'),) + ftype.over[1][1:]
 				ftype.over = ftype.over[0], atypes
 				mtypes.append(ftype.ir)
 		
@@ -1054,7 +1054,7 @@ class CodeGen(object):
 					nodes += [getattr(node, k) for k in fields]
 					node = None if not nodes else nodes.pop(0)
 		
-		t.attribs['$label'] = 0, self.mod.types.get('&byte')
+		t.attribs['$label'] = 0, self.mod.type('&byte')
 		for i, (name, type) in enumerate(util.items(vars)):
 			t.attribs[name] = i + 1, type
 		

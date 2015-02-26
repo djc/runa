@@ -77,7 +77,7 @@ def destructify(mod, code):
 					left.pop(step.right.right[1].name, None)
 	
 	if code.irname == 'main' and code.args:
-		left['args'] = mod.types.get('$array[str]'), {None}
+		left['args'] = mod.type('$array[str]'), {None}
 	
 	for name, bid, sid, type in reassign:
 		node = ast.Name(name, None)

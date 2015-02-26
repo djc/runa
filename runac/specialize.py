@@ -27,9 +27,9 @@ class Specializer(object):
 		if node.type == dst:
 			return
 		elif node.type == types.anyint() and dst is None:
-			node.type = self.mod.types.get('int')
+			node.type = self.mod.type('int')
 		elif node.type == types.anyfloat() and dst is None:
-			node.type = self.mod.types.get('float')
+			node.type = self.mod.type('float')
 		elif dst is None:
 			return
 		elif node.type == types.anyint() and types.unwrap(dst) in types.INTS:
@@ -53,9 +53,9 @@ class Specializer(object):
 			node.type = self.mod.types.build_tuple(ttypes)
 		elif isinstance(types.unwrap(dst), types.trait):
 			if node.type == types.anyint():
-				node.type = self.mod.types.get('int')
+				node.type = self.mod.type('int')
 			elif node.type == types.anyfloat():
-				node.type = self.mod.types.get('float')
+				node.type = self.mod.type('float')
 			else:
 				assert False, 'specialize %s to trait' % node.type
 		else:
@@ -203,7 +203,7 @@ class Specializer(object):
 		self.visit(node.lvar, self.track.get(node.lvar.name))
 	
 	def CondBranch(self, node, type=None):
-		self.visit(node.cond, self.mod.types.get('ToBool'))
+		self.visit(node.cond, self.mod.type('ToBool'))
 	
 	def Assign(self, node, type=None):
 		if isinstance(node.left, ast.Name):
@@ -258,11 +258,11 @@ class Specializer(object):
 			node.type = node.left[1].type
 			return
 		
-		if node.left[1].type == self.mod.types.get('NoType'):
+		if node.left[1].type == self.mod.type('NoType'):
 			assert node.type == types.opt(node.right[1].type)
 			node.left[1].type = node.type
 			return
-		elif node.right[1].type == self.mod.types.get('NoType'):
+		elif node.right[1].type == self.mod.type('NoType'):
 			assert node.type == types.opt(node.left[1].type)
 			node.right[1].type = node.type
 			return
