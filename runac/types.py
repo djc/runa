@@ -387,6 +387,9 @@ class TypeMap(object):
 			return VarArgs()
 		elif isinstance(t, base):
 			return t
+		elif isinstance(t, tuple):
+			assert t[0] == 'tuple', t
+			return self.build_tuple(t[1])
 		elif isinstance(t, str) and t[0] == '$':
 			return owner(self.get(t[1:], stubs))
 		elif isinstance(t, str) and t[0] == '&':

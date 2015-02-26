@@ -50,7 +50,7 @@ class Specializer(object):
 			for i, e in enumerate(node.type.params):
 				assert types.compat(e, dst.params[i])
 				ttypes.append(dst.params[i])
-			node.type = self.mod.types.build_tuple(ttypes)
+			node.type = self.mod.type(('tuple', ttypes))
 		elif isinstance(types.unwrap(dst), types.trait):
 			if node.type == types.anyint():
 				node.type = self.mod.type('int')
@@ -105,7 +105,7 @@ class Specializer(object):
 		for i, e in enumerate(node.values):
 			if types.generic(e.type):
 				self.specialize(e, ttypes[i])
-		node.type = self.mod.types.build_tuple(n.type for n in node.values)
+		node.type = self.mod.type(('tuple', (n.type for n in node.values)))
 	
 	def Init(self, node, type=None):
 		pass

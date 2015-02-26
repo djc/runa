@@ -225,7 +225,7 @@ class TypeChecker(object):
 	def Tuple(self, node, scope):
 		for v in node.values:
 			self.visit(v, scope)
-		node.type = self.mod.types.build_tuple(v.type for v in node.values)
+		node.type = self.mod.type(('tuple', (v.type for v in node.values)))
 	
 	# Boolean operators
 	
@@ -540,7 +540,7 @@ class TypeChecker(object):
 				dst.type = t
 				ttypes.append(t)
 			
-			node.left.type = self.mod.types.build_tuple(ttypes)
+			node.left.type = self.mod.type(('tuple', ttypes))
 			return
 		
 		new, var = False, isinstance(node.left, ast.Name)
