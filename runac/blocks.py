@@ -546,7 +546,58 @@ class Module(object):
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	
 	def type(self, t, stubs={}):
-		return self.types.get(t, stubs)
+		if t is None:
+			return void()
+		elif t == '...':
+			return types.VarArgs()
+		elif isinstance(t, types.base):
+			return t
+		elif isinstance(t, tuple):
+			assert t[0] == 'tuple', t
+			t = t[0], tuple(t[1])
+			cls = self.types[t] = types.build_tuple(t[1])
+			return cls()
+		elif isinstance(t, str) and t[0] == '$':
+			return types.owner(self.type(t[1:], stubs))
+		elif isinstance(t, str) and t[0] == '&':
+			return types.ref(self.type(t[1:], stubs))
+		elif isinstance(t, str) and '[' in t:
+			ext = t.partition('[')
+			assert ext[2][-1] == ']'
+			tpl = self.type(ext[0])
+			params = self.type(ext[2][:-1])
+			cls = types.apply(tpl, params)
+			self.types[tpl.name, params] = cls
+			return cls()
+		elif isinstance(t, str):
+			return stubs[t] if t in stubs else self.types[t]()
+		elif isinstance(t, ast.Name):
+			if t.name in stubs:
+				return stubs[t.name]
+			if t.name not in self.types:
+				raise util.Error(t, "type '%s' not found" % t.name)
+			return self.types[t.name]()
+		elif isinstance(t, ast.Elem):
+			if isinstance(self.type(t.obj.name, stubs), types.template):
+				if t.key.name in stubs:
+					return self.type(t.obj.name, stubs)
+			tpl = self.types[t.obj.name]()
+			params = self.type(t.key, stubs)
+			cls = types.apply(tpl, params)
+			self.types[tpl.name, params] = cls
+			return cls()
+		elif isinstance(t, ast.Owner):
+			return types.owner(self.type(t.value, stubs))
+		elif isinstance(t, ast.Ref):
+			return types.ref(self.type(t.value, stubs))
+		elif isinstance(t, ast.Opt):
+			return types.opt(self.type(t.value, stubs))
+		elif isinstance(t, ast.Tuple):
+			params = tuple(self.type(v) for v in t.values)
+			cls = self.types['tuple', params] = types.build_tuple(params)
+			return cls()
+		else:
+			assert False, 'no type %s' % t
 	
 	def merge(self, node):
 		

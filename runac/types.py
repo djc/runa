@@ -379,60 +379,6 @@ class TypeMap(object):
 	
 	def __setitem__(self, key, val):
 		self.map[key] = val
-	
-	def get(self, t, stubs={}):
-		if t is None:
-			return void()
-		elif t == '...':
-			return VarArgs()
-		elif isinstance(t, base):
-			return t
-		elif isinstance(t, tuple):
-			assert t[0] == 'tuple', t
-			t = t[0], tuple(t[1])
-			cls = self[t] = build_tuple(t[1])
-			return cls()
-		elif isinstance(t, str) and t[0] == '$':
-			return owner(self.get(t[1:], stubs))
-		elif isinstance(t, str) and t[0] == '&':
-			return ref(self.get(t[1:], stubs))
-		elif isinstance(t, str) and '[' in t:
-			ext = t.partition('[')
-			assert ext[2][-1] == ']'
-			tpl = self.get(ext[0])
-			params = self.get(ext[2][:-1])
-			cls = apply(tpl, params)
-			self[tpl.name, params] = cls
-			return cls()
-		elif isinstance(t, str):
-			return stubs[t] if t in stubs else self[t]()
-		elif isinstance(t, ast.Name):
-			if t.name in stubs:
-				return stubs[t.name]
-			if t.name not in self:
-				raise util.Error(t, "type '%s' not found" % t.name)
-			return self[t.name]()
-		elif isinstance(t, ast.Elem):
-			if isinstance(self.get(t.obj.name, stubs), template):
-				if t.key.name in stubs:
-					return self.get(t.obj.name, stubs)
-			tpl = self[t.obj.name]()
-			params = self.get(t.key, stubs)
-			cls = apply(tpl, params)
-			self[tpl.name, params] = cls
-			return cls()
-		elif isinstance(t, ast.Owner):
-			return owner(self.get(t.value, stubs))
-		elif isinstance(t, ast.Ref):
-			return ref(self.get(t.value, stubs))
-		elif isinstance(t, ast.Opt):
-			return opt(self.get(t.value, stubs))
-		elif isinstance(t, ast.Tuple):
-			params = tuple(self.get(v) for v in t.values)
-			cls = self['tuple', params] = build_tuple(params)
-			return cls()
-		else:
-			assert False, 'no type %s' % t
 
 def create(node):
 	
