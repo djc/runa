@@ -389,7 +389,9 @@ class TypeMap(object):
 			return t
 		elif isinstance(t, tuple):
 			assert t[0] == 'tuple', t
-			return self.build_tuple(t[1])
+			t = t[0], tuple(t[1])
+			cls = self[t] = build_tuple(t[1])
+			return cls()
 		elif isinstance(t, str) and t[0] == '$':
 			return owner(self.get(t[1:], stubs))
 		elif isinstance(t, str) and t[0] == '&':
@@ -426,24 +428,11 @@ class TypeMap(object):
 		elif isinstance(t, ast.Opt):
 			return opt(self.get(t.value, stubs))
 		elif isinstance(t, ast.Tuple):
-			return self.build_tuple(tuple(self.get(v) for v in t.values))
+			params = tuple(self.get(v) for v in t.values)
+			cls = self['tuple', params] = build_tuple(params)
+			return cls()
 		else:
 			assert False, 'no type %s' % t
-	
-	def build_tuple(self, params):
-		
-		params = tuple(params)
-		name = 'tuple[%s]' % ', '.join(p.name for p in params)
-		internal = name.replace('%', '_').replace('.', '_')
-		cls = self[('tuple', params)] = type(internal, (concrete,), {
-			'ir': '%tuple$' + '.'.join(wrangle(t.name) for t in params),
-			'name': name,
-			'params': params,
-			'methods': {'v%i' % i: (i, t) for (i, t) in enumerate(params)},
-			'attribs': {},
-		})
-		
-		return cls()
 
 def create(node):
 	
@@ -466,6 +455,18 @@ def create(node):
 		fields['byval'] = True
 	
 	return type(node.name.name, (parent,), fields)
+
+def build_tuple(params):
+	params = tuple(params)
+	name = 'tuple[%s]' % ', '.join(p.name for p in params)
+	internal = name.replace('%', '_').replace('.', '_')
+	return type(internal, (concrete,), {
+		'ir': '%tuple$' + '.'.join(wrangle(t.name) for t in params),
+		'name': name,
+		'params': params,
+		'methods': {'v%i' % i: (i, t) for (i, t) in enumerate(params)},
+		'attribs': {},
+	})
 
 def apply(tpl, params):
 	
