@@ -730,7 +730,7 @@ def typer(mod):
 	
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
-			base[k] = mod.names[k] = mod.types.fill(v)
+			base[k] = mod.names[k] = types.fill(mod, v)
 	
 	# Process module-level functions: build function definition object,
 	# set IR name and check for types (in particular for "main")
