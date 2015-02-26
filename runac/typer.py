@@ -688,7 +688,7 @@ def typer(mod):
 	
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
-			mod.types.add(v)
+			mod.types[k] = types.create(v)
 	
 	# Next, set up module scope and imported redirections
 	

@@ -419,28 +419,6 @@ class TypeMap(object):
 		else:
 			assert False, 'no type %s' % t
 	
-	def add(self, node):
-		
-		if isinstance(node, ast.Trait):
-			parent = trait
-		elif node.params:
-			parent = template
-		else:
-			parent = base
-		
-		if isinstance(node, ast.Trait):
-			fields = {'methods': {}}
-		elif node.params:
-			fields = {'methods': {}, 'attribs': {}, 'params': {}}
-		else:
-			fields = {'methods': {}, 'attribs': {}}
-		
-		if node.name.name in BASIC:
-			fields['ir'] = BASIC[node.name.name]
-			fields['byval'] = True
-		
-		self[node.name.name] = type(node.name.name, (parent,), fields)
-	
 	def fill(self, node):
 		
 		cls = self[node.name.name]
@@ -558,3 +536,25 @@ class TypeMap(object):
 				cls.methods.setdefault(k, []).append(FunctionDef(decl, t))
 		
 		return cls()
+
+def create(node):
+	
+	if isinstance(node, ast.Trait):
+		parent = trait
+	elif node.params:
+		parent = template
+	else:
+		parent = base
+	
+	if isinstance(node, ast.Trait):
+		fields = {'methods': {}}
+	elif node.params:
+		fields = {'methods': {}, 'attribs': {}, 'params': {}}
+	else:
+		fields = {'methods': {}, 'attribs': {}}
+	
+	if node.name.name in BASIC:
+		fields['ir'] = BASIC[node.name.name]
+		fields['byval'] = True
+	
+	return type(node.name.name, (parent,), fields)
