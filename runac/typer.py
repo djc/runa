@@ -763,7 +763,7 @@ def typer(mod):
 			msg = '1st argument to main() must be of type &str'
 			raise util.Error(fun.args[0].type, msg)
 		
-		compare = types.ref(mod.types.apply(base['array'], base['str']))
+		compare = mod.types.get('&array[str]')
 		if k == 'main' and args and args[1][0] != compare:
 			msg = '2nd argument to main() must be of type &array[str]'
 			raise util.Error(fun.args[1].type, msg)
