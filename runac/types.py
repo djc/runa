@@ -481,16 +481,6 @@ class TypeMap(object):
 		
 		return obj
 	
-	def realize(self, n):
-		if isinstance(n, ast.Decl):
-			rtype = self.get(n.rtype)
-			atypes = [self.get(a.type) for a in n.args]
-			return FunctionDef(n.name.name, function(rtype, atypes))
-		else:
-			rtype = self.get(n.rtype)
-			atypes = [self.get(t) for t in n.atypes]
-			return FunctionDef(n.decl, function(rtype, atypes))
-	
 	def build_tuple(self, params):
 		
 		params = tuple(params)

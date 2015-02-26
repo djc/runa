@@ -705,7 +705,11 @@ def typer(mod):
 		
 		val = ns.attribs[path[0]]
 		if isinstance(val, Decl):
-			val = mod.types.realize(val)
+			rtype = mod.types.get(val.rtype)
+			atypes = [mod.types.get(t) for t in val.atypes]
+			val = types.FunctionDef(val.decl, types.function(rtype, atypes))
+		else:
+			assert False, val
 		
 		mod.names[name] = base[name] = val
 	
@@ -727,12 +731,6 @@ def typer(mod):
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
 			base[k] = mod.names[k] = mod.types.fill(v)
-	
-	# Build function definitions from declarations
-	
-	for k, v in util.items(mod.names):
-		if isinstance(v, ast.Decl):
-			base[k] = mod.names[k] = mod.types.realize(v)
 	
 	# Process module-level functions: build function definition object,
 	# set IR name and check for types (in particular for "main")
