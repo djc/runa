@@ -534,9 +534,9 @@ class Module(object):
 	def __init__(self, node=None):
 		self.names = {}
 		self.code = []
+		self.types = {t.__name__: t for t in types.BASE}
 		self.variants = set() # populated by type inferencing pass
 		self.scope = None # populated by type inferencing pass
-		self.types = types.TypeMap()
 		if node is not None:
 			self.merge(node)
 	

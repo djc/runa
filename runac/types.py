@@ -261,6 +261,7 @@ UINTS = set()
 INTS = {anyint()}
 FLOATS = {anyfloat()}
 WRAPPERS = owner, ref
+BASE = void, anyint, anyfloat, iter
 
 class function(base):
 	
@@ -360,25 +361,6 @@ class VarArgs(base):
 	@property
 	def ir(self):
 		return '...'
-
-class TypeMap(object):
-	
-	def __init__(self):
-		self.map = {
-			'void': void,
-			'anyint': anyint,
-			'anyfloat': anyfloat,
-			'iter': iter,
-		}
-	
-	def __contains__(self, key):
-		return key in self.map
-	
-	def __getitem__(self, key):
-		return self.map[key]
-	
-	def __setitem__(self, key, val):
-		self.map[key] = val
 
 def create(node):
 	
