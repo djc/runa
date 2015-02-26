@@ -693,7 +693,6 @@ def typer(mod):
 	# Next, set up module scope and imported redirections
 	
 	base = Scope()
-	base['iter'] = types.iter()
 	for name, obj in util.items(mod.names):
 		
 		if not isinstance(obj, str):
