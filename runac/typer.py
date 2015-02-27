@@ -677,7 +677,7 @@ def process(mod, base, fun):
 			'yields': fun.rtype.params[0],
 			'function': defn,
 			'attribs': {}
-		})
+		})()
 	
 	checker = TypeChecker(mod, fun)
 	checker.check(start)

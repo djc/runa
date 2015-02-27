@@ -382,7 +382,7 @@ def create(node):
 		fields['ir'] = BASIC[node.name.name]
 		fields['byval'] = True
 	
-	return type(node.name.name, (parent,), fields)
+	return type(node.name.name, (parent,), fields)()
 
 def build_tuple(params):
 	params = tuple(params)
@@ -394,7 +394,7 @@ def build_tuple(params):
 		'params': params,
 		'methods': {'v%i' % i: (i, t) for (i, t) in enumerate(params)},
 		'attribs': {},
-	})
+	})()
 
 def apply(tpl, params):
 	
@@ -433,12 +433,12 @@ def apply(tpl, params):
 			decl = method.decl.replace(tpl.name, pmd)
 			cls.methods.setdefault(k, []).append(FunctionDef(decl, t))
 	
-	return cls
+	return cls()
 
 def fill(mod, node):
 	
-	cls = mod.types[node.name.name]
-	stubs = {}
+	obj = mod.types[node.name.name]
+	cls, stubs = obj.__class__, {}
 	if not isinstance(node, ast.Trait):
 		cls.params = tuple(n.name for n in node.params)
 		stubs = {n.name: Stub(n.name) for n in node.params}
@@ -470,7 +470,6 @@ def fill(mod, node):
 		cls.methods.setdefault(name, []).append(fun)
 		method.irname = irname
 	
-	obj = cls()
 	if node.name.name in INTEGERS:
 		
 		cls.signed, cls.bits = INTEGERS[node.name.name]
