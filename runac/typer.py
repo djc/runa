@@ -9,7 +9,7 @@ There should generally be three scope levels:
 global-level, for core types and functions that are always available,
 module-level, for other stuff in the module, and function-level.
 In addition,
-the ``TypeChecker`` analysis currently uses per-block ``Scope`` objects
+the ``TypeChecker`` analysis currently uses per-block scope mappings
 to track data.
 
 The core of this pass is the ``TypeChecker`` tree-walking class,
@@ -37,6 +37,7 @@ provide enough context to be actionable.
 '''
 
 from . import types, ast, blocks, util
+import copy
 
 class Object(util.AttribRepr):
 	def __init__(self, type):
@@ -90,40 +91,6 @@ ROOT = Declarations('', {
 	}),
 })
 
-class Scope(object):
-	
-	def __init__(self, parent=None):
-		self.parent = parent
-		self.vars = {}
-	
-	def __repr__(self):
-		return '<Scope(%r)>' % self.vars
-	
-	def __contains__(self, key):
-		if key in self.vars:
-			return True
-		elif self.parent is not None:
-			return key in self.parent
-		else:
-			return False
-	
-	def __getitem__(self, key):
-		if key in self.vars:
-			return self.vars[key]
-		elif self.parent is not None and key in self.parent:
-			return self.parent[key]
-		else:
-			raise KeyError(key)
-	
-	def __setitem__(self, key, val):
-		self.vars[key] = val
-	
-	def __delitem__(self, key):
-		del self.vars[key]
-	
-	def get(self, key, default=None):
-		return self[key] if key in self else default
-
 class TypeChecker(object):
 	
 	def __init__(self, mod, fun):
@@ -137,7 +104,7 @@ class TypeChecker(object):
 	def check(self, scope):
 		self.scopes[None] = scope
 		for i, b in sorted(util.items(self.flow.blocks)):
-			scope = self.scopes[i] = Scope()
+			scope = self.scopes[i] = {}
 			for sid, step in enumerate(b.steps):
 				self.cur = b, sid
 				self.visit(step, scope)
@@ -647,7 +614,7 @@ def process(mod, base, fun):
 		msg = "method '%s' must return type 'void'"
 		raise util.Error(fun.rtype, msg % fun.name.name)
 	
-	start = Scope(base)
+	start = copy.copy(base)
 	if fun.rtype is None:
 		fun.rtype = types.void()
 	if not isinstance(fun.rtype, types.base):
@@ -692,7 +659,7 @@ def typer(mod):
 	
 	# Next, set up module scope and imported redirections
 	
-	base = Scope()
+	base = {}
 	for name, obj in util.items(mod.names):
 		
 		if not isinstance(obj, str):
