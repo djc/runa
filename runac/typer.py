@@ -729,7 +729,8 @@ def typer(mod):
 		
 		funtype = types.function(rtype, tuple(i[0] for i in args))
 		funtype.args = tuple(i[1] for i in args)
-		base[fun.name.name] = types.FunctionDecl(fun.name.name, funtype)
+		fundecl = types.FunctionDecl(fun.name.name, funtype)
+		base[fun.name.name] = mod.names[fun.name.name] = fundecl
 		fun.irname = fun.name.name
 		
 		if k == 'main' and args and args[0][0] != types.ref(base['str']):

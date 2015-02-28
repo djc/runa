@@ -536,6 +536,7 @@ class Module(object):
 		self.code = []
 		self.types = {t.__name__: t() for t in types.BASE}
 		self.variants = set() # populated by type inferencing pass
+		self.defined = set()
 		if node is not None:
 			self.merge(node)
 	
@@ -639,5 +640,6 @@ class Module(object):
 				assert False, n
 		
 		for name, node in code:
+			self.defined.add(name)
 			FlowFinder().find_flow(node)
 			self.code.append((name, node))
