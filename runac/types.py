@@ -49,7 +49,7 @@ class Type(object):
 	def __eq__(self, other):
 		return self.__class__ == other.__class__
 
-class FunctionDef(util.AttribRepr):
+class FunctionDecl(util.AttribRepr):
 	def __init__(self, decl, type):
 		self.decl = decl
 		self.type = type
@@ -431,7 +431,7 @@ def apply(tpl, params):
 			
 			pmd = tpl.name + '$' + '.'.join(t.name for t in params)
 			decl = method.decl.replace(tpl.name, pmd)
-			cls.methods.setdefault(k, []).append(FunctionDef(decl, t))
+			cls.methods.setdefault(k, []).append(FunctionDecl(decl, t))
 	
 	return cls()
 
@@ -465,7 +465,7 @@ def fill(mod, node):
 			irname = irname + '$' + '.'.join(wrangle(a[1].name) for a in args)
 			assert rtype == cls.methods[name][0].type.over[0]
 		
-		fun = FunctionDef(irname, function(rtype, tuple(a[1] for a in args)))
+		fun = FunctionDecl(irname, function(rtype, tuple(a[1] for a in args)))
 		fun.type.args = [a[0] for a in args]
 		cls.methods.setdefault(name, []).append(fun)
 		method.irname = irname

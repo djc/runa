@@ -1063,7 +1063,7 @@ class CodeGen(object):
 	def Module(self, mod):
 		
 		for k, v in util.items(mod.names):
-			if isinstance(v, types.FunctionDef):
+			if isinstance(v, types.FunctionDecl):
 				self.declare(v)
 		
 		self.newline()

@@ -429,7 +429,7 @@ class TypeChecker(object):
 				mod = scope[node.name.obj.name]
 				fun = mod.type.functions[node.name.attrib.name]
 				qual = mod.name + '.' + node.name.attrib.name
-				node.fun = types.FunctionDef(qual, fun)
+				node.fun = types.FunctionDecl(qual, fun)
 				node.type = fun.over[0]
 				
 			else:
@@ -486,7 +486,7 @@ class TypeChecker(object):
 				if isinstance(node.args[i], ast.Name):
 					del scope[node.args[i].name]
 		
-		if isinstance(obj, types.FunctionDef):
+		if isinstance(obj, types.FunctionDecl):
 			node.name.name = obj.name
 	
 	def CondBranch(self, node, scope):
@@ -706,7 +706,7 @@ def typer(mod):
 		if isinstance(v, ast.Decl):
 			atypes = [mod.type(a.type) for a in v.args]
 			funtype = types.function(mod.type(v.rtype), atypes)
-			base[k] = mod.names[k] = types.FunctionDef(v.name.name, funtype)
+			base[k] = mod.names[k] = types.FunctionDecl(v.name.name, funtype)
 	
 	# Process module-level functions: build function definition object,
 	# set IR name and check for types (in particular for "main")
@@ -729,7 +729,7 @@ def typer(mod):
 		
 		type = types.function(rtype, tuple(i[0] for i in args))
 		type.args = tuple(i[1] for i in args)
-		base[fun.name.name] = types.FunctionDef(fun.name.name, type)
+		base[fun.name.name] = types.FunctionDecl(fun.name.name, type)
 		fun.irname = fun.name.name
 		
 		if k == 'main' and args and args[0][0] != types.ref(base['str']):
