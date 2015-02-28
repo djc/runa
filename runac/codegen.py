@@ -1062,7 +1062,7 @@ class CodeGen(object):
 	
 	def Module(self, mod):
 		
-		for k, v in util.items(mod.names):
+		for k, v in util.items(mod.scope):
 			if not isinstance(v, types.FunctionDecl):
 				continue
 			if k not in mod.defined:
@@ -1070,7 +1070,7 @@ class CodeGen(object):
 		
 		self.newline()
 		deps = {}
-		for k, v in util.items(mod.names):
+		for k, v in util.items(mod.scope):
 			if k in types.BASIC:
 				deps[k] = None
 			elif isinstance(v, types.base):
@@ -1095,7 +1095,7 @@ class CodeGen(object):
 			
 			remains -= {t.name for t in done}
 		
-		for k, v in util.items(mod.names):
+		for k, v in util.items(mod.scope):
 			if isinstance(v, types.trait):
 				self.trait(v)
 		
@@ -1106,7 +1106,7 @@ class CodeGen(object):
 				self.type(var)
 		
 		frame = Frame()
-		for k, v in util.items(mod.names):
+		for k, v in util.items(mod.scope):
 			if isinstance(v, blocks.Constant):
 				self.const(k, v.node, frame)
 		
