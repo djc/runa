@@ -1,0 +1,6 @@
+syntax "runa" "\.rns$"
+color brightcyan "\<(and|as|break|class|continue|def|elif|else|except|for|from|if|import|is|not|or|pass|raise|return|trait|try|while|yield)\>"
+color brightgreen "''" "['][^']*[^\\][']" "[']{3}.*[^\\][']{3}"
+color brightgreen "["][^"]*[^\\]["]" "["]{3}.*[^\\]["]{3}"
+color brightgreen start=""""[^"]" end=""""" start="'''[^']" end="'''"
+color brightred "#.*$"
