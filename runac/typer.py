@@ -687,12 +687,12 @@ def typer(mod):
 		if not isinstance(v, blocks.Constant):
 			continue
 		if isinstance(v.node, ast.String):
-			v.node.type = mod.type('&str')
+			v.type = v.node.type = mod.type('&str')
 		elif isinstance(v.node, ast.Int):
-			v.node.type = mod.type('&int')
+			v.type = v.node.type = mod.type('&int')
 		else:
 			assert False, v.node
-		base[k] = v.node
+		base[k] = v
 	
 	# Build types for classes and traits
 	
