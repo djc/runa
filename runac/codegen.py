@@ -1062,11 +1062,19 @@ class CodeGen(object):
 	
 	def Module(self, mod):
 		
+		# Declare functions not defined in this module
+		
 		for k, v in util.items(mod.scope):
 			if not isinstance(v, types.FunctionDecl):
 				continue
 			if k not in mod.defined:
 				self.declare(v)
+		
+		# Determine type dependencies for all types that have to defined;
+		# excludes basic types (intrinsically defined by LLVM), abstract
+		# types (only concrete types supported in code generation) and
+		# generic types (types must be specialized before code generation).
+		# Generator contexts need more work; save them for later processing.
 		
 		self.newline()
 		deps, ctxs = {}, []
@@ -1081,9 +1089,11 @@ class CodeGen(object):
 				continue
 			
 			if isinstance(k, tuple):
+				# Skip templated types with abstract or generic parameters
 				if any(isinstance(t, types.BASE) for t in k[1]):
 					continue
 			
+			# Determine type dependencies for the type's attributes
 			atypes = {a[1] for a in util.values(v.attribs)}
 			tdeps = {types.unwrap(t) for t in atypes}
 			deps[v.name] = v, {t for t in tdeps if t.name not in types.BASIC}
@@ -1091,19 +1101,25 @@ class CodeGen(object):
 		remains = set(deps)
 		while remains:
 			
+			# Write out types with no dependencies
+			
 			done = set()
 			for k in remains:
 				if not deps[k][1]:
 					self.type(deps[k][0])
 					done.add(deps[k][0])
 			
-			assert done
+			# Remove the processed types from dependency lists
+			
+			assert done # check that we made progress
 			for k in remains:
 				for t in done:
 					if t in deps[k][1]:
 						deps[k][1].remove(t)
 			
 			remains -= {t.name for t in done}
+		
+		# Declare traits and contexts
 		
 		for k, v in util.items(mod.scope):
 			if isinstance(v, types.trait):
@@ -1112,6 +1128,8 @@ class CodeGen(object):
 		for ctx in ctxs:
 			self.ctx(mod, ctx)
 		
+		# Setup root frame and add constants to it
+		
 		frame = Frame()
 		for k, v in util.items(mod.scope):
 			if isinstance(v, blocks.Constant):
@@ -1119,6 +1137,8 @@ class CodeGen(object):
 		
 		self.typedecls = self.buf
 		self.buf = []
+		
+		# Generate IR for code objects
 		
 		self.newline()
 		for k, v in mod.code:
