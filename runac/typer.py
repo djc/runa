@@ -53,40 +53,44 @@ class Declarations(util.AttribRepr):
 		self.name = name
 		self.attribs = init
 
-class Decl(object):
+def declare(name, rtype, atypes):
 	
-	def __init__(self, name, rtype, atypes):
-		self.decl = name
-		self.rtype = rtype
-		self.atypes = atypes
+	node = ast.Decl(None)
+	node.name = ast.Name(name, None)
+	node.rtype = rtype
 	
-	def __repr__(self):
-		name = self.__class__.__name__
-		atypes = ', '.join(self.atypes)
-		return '<%s(%r, %s, (%s))>' % (name, self.decl, self.rtype, atypes)
+	node.args = []
+	for t in atypes:
+		arg = ast.Argument(None)
+		arg.type = t
+		node.args.append(arg)
+	
+	return node
 
 ROOT = Declarations('', {
 	'__internal__': Declarations('__internal__', {
-		'__malloc__': Decl('Runa.rt.malloc', '$byte', ('uint',)),
-		'__free__': Decl('Runa.rt.free', 'void', ('$byte',)),
-		'__memcpy__': Decl('Runa.rt.memcpy', 'void', ('&byte', '&byte', 'uint')),
-		'__offset__': Decl('Runa.rt.offset', '&byte', ('&byte', 'uint')),
+		'__malloc__': declare('Runa.rt.malloc', '$byte', ('uint',)),
+		'__free__': declare('Runa.rt.free', 'void', ('$byte',)),
+		'__memcpy__': declare('Runa.rt.memcpy', 'void', (
+			'&byte', '&byte', 'uint'
+		)),
+		'__offset__': declare('Runa.rt.offset', '&byte', ('&byte', 'uint')),
 	}),
 	'libc': Declarations('libc', {
 		'stdlib': Declarations('libc.stdlib', {
-			'getenv': Decl('getenv', '&byte', ('&byte',)),
+			'getenv': declare('getenv', '&byte', ('&byte',)),
 		}),
 		'stdio': Declarations('libc.stdio', {
-			'snprintf': Decl('snprintf', 'i32', (
+			'snprintf': declare('snprintf', 'i32', (
 				'&byte', 'i32', '&byte', '...'
 			)),
 		}),
 		'string': Declarations('libc.string', {
-			'strncmp': Decl('strncmp', 'i32', ('&byte', '&byte', 'uint')),
-			'strlen': Decl('strlen', 'uint', ('&byte',)),
+			'strncmp': declare('strncmp', 'i32', ('&byte', '&byte', 'uint')),
+			'strlen': declare('strlen', 'uint', ('&byte',)),
 		}),
 		'unistd': Declarations('libc.unistd', {
-			'write': Decl('write', 'int', ('i32', '&byte', 'uint')),
+			'write': declare('write', 'int', ('i32', '&byte', 'uint')),
 		}),
 	}),
 })
@@ -674,10 +678,10 @@ def typer(mod):
 			ns = ns.attribs[path.pop(0)]
 		
 		val = ns.attribs[path[0]]
-		if isinstance(val, Decl):
-			rtype = mod.type(val.rtype)
-			atypes = [mod.type(t) for t in val.atypes]
-			val = types.FunctionDef(val.decl, types.function(rtype, atypes))
+		if isinstance(val, ast.Decl):
+			atypes = [mod.type(a.type) for a in val.args]
+			funtype = types.function(mod.type(val.rtype), atypes)
+			val = types.FunctionDef(val.name.name, funtype)
 		else:
 			assert False, val
 		
