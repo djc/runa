@@ -1071,14 +1071,15 @@ class CodeGen(object):
 		self.newline()
 		deps = {}
 		for k, v in util.items(mod.scope):
-			if k in types.BASIC:
-				deps[k] = None
-			elif isinstance(v, types.base):
-				atypes = {a[1] for a in util.values(v.attribs)}
-				tdeps = {types.unwrap(t) for t in atypes}
-				deps[k] = v, {t for t in tdeps if t.name not in types.BASIC}
+			
+			if not isinstance(v, types.base) or k in types.BASIC:
+				continue
+			
+			atypes = {a[1] for a in util.values(v.attribs)}
+			tdeps = {types.unwrap(t) for t in atypes}
+			deps[k] = v, {t for t in tdeps if t.name not in types.BASIC}
 		
-		remains = {k for (k, v) in util.items(deps) if v is not None}
+		remains = set(deps)
 		while remains:
 			
 			done = set()
