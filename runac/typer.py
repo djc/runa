@@ -746,7 +746,6 @@ def typer(mod):
 	
 	# Handle type checking and inference on all code objects
 	
-	mod.scope = base
 	for k, fun in mod.code:
 		
 		# Check type invariants on methods
