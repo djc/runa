@@ -566,7 +566,7 @@ class Module(object):
 			ext = t.partition('[')
 			assert ext[2][-1] == ']'
 			tpl = self.type(ext[0])
-			params = self.type(ext[2][:-1])
+			params = (self.type(ext[2][:-1]),)
 			self.types[tpl.name, params] = obj = types.apply(tpl, params)
 			return obj
 		elif isinstance(t, str):
@@ -582,7 +582,7 @@ class Module(object):
 				if t.key.name in stubs:
 					return self.type(t.obj.name, stubs)
 			tpl = self.types[t.obj.name]
-			params = self.type(t.key, stubs)
+			params = (self.type(t.key, stubs),)
 			obj = self.types[tpl.name, params] = types.apply(tpl, params)
 			return obj
 		elif isinstance(t, ast.Owner):

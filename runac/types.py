@@ -398,7 +398,7 @@ def build_tuple(params):
 
 def apply(tpl, params):
 	
-	params = params if isinstance(params, tuple) else (params,)
+	assert isinstance(params, tuple)
 	name = '%s[%s]' % (tpl.name, ', '.join(p.name for p in params))
 	internal = name.replace('$', '_').replace('.', '_')
 	cls = type(internal, (concrete,), {
