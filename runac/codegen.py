@@ -1111,13 +1111,13 @@ class CodeGen(object):
 			
 			# Remove the processed types from dependency lists
 			
-			assert done # check that we made progress
+			remains -= {t.name for t in done}
 			for k in remains:
 				for t in done:
 					if t in deps[k][1]:
 						deps[k][1].remove(t)
 			
-			remains -= {t.name for t in done}
+			assert done # check that we made progress
 		
 		# Declare traits and contexts
 		
