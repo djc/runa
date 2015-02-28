@@ -49,12 +49,6 @@ class Type(object):
 	def __eq__(self, other):
 		return self.__class__ == other.__class__
 
-class FunctionDecl(util.AttribRepr):
-	def __init__(self, decl, type):
-		self.decl = decl
-		self.type = type
-		self.name = decl # might be overridden by the Module
-
 class ReprId(object):
 	
 	def __hash__(self):
@@ -361,6 +355,12 @@ class VarArgs(base):
 	@property
 	def ir(self):
 		return '...'
+
+class FunctionDecl(util.AttribRepr):
+	def __init__(self, decl, type):
+		self.decl = decl
+		self.type = type
+		self.name = decl # might be overridden by the Module
 
 def create(node):
 	
