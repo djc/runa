@@ -357,10 +357,29 @@ class VarArgs(base):
 		return '...'
 
 class FunctionDecl(util.AttribRepr):
+	
 	def __init__(self, decl, type):
 		self.decl = decl
 		self.type = type
 		self.name = decl # might be overridden by the Module
+	
+	@classmethod
+	def from_ast(cls, mod, node):
+		
+		args = []
+		for arg in node.args:
+			if arg.type is None:
+				msg = "missing type for argument '%s'"
+				raise util.Error(arg, msg % arg.name.name)
+			args.append((mod.type(arg.type), arg.name.name))
+		
+		rtype = void()
+		if node.rtype is not None:
+			rtype = mod.type(node.rtype)
+		
+		funtype = function(rtype, tuple(i[0] for i in args))
+		funtype.args = tuple(i[1] for i in args)
+		return cls(node.name.name, funtype)
 
 def create(node):
 	
