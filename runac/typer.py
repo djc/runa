@@ -678,13 +678,7 @@ def typer(mod):
 			ns = ns.attribs[path.pop(0)]
 		
 		val = ns.attribs[path[0]]
-		if isinstance(val, ast.Decl):
-			atypes = [mod.type(a.type) for a in val.args]
-			funtype = types.function(mod.type(val.rtype), atypes)
-			val = types.FunctionDef(val.name.name, funtype)
-		else:
-			assert False, val
-		
+		assert isinstance(val, ast.Decl)
 		mod.names[name] = base[name] = val
 	
 	# Add constants to module scope
@@ -705,6 +699,14 @@ def typer(mod):
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
 			base[k] = mod.names[k] = types.fill(mod, v)
+	
+	# Build function definitions from declarations
+	
+	for k, v in util.items(mod.names):
+		if isinstance(v, ast.Decl):
+			atypes = [mod.type(a.type) for a in v.args]
+			funtype = types.function(mod.type(v.rtype), atypes)
+			base[k] = mod.names[k] = types.FunctionDef(v.name.name, funtype)
 	
 	# Process module-level functions: build function definition object,
 	# set IR name and check for types (in particular for "main")
