@@ -349,7 +349,6 @@ class TypeChecker(object):
 		
 		name = node.loop.source.fun.name + '$ctx'
 		node.type = self.mod.type(name)
-		self.mod.variants.add(node.type)
 	
 	def LoopHeader(self, node, scope):
 		
@@ -604,12 +603,6 @@ class TypeChecker(object):
 			bits = node.value.type.name, self.fun.rtype.name
 			raise util.Error(node.value, msg % bits)
 
-def variant(mod, t):
-	if isinstance(t, types.WRAPPERS):
-		variant(mod, t.over)
-	elif hasattr(t, 'over') or isinstance(t, types.concrete):
-		mod.variants.add(t)
-
 VOID = {'__init__', '__del__'}
 
 def process(mod, base, fun, cls):
@@ -627,15 +620,11 @@ def process(mod, base, fun, cls):
 		fun.rtype = types.void()
 	elif not isinstance(fun.rtype, types.base):
 		fun.rtype = mod.type(fun.rtype, stubs)
-		variant(mod, fun.rtype)
 	
 	for arg in fun.args:
-		
 		if not isinstance(arg.type, types.base):
 			arg.type = mod.type(arg.type, stubs)
-		
 		start[arg.name.name] = arg
-		variant(mod, arg.type)
 	
 	if fun.flow.yields:
 		

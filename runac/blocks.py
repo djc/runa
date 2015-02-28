@@ -534,7 +534,6 @@ class Module(object):
 	def __init__(self, node=None):
 		self.names = {}
 		self.code = []
-		self.variants = set() # populated by type inferencing pass
 		self.defined = set()
 		self.scope = {t.__name__: t() for t in types.BASE}
 		if node is not None:

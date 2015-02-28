@@ -1069,7 +1069,7 @@ class CodeGen(object):
 				self.declare(v)
 		
 		self.newline()
-		deps = {}
+		deps, ctxs = {}, []
 		for k, v in util.items(mod.scope):
 			
 			if not isinstance(v, types.base) or k in types.BASIC:
@@ -1077,6 +1077,7 @@ class CodeGen(object):
 			elif isinstance(v, types.BASE):
 				continue
 			elif v.name.endswith('$ctx'):
+				ctxs.append(v)
 				continue
 			
 			if isinstance(k, tuple):
@@ -1108,9 +1109,8 @@ class CodeGen(object):
 			if isinstance(v, types.trait):
 				self.trait(v)
 		
-		for var in mod.variants:
-			if var.name.endswith('$ctx'):
-				self.ctx(mod, var)
+		for ctx in ctxs:
+			self.ctx(mod, ctx)
 		
 		frame = Frame()
 		for k, v in util.items(mod.scope):
