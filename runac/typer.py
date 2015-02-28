@@ -727,9 +727,9 @@ def typer(mod):
 		if fun.rtype is not None:
 			rtype = mod.type(fun.rtype)
 		
-		type = types.function(rtype, tuple(i[0] for i in args))
-		type.args = tuple(i[1] for i in args)
-		base[fun.name.name] = types.FunctionDecl(fun.name.name, type)
+		funtype = types.function(rtype, tuple(i[0] for i in args))
+		funtype.args = tuple(i[1] for i in args)
+		base[fun.name.name] = types.FunctionDecl(fun.name.name, funtype)
 		fun.irname = fun.name.name
 		
 		if k == 'main' and args and args[0][0] != types.ref(base['str']):
