@@ -608,7 +608,7 @@ def variant(mod, t):
 
 VOID = {'__init__', '__del__'}
 
-def process(mod, base, fun):
+def process(mod, base, fun, cls):
 	
 	if fun.name.name in VOID and fun.rtype is not None:
 		msg = "method '%s' must return type 'void'"
@@ -631,9 +631,8 @@ def process(mod, base, fun):
 	
 	if fun.flow.yields:
 		
-		if '.' in fun.irname:
-			mcls = types.unwrap(fun.args[0].type)
-			defn = mcls.methods[fun.name.name][0]
+		if cls is not None:
+			defn = cls.methods[fun.name.name][0]
 		else:
 			defn = base[fun.name.name]
 		
@@ -759,4 +758,8 @@ def typer(mod):
 			else:
 				fun.args[0].type = types.ref(base[k[0]])
 		
-		process(mod, base, fun)
+		cls = None
+		if isinstance(k, tuple):
+			cls = mod.type(k[0])
+		
+		process(mod, base, fun, cls)
