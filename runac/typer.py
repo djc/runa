@@ -720,17 +720,19 @@ def typer(mod):
 		mod.scope[fun.name.name] = types.FunctionDecl(fun.name.name, funtype)
 		fun.irname = fun.name.name
 		
-		if k == 'main' and args and args[0][0] != types.ref(mod.scope['str']):
-			msg = '1st argument to main() must be of type &str'
-			raise util.Error(fun.args[0].type, msg)
-		
-		compare = mod.type('&array[str]')
-		if k == 'main' and args and args[1][0] != compare:
-			msg = '2nd argument to main() must be of type &array[str]'
-			raise util.Error(fun.args[1].type, msg)
-		
-		if k == 'main' and rtype not in {types.void(), mod.scope['i32']}:
-			raise util.Error(fun, 'main() return type must be i32')
+		if k == 'main':
+			
+			if args and args[0][0] != types.ref(mod.scope['str']):
+				msg = '1st argument to main() must be of type &str'
+				raise util.Error(fun.args[0].type, msg)
+			
+			compare = mod.type('&array[str]')
+			if args and args[1][0] != compare:
+				msg = '2nd argument to main() must be of type &array[str]'
+				raise util.Error(fun.args[1].type, msg)
+			
+			if rtype not in {types.void(), mod.scope['i32']}:
+				raise util.Error(fun, 'main() return type must be i32')
 	
 	# Handle type checking and inference on all code objects
 	
