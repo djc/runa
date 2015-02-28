@@ -696,16 +696,16 @@ def typer(mod):
 			funtype = types.function(mod.type(v.rtype), atypes)
 			mod.scope[k] = types.FunctionDecl(v.name.name, funtype)
 	
-	# Process module-level functions: build function definition object,
-	# set IR name and check for types (in particular for "main")
-	
 	for k, fun in mod.code:
 		
-		if not isinstance(k, str):
-			continue
+		# Build FunctionDecl objects and set IR name for module-level functions
+		# (for methods, this has already been done during type filling)
 		
-		mod.scope[fun.name.name] = types.FunctionDecl.from_ast(mod, fun)
-		fun.irname = fun.name.name
+		if not isinstance(k, tuple):
+			mod.scope[fun.name.name] = types.FunctionDecl.from_ast(mod, fun)
+			fun.irname = fun.name.name
+		
+		# Check function signature invariants for main() and methods
 		
 		if k == 'main':
 			
@@ -722,11 +722,6 @@ def typer(mod):
 			if rtype not in {types.void(), mod.scope['i32']}:
 				raise util.Error(fun, 'main() return type must be i32')
 	
-	# Handle type checking and inference on all code objects
-	
-	for k, fun in mod.code:
-		
-		# Check type invariants on methods
 		if isinstance(k, tuple) and k[1] != '__new__':
 			if not fun.args:
 				raise util.Error(fun, "missing 'self' argument")
@@ -738,15 +733,17 @@ def typer(mod):
 					msg = "first method argument must be of type '%s'"
 					raise util.Error(fun.args[0].type, msg % k[0])
 		
-		# Pass self as owner to __del__ methods
 		if fun.args and fun.args[0].type is None:
 			if fun.name.name == '__del__':
 				fun.args[0].type = types.owner(mod.scope[k[0]])
 			else:
 				fun.args[0].type = types.ref(mod.scope[k[0]])
-		
+	
+	# Handle type checking and inferencing of actual function code
+	# (needs to be done after add function declarations for each function)
+	
+	for k, fun in mod.code:
 		cls = None
 		if isinstance(k, tuple):
 			cls = mod.type(k[0])
-		
 		process(mod, mod.scope, fun, cls)
