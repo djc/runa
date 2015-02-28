@@ -743,7 +743,5 @@ def typer(mod):
 	# (needs to be done after add function declarations for each function)
 	
 	for k, fun in mod.code:
-		cls = None
-		if isinstance(k, tuple):
-			cls = mod.type(k[0])
+		cls = mod.type(k[0]) if isinstance(k, tuple) else None
 		process(mod, mod.scope, fun, cls)
