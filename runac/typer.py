@@ -615,16 +615,20 @@ def process(mod, base, fun, cls):
 		raise util.Error(fun.rtype, msg % fun.name.name)
 	
 	start = copy.copy(base)
+	stubs = {}
+	if cls is not None and isinstance(cls, types.template):
+		stubs = {k: types.Stub(k) for k in cls.params}
+	
 	if fun.rtype is None:
 		fun.rtype = types.void()
-	if not isinstance(fun.rtype, types.base):
-		fun.rtype = mod.type(fun.rtype)
+	elif not isinstance(fun.rtype, types.base):
+		fun.rtype = mod.type(fun.rtype, stubs)
 		variant(mod, fun.rtype)
 	
 	for arg in fun.args:
 		
 		if not isinstance(arg.type, types.base):
-			arg.type = mod.type(arg.type)
+			arg.type = mod.type(arg.type, stubs)
 		
 		start[arg.name.name] = arg
 		variant(mod, arg.type)
