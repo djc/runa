@@ -2,9 +2,9 @@ from . import ast, util
 import rply, sys, os
 
 NAME_LIKE = {
-	'break', 'class', 'continue', 'def', 'elif', 'else', 'except', 'for',
-	'from', 'if', 'import', 'return', 'while', 'pass', 'raise', 'trait',
-	'try', 'yield', 'not', 'and', 'or', 'in', 'as', 'is',
+	'and', 'as', 'break', 'class', 'continue', 'def', 'elif', 'else',
+	'except', 'for', 'from', 'if', 'import', 'in', 'is', 'not', 'or',
+	'pass', 'raise', 'return', 'trait', 'try', 'while', 'yield',
 }
 
 def lexer():
