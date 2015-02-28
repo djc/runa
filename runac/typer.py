@@ -666,7 +666,6 @@ def typer(mod):
 	
 	# Next, set up module scope and imported redirections
 	
-	base = {}
 	for name, obj in util.items(mod.names):
 		
 		if not isinstance(obj, str):
@@ -679,7 +678,7 @@ def typer(mod):
 		
 		val = ns.attribs[path[0]]
 		assert isinstance(val, ast.Decl)
-		mod.names[name] = base[name] = val
+		mod.names[name] = val
 	
 	# Add constants to module scope
 	
@@ -692,13 +691,12 @@ def typer(mod):
 			v.type = v.node.type = mod.type('&int')
 		else:
 			assert False, v.node
-		base[k] = v
 	
 	# Build types for classes and traits
 	
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
-			base[k] = mod.names[k] = types.fill(mod, v)
+			mod.names[k] = types.fill(mod, v)
 	
 	# Build function definitions from declarations
 	
@@ -706,7 +704,7 @@ def typer(mod):
 		if isinstance(v, ast.Decl):
 			atypes = [mod.type(a.type) for a in v.args]
 			funtype = types.function(mod.type(v.rtype), atypes)
-			base[k] = mod.names[k] = types.FunctionDecl(v.name.name, funtype)
+			mod.names[k] = types.FunctionDecl(v.name.name, funtype)
 	
 	# Process module-level functions: build function definition object,
 	# set IR name and check for types (in particular for "main")
@@ -729,11 +727,10 @@ def typer(mod):
 		
 		funtype = types.function(rtype, tuple(i[0] for i in args))
 		funtype.args = tuple(i[1] for i in args)
-		fundecl = types.FunctionDecl(fun.name.name, funtype)
-		base[fun.name.name] = mod.names[fun.name.name] = fundecl
+		mod.names[fun.name.name] = types.FunctionDecl(fun.name.name, funtype)
 		fun.irname = fun.name.name
 		
-		if k == 'main' and args and args[0][0] != types.ref(base['str']):
+		if k == 'main' and args and args[0][0] != types.ref(mod.names['str']):
 			msg = '1st argument to main() must be of type &str'
 			raise util.Error(fun.args[0].type, msg)
 		
@@ -742,7 +739,7 @@ def typer(mod):
 			msg = '2nd argument to main() must be of type &array[str]'
 			raise util.Error(fun.args[1].type, msg)
 		
-		if k == 'main' and rtype not in {types.void(), base['i32']}:
+		if k == 'main' and rtype not in {types.void(), mod.names['i32']}:
 			raise util.Error(fun, 'main() return type must be i32')
 	
 	# Handle type checking and inference on all code objects
@@ -764,12 +761,12 @@ def typer(mod):
 		# Pass self as owner to __del__ methods
 		if fun.args and fun.args[0].type is None:
 			if fun.name.name == '__del__':
-				fun.args[0].type = types.owner(base[k[0]])
+				fun.args[0].type = types.owner(mod.names[k[0]])
 			else:
-				fun.args[0].type = types.ref(base[k[0]])
+				fun.args[0].type = types.ref(mod.names[k[0]])
 		
 		cls = None
 		if isinstance(k, tuple):
 			cls = mod.type(k[0])
 		
-		process(mod, base, fun, cls)
+		process(mod, mod.names, fun, cls)
