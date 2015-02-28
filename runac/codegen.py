@@ -1077,7 +1077,7 @@ class CodeGen(object):
 			
 			atypes = {a[1] for a in util.values(v.attribs)}
 			tdeps = {types.unwrap(t) for t in atypes}
-			deps[k] = v, {t for t in tdeps if t.name not in types.BASIC}
+			deps[v.name] = v, {t for t in tdeps if t.name not in types.BASIC}
 		
 		remains = set(deps)
 		while remains:
