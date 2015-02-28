@@ -485,5 +485,3 @@ def fill(mod, node):
 		cls.bits = BASIC_FLOATS[node.name.name]
 		FLOATS.add(obj)
 		mod.types['anyfloat'].methods.update(cls.methods)
-	
-	return obj

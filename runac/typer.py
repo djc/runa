@@ -696,7 +696,8 @@ def typer(mod):
 	
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
-			mod.names[k] = types.fill(mod, v)
+			types.fill(mod, v)
+			mod.names[k] = mod.type(k)
 	
 	# Build function definitions from declarations
 	
