@@ -534,10 +534,9 @@ class Module(object):
 	def __init__(self, node=None):
 		self.names = {}
 		self.code = []
-		self.types = {t.__name__: t() for t in types.BASE}
 		self.variants = set() # populated by type inferencing pass
 		self.defined = set()
-		self.scope = {} # populated by type inferencing pass
+		self.scope = {t.__name__: t() for t in types.BASE}
 		if node is not None:
 			self.merge(node)
 	
@@ -556,7 +555,7 @@ class Module(object):
 		elif isinstance(t, tuple):
 			assert t[0] == 'tuple', t
 			t = t[0], tuple(t[1])
-			obj = self.types[t] = types.build_tuple(t[1])
+			obj = self.scope[t] = types.build_tuple(t[1])
 			return obj
 		elif isinstance(t, str) and t[0] == '$':
 			return types.owner(self.type(t[1:], stubs))
@@ -567,23 +566,23 @@ class Module(object):
 			assert ext[2][-1] == ']'
 			tpl = self.type(ext[0])
 			params = (self.type(ext[2][:-1]),)
-			self.types[tpl.name, params] = obj = types.apply(tpl, params)
+			self.scope[tpl.name, (params,)] = obj = types.apply(tpl, params)
 			return obj
 		elif isinstance(t, str):
-			return stubs[t] if t in stubs else self.types[t]
+			return stubs[t] if t in stubs else self.scope[t]
 		elif isinstance(t, ast.Name):
 			if t.name in stubs:
 				return stubs[t.name]
-			if t.name not in self.types:
+			if t.name not in self.scope:
 				raise util.Error(t, "type '%s' not found" % t.name)
-			return self.types[t.name]
+			return self.scope[t.name]
 		elif isinstance(t, ast.Elem):
 			if isinstance(self.type(t.obj.name, stubs), types.template):
 				if t.key.name in stubs:
 					return self.type(t.obj.name, stubs)
-			tpl = self.types[t.obj.name]
+			tpl = self.scope[t.obj.name]
 			params = (self.type(t.key, stubs),)
-			obj = self.types[tpl.name, params] = types.apply(tpl, params)
+			obj = self.scope[tpl.name, params] = types.apply(tpl, params)
 			return obj
 		elif isinstance(t, ast.Owner):
 			return types.owner(self.type(t.value, stubs))
@@ -593,7 +592,7 @@ class Module(object):
 			return types.opt(self.type(t.value, stubs))
 		elif isinstance(t, ast.Tuple):
 			params = tuple(self.type(v) for v in t.values)
-			obj = self.types['tuple', params] = types.build_tuple(params)
+			obj = self.scope['tuple', params] = types.build_tuple(params)
 			return obj
 		else:
 			assert False, 'no type %s' % t

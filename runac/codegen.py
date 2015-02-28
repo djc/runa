@@ -872,7 +872,7 @@ class CodeGen(object):
 		
 		ctxt, self.intercept = None, None
 		if node.flow.yields:
-			ctxt = self.mod.types[irname + '$ctx']
+			ctxt = self.mod.scope[irname + '$ctx']
 			self.intercept = Value(types.ref(ctxt), '%ctx')
 		
 		rt = node.rtype.ir
@@ -1074,6 +1074,14 @@ class CodeGen(object):
 			
 			if not isinstance(v, types.base) or k in types.BASIC:
 				continue
+			elif isinstance(v, types.BASE):
+				continue
+			elif v.name.endswith('$ctx'):
+				continue
+			
+			if isinstance(k, tuple):
+				if any(isinstance(t, types.BASE) for t in k[1]):
+					continue
 			
 			atypes = {a[1] for a in util.values(v.attribs)}
 			tdeps = {types.unwrap(t) for t in atypes}
@@ -1103,8 +1111,6 @@ class CodeGen(object):
 		for var in mod.variants:
 			if var.name.endswith('$ctx'):
 				self.ctx(mod, var)
-			else:
-				self.type(var)
 		
 		frame = Frame()
 		for k, v in util.items(mod.scope):

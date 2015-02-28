@@ -645,7 +645,7 @@ def process(mod, base, fun, cls):
 			defn = base[fun.name.name]
 		
 		name = fun.irname + '$ctx'
-		mod.types[name] = type(name, (types.concrete,), {
+		mod.scope[name] = type(name, (types.concrete,), {
 			'name': name,
 			'ir': '%' + name,
 			'yields': fun.rtype.params[0],
@@ -662,7 +662,7 @@ def typer(mod):
 	
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
-			mod.types[k] = types.create(v)
+			mod.scope[k] = types.create(v)
 	
 	# Next, set up module scope and imported redirections
 	
@@ -698,7 +698,6 @@ def typer(mod):
 	for k, v in util.items(mod.names):
 		if isinstance(v, (ast.Class, ast.Trait)):
 			types.fill(mod, v)
-			mod.scope[k] = mod.type(k)
 	
 	# Build function definitions from declarations
 	

@@ -437,7 +437,7 @@ def apply(tpl, params):
 
 def fill(mod, node):
 	
-	obj = mod.types[node.name.name]
+	obj = mod.scope[node.name.name]
 	cls, stubs = obj.__class__, {}
 	if not isinstance(node, ast.Trait):
 		cls.params = tuple(n.name for n in node.params)
@@ -479,9 +479,9 @@ def fill(mod, node):
 		else:
 			UINTS.add(obj)
 		
-		mod.types['anyint'].methods.update(cls.methods)
+		mod.scope['anyint'].methods.update(cls.methods)
 	
 	elif node.name.name in BASIC_FLOATS:
 		cls.bits = BASIC_FLOATS[node.name.name]
 		FLOATS.add(obj)
-		mod.types['anyfloat'].methods.update(cls.methods)
+		mod.scope['anyfloat'].methods.update(cls.methods)
