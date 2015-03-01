@@ -15,9 +15,9 @@ def getspec(src):
 		else:
 			return {}
 
-def compile(src, bin):
+def compile(fn, bin):
 	try:
-		runac.compile(runac.ir(src), bin)
+		runac.compile(runac.ir(fn), bin)
 		return None
 	except util.Error as e:
 		return e.show()
