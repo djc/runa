@@ -537,7 +537,7 @@ class Module(object):
 		self.defined = set()
 		self.scope = {t.__name__: t() for t in types.BASE}
 		if node is not None:
-			self.merge(node)
+			self.add(node)
 	
 	def __repr__(self):
 		contents = sorted(util.items(self.__dict__))
@@ -596,7 +596,14 @@ class Module(object):
 		else:
 			assert False, 'no type %s' % t
 	
-	def merge(self, node):
+	def merge(self, mod):
+		for k, v in util.items(mod.names):
+			self.names[k] = v
+		for name, fun in mod.code:
+			self.code.append((name, fun))
+		self.defined |= mod.defined
+	
+	def add(self, node):
 		
 		code = []
 		for n in node.suite:

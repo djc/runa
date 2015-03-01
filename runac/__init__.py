@@ -21,12 +21,20 @@ def parse(fn):
 	'''Takes a string containing file name, returns an AST File node'''
 	return parser.parse(fn)
 
-def merge(mod):
-	'''Merge AST Modules for core library files into the given Module'''
-	for fn in os.listdir(util.CORE_DIR):
+def module(path):
+	'''Takes a file or directory path, returns a Module containing
+	declarations and code objects, to be submitted for further processing.'''
+	
+	if not os.path.isdir(path):
+		return blocks.Module(parser.parse('Runa', path))
+	
+	name = os.path.basename(path)
+	mod = blocks.Module()
+	for fn in os.listdir(path):
 		if not fn.endswith('.rns'): continue
-		fn = os.path.join(util.CORE_DIR, fn)
-		mod.merge(parser.parse('Runa.core', fn))
+		mod.add(parser.parse('Runa.' + name, os.path.join(path, fn)))
+	
+	return mod
 
 def show(fn, last):
 	'''Show Runa high-level intermediate representation for the source code
@@ -35,10 +43,10 @@ def show(fn, last):
 	
 	Returns a dict with function names (string or tuple) -> IR (string).
 	Functions from modules other than the given module are ignored.'''
-	mod = blocks.Module(parser.parse('Runa', fn))
+	mod = module(fn)
 	names = [name for (name, code) in mod.code]
 	
-	merge(mod)
+	mod.merge(module(util.CORE_DIR))
 	for name, fun in util.items(PASSES):
 		fun(mod)
 		if name == last:
@@ -55,8 +63,8 @@ def show(fn, last):
 def ir(fn):
 	'''Generate LLVM IR for the given module. Takes a string file name and
 	returns a string of LLVM IR, for the host architecture.'''
-	mod = blocks.Module(parser.parse('Runa', fn))
-	merge(mod)
+	mod = module(fn)
+	mod.merge(module(util.CORE_DIR))
 	for name, fun in util.items(PASSES):
 		fun(mod)
 	return codegen.generate(mod)
