@@ -18,7 +18,7 @@ def lex(src):
 	return parser.lex(src)
 
 def parse(fn):
-	'''Takes a string containing file name, returns an AST Module node'''
+	'''Takes a string containing file name, returns an AST File node'''
 	return parser.parse(fn)
 
 def merge(mod):
