@@ -63,10 +63,14 @@ def show(fn, last):
 def ir(fn):
 	'''Generate LLVM IR for the given module. Takes a string file name and
 	returns a string of LLVM IR, for the host architecture.'''
+	
 	mod = module(fn)
-	mod.merge(module(util.CORE_DIR))
+	if os.path.abspath(fn) != os.path.abspath(util.CORE_DIR):
+		mod.merge(module(util.CORE_DIR))
+	
 	for name, fun in util.items(PASSES):
 		fun(mod)
+	
 	return codegen.generate(mod)
 
 def compile(ir, outfn):
