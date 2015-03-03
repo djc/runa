@@ -79,7 +79,7 @@ class ReprId(object):
 		res = []
 		formals = []
 		for fun in opts:
-
+			
 			formals.append([t.name for t in fun.type.over[1]][1:])
 			tmp = actual
 			if '__init__' in fun.decl:
