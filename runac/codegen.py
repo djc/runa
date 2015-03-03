@@ -866,21 +866,17 @@ class CodeGen(object):
 		
 		self.vars = 0
 		self.labels.clear()
-		irname = node.name.name
-		if hasattr(node, 'irname'):
-			irname = node.irname
-		
 		ctxt, self.intercept = None, None
 		if node.flow.yields:
-			ctxt = self.mod.scope[irname + '$ctx']
+			ctxt = self.mod.scope[node.irname + '$ctx']
 			self.intercept = Value(types.ref(ctxt), '%ctx')
 		
 		rt = node.rtype.ir
-		if irname == 'main' and rt == 'void':
+		if node.irname == 'main' and rt == 'void':
 			rt = 'i32'
 		
 		args = ['%s %%%s' % (a.type.ir, a.name.name) for a in node.args]
-		if irname == 'main' and node.args:
+		if node.irname == 'main' and node.args:
 			args = ['i32 %argc', 'i8** %argv']
 		elif ctxt is not None:
 			args = ['%s %%ctx' % (types.ref(ctxt).ir)]
@@ -889,7 +885,7 @@ class CodeGen(object):
 			args.insert(0, '%s* %%$R' % rt)
 			rt = 'void'
 		
-		bits = rt, irname, ', '.join(args)
+		bits = rt, node.irname, ', '.join(args)
 		self.writeline('define %s @%s(%s) uwtable {' % bits)
 		self.indent()
 		
@@ -906,7 +902,7 @@ class CodeGen(object):
 			self.writeline('indirectbr %s %s, [ %s ]' % bits)
 		
 		self.label('L0', 'entry')
-		if irname == 'main' and node.args:
+		if node.irname == 'main' and node.args:
 			
 			strt = self.mod.type('&str')
 			addrp = self.gep(('i8**', '%argv'), 0)
@@ -931,7 +927,7 @@ class CodeGen(object):
 				frame[arg.name.name] = addr
 				self.store((arg.type, '%' + arg.name.name), addr.var)
 		
-		self.main = node if irname == 'main' else None
+		self.main = node if node.irname == 'main' else None
 		for i, block in sorted(util.items(node.flow.blocks)):
 			self.visit(block, frame)
 		
