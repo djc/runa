@@ -384,14 +384,16 @@ class FunctionDecl(util.AttribRepr):
 		funtype = function(rtype, tuple(i[0] for i in args))
 		funtype.args = tuple(i[1] for i in args)
 		
-		irname = name = node.name.name
+		name = node.name.name
+		irname = mod.name + '.' + name
 		if type is not None:
-			irname = '%s.%s' % (type.name, name)
+			irname = mod.name + '.%s.%s' % (type.name, name)
 			if name in type.methods:
 				wrangled = '.'.join(wrangle(t.name) for t in funtype.over[1])
 				irname = irname + '$' + wrangled
 				assert funtype.over[0] == type.methods[name][0].type.over[0]
 		
+		irname = 'main' if irname == 'Runa.main' else irname
 		return cls(irname, funtype)
 
 def create(node):

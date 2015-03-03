@@ -909,7 +909,7 @@ class CodeGen(object):
 			addr = self.load(Value(self.mod.type('&&byte'), addrp))
 			name = self.alloca(strt.over)
 			
-			wrapfun = '@str.__init__$Rstr.Obyte'
+			wrapfun = '@Runa.str.__init__$Rstr.Obyte'
 			bits = wrapfun, strt.ir, name.var, addr.var
 			self.writeline('call void %s(%s %s, i8* %s)' % bits)
 			frame['name'] = name
@@ -1023,7 +1023,7 @@ class CodeGen(object):
 	
 	def ctx(self, mod, t):
 		
-		name = t.name[:-4].split('.')
+		name = t.name[len(mod.name) + 1:-4].split('.')
 		key = name[0] if len(name) == 1 else tuple(name)
 		fun = None
 		for k, v in mod.code:

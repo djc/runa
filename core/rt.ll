@@ -63,7 +63,7 @@ Body:
 	%arg = load i8** %arg.ptr
 	
 	%obj = getelementptr [0 x %str]* %array.data, i32 0, {{ WORD }} %idx
-	call void @str.__init__$Rstr.Obyte(%str* %obj, i8* %arg)
+	call void @Runa.str.__init__$Rstr.Obyte(%str* %obj, i8* %arg)
 	
 	%next = add {{ WORD }} %idx, 1
 	store {{ WORD }} %next, {{ WORD }}* %itervar
