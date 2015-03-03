@@ -364,22 +364,35 @@ class FunctionDecl(util.AttribRepr):
 		self.name = decl # might be overridden by the Module
 	
 	@classmethod
-	def from_ast(cls, mod, node):
+	def from_ast(cls, mod, node, type=None, stubs={}):
 		
 		args = []
-		for arg in node.args:
-			if arg.type is None:
+		for i, arg in enumerate(node.args):
+			if not i and arg.name.name == 'self':
+				wrapper = owner if node.name.name == '__del__' else ref
+				args.append((wrapper(type), 'self'))
+			elif arg.type is None:
 				msg = "missing type for argument '%s'"
 				raise util.Error(arg, msg % arg.name.name)
-			args.append((mod.type(arg.type), arg.name.name))
+			else:
+				args.append((mod.type(arg.type, stubs), arg.name.name))
 		
 		rtype = void()
 		if node.rtype is not None:
-			rtype = mod.type(node.rtype)
+			rtype = mod.type(node.rtype, stubs)
 		
 		funtype = function(rtype, tuple(i[0] for i in args))
 		funtype.args = tuple(i[1] for i in args)
-		return cls(node.name.name, funtype)
+		
+		irname = name = node.name.name
+		if type is not None:
+			irname = '%s.%s' % (type.name, name)
+			if name in type.methods:
+				wrangled = '.'.join(wrangle(t.name) for t in funtype.over[1])
+				irname = irname + '$' + wrangled
+				assert funtype.over[0] == type.methods[name][0].type.over[0]
+		
+		return cls(irname, funtype)
 
 def create(node):
 	
@@ -465,29 +478,10 @@ def fill(mod, node):
 			cls.attribs[name.name] = i, mod.type(atype, stubs)
 	
 	for method in node.methods:
-		
 		name = method.name.name
-		rtype = void()
-		if method.rtype is not None:
-			rtype = mod.type(method.rtype, stubs)
-		
-		args = []
-		for i, arg in enumerate(method.args):
-			if not i and arg.name.name == 'self':
-				wrapper = owner if name == '__del__' else ref
-				args.append(('self', wrapper(mod.type(node.name, stubs))))
-			else:
-				args.append((arg.name.name, mod.type(arg.type, stubs)))
-		
-		irname = '%s.%s' % (node.name.name, name)
-		if name in cls.methods:
-			irname = irname + '$' + '.'.join(wrangle(a[1].name) for a in args)
-			assert rtype == cls.methods[name][0].type.over[0]
-		
-		fun = FunctionDecl(irname, function(rtype, tuple(a[1] for a in args)))
-		fun.type.args = [a[0] for a in args]
+		fun = FunctionDecl.from_ast(mod, method, obj, stubs)
 		cls.methods.setdefault(name, []).append(fun)
-		method.irname = irname
+		method.irname = fun.decl
 	
 	if node.name.name in INTEGERS:
 		
