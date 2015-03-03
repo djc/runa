@@ -741,13 +741,11 @@ parser = pg.build()
 
 class State(object):
 
-	def __init__(self, pkg_name, fn):
+	def __init__(self, fn):
 		self.fn = fn
 		with open(fn) as f:
 			self.src = f.read()
 		self.lines = self.src.splitlines()
-		pkg_name = '' if not pkg_name else pkg_name + '.'
-		self.mod_name = pkg_name + os.path.splitext(os.path.split(fn)[-1])[0]
 	
 	def pos(self, t):
 		'''Reprocess location information (see parse() for more details).'''
@@ -759,7 +757,7 @@ class State(object):
 		line = self.lines[ln] if ln < len(self.lines) else ''
 		return (ln, col), (ln, col + len(t.value)), line, self.fn
 
-def parse(pkg_name, fn):
+def parse(fn):
 	'''Takes a file name and returns the AST corresponding to the source
 	contained in the file. The State thing is here mostly to reprocess
 	location information from rply into something easier to use. AST nodes
@@ -771,5 +769,5 @@ def parse(pkg_name, fn):
 	- The file name
 	
 	This should be everything we need to build good error messages.'''
-	state = State(pkg_name, fn)
+	state = State(fn)
 	return parser.parse(lex(state.src), state=state)

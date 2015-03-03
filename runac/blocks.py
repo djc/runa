@@ -531,7 +531,8 @@ FINAL = ast.Return, ast.Raise, Branch, CondBranch, ast.Yield, LoopHeader, LPad
 
 class Module(object):
 	
-	def __init__(self, node=None):
+	def __init__(self, name, node=None):
+		self.name = name
 		self.names = {}
 		self.code = []
 		self.defined = set()

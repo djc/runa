@@ -26,13 +26,13 @@ def module(path):
 	declarations and code objects, to be submitted for further processing.'''
 	
 	if not os.path.isdir(path):
-		return blocks.Module(parser.parse('Runa', path))
+		return blocks.Module('Runa', parser.parse(path))
 	
 	name = os.path.basename(path)
-	mod = blocks.Module()
+	mod = blocks.Module('Runa.' + name)
 	for fn in os.listdir(path):
 		if not fn.endswith('.rns'): continue
-		mod.add(parser.parse('Runa.' + name, os.path.join(path, fn)))
+		mod.add(parser.parse(os.path.join(path, fn)))
 	
 	return mod
 
