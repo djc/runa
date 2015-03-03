@@ -422,26 +422,15 @@ class TypeChecker(object):
 			if node.name.obj.type is None:
 				self.visit(node.name.obj, scope)
 			
-			if node.name.obj.type == types.module():
-				
-				# calling a module attribute
-				mod = scope[node.name.obj.name]
-				fun = mod.type.functions[node.name.attrib.name]
-				qual = mod.name + '.' + node.name.attrib.name
-				node.fun = types.FunctionDecl(qual, fun)
-				node.type = fun.over[0]
-				
-			else:
-				
-				# calling an object attribute (method)
-				t = types.unwrap(node.name.obj.type)
-				if isinstance(t, types.trait):
-					node.virtual = True
-				
-				node.args.insert(0, node.name.obj)
-				actual = [a.type for a in node.args]
-				node.fun = t.select(node, node.name.attrib, actual)
-				node.type = node.fun.type.over[0]
+			assert isinstance(node.name.obj.type, types.base), node.name.obj
+			t = types.unwrap(node.name.obj.type)
+			if isinstance(t, types.trait):
+				node.virtual = True
+			
+			node.args.insert(0, node.name.obj)
+			actual = [a.type for a in node.args]
+			node.fun = t.select(node, node.name.attrib, actual)
+			node.type = node.fun.type.over[0]
 			
 			if not types.compat(actual, node.fun.type.over[1]):
 				assert False
