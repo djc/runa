@@ -692,7 +692,7 @@ def typer(mod):
 		
 		if not isinstance(k, tuple):
 			mod.scope[fun.name.name] = types.FunctionDecl.from_ast(mod, fun)
-			fun.irname = fun.name.name
+			fun.irname = mod.scope[fun.name.name].decl
 		
 		# Check function signature invariants for main() and methods
 		
