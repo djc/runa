@@ -5,6 +5,9 @@ Runa
    :target: https://travis-ci.org/djc/runa
 .. image:: https://img.shields.io/coveralls/djc/runa.svg?branch=master
    :target: https://coveralls.io/r/djc/runa?branch=master
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/djc/runa
+   :target: https://gitter.im/djc/runa
 
 A Python-like systems programming language.
 This means that the design borrows as much from Python
