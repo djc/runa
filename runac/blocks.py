@@ -545,6 +545,18 @@ class Module(object):
 		show = ('%s=%s' % (k, v) for (k, v) in contents)
 		return '<%s(%s)>' % (self.__class__.__name__, ', '.join(show))
 	
+	def __getitem__(self, key):
+		return self.names[key]
+	
+	def __setitem__(self, key, val):
+		self.names[key] = val
+	
+	def iteritems(self):
+		return self.names.iteritems()
+	
+	def items(self):
+		return self.names.items()
+	
 	def type(self, t, stubs={}):
 		if t is None:
 			return void()
@@ -598,7 +610,7 @@ class Module(object):
 			assert False, 'no type %s' % t
 	
 	def merge(self, mod):
-		for k, v in util.items(mod.names):
+		for k, v in util.items(mod):
 			self.names[k] = v
 		for name, fun in mod.code:
 			self.code.append((name, fun))
@@ -623,10 +635,10 @@ class Module(object):
 						res.append(start.name)
 						base = '.'.join(reversed(res))
 					
-					self.names[name.name] = base + '.' + name.name
+					self[name.name] = base + '.' + name.name
 			
 			elif isinstance(n, ast.Class):
-				self.names[n.name.name] = n
+				self[n.name.name] = n
 				for m in n.methods:
 					code.append(((n.name.name, m.name.name), m))
 			
@@ -634,14 +646,14 @@ class Module(object):
 				code.append((n.name.name, n))
 			
 			elif isinstance(n, ast.Trait):
-				self.names[n.name.name] = n
+				self[n.name.name] = n
 			
 			elif isinstance(n, ast.Assign):
 				assert isinstance(n.left, ast.Name), n.left
-				self.names[n.left.name] = Constant(n.right)
+				self[n.left.name] = Constant(n.right)
 			
 			elif isinstance(n, ast.Decl):
-				self.names[n.name.name] = n
+				self[n.name.name] = n
 			
 			else:
 				assert False, n

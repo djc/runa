@@ -638,13 +638,13 @@ def typer(mod):
 	
 	# Start by adding types to type dictionary
 	
-	for k, v in util.items(mod.names):
+	for k, v in util.items(mod):
 		if isinstance(v, (ast.Class, ast.Trait)):
 			mod.scope[k] = types.create(v)
 	
 	# Next, set up module scope and imported redirections
 	
-	for name, obj in util.items(mod.names):
+	for name, obj in util.items(mod):
 		
 		if not isinstance(obj, str):
 			continue
@@ -656,11 +656,11 @@ def typer(mod):
 		
 		val = ns.attribs[path[0]]
 		assert isinstance(val, ast.Decl)
-		mod.names[name] = val
+		mod[name] = val
 	
 	# Add constants to module scope
 	
-	for k, v in util.items(mod.names):
+	for k, v in util.items(mod):
 		if not isinstance(v, blocks.Constant):
 			continue
 		if isinstance(v.node, ast.String):
@@ -673,13 +673,13 @@ def typer(mod):
 	
 	# Build types for classes and traits
 	
-	for k, v in util.items(mod.names):
+	for k, v in util.items(mod):
 		if isinstance(v, (ast.Class, ast.Trait)):
 			types.fill(mod, v)
 	
 	# Build function definitions from declarations
 	
-	for k, v in util.items(mod.names):
+	for k, v in util.items(mod):
 		if isinstance(v, ast.Decl):
 			atypes = [mod.type(a.type) for a in v.args]
 			funtype = types.function(mod.type(v.rtype), atypes)
