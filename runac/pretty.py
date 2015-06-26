@@ -43,7 +43,7 @@ class PrettyPrinter(object):
 		self.write(')')
 		if fun.rtype is not None:
 			self.write(' -> ')
-			self.visit(fun.rtype)
+			self.type(fun.rtype)
 		
 		self.write(':')
 		self.newline()
