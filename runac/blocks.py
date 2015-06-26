@@ -559,7 +559,7 @@ class Module(object):
 	
 	def type(self, t, stubs={}):
 		if t is None:
-			return void()
+			return types.void()
 		elif t == '...':
 			return types.VarArgs()
 		elif isinstance(t, types.base):
