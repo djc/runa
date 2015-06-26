@@ -11,6 +11,9 @@ def maybe(i: int) -> $test?:
 def multi() -> (uint, uint):
 	return 4, 5
 
+def cast(a: &byte):
+	p = a as &i8
+
 def opt_check():
 	
 	obj = maybe(1)

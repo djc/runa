@@ -21,6 +21,11 @@ def multi() -> tuple[uint, uint]:
  {00} $0 [tuple[uint, uint]] = (4 [int], 5 [int])
  {01} Return $0 [tuple[uint, uint]]
 
+def cast(a [&byte]) -> void:
+   0: [entry]
+ {00} p [&i8] = As a [&byte] &i8
+ {01} Return
+
 def opt_check() -> void:
    0: [entry]
  {00} obj [$test?] = Runa.maybe(1 [int]) [$test?]

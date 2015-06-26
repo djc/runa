@@ -119,7 +119,10 @@ class PrettyPrinter(object):
 		self.visit(node.right)
 	
 	def As(self, node):
-		self.binary('As', node)
+		self.write('As ')
+		self.visit(node.left)
+		self.write(' ')
+		self.visit(node.type)
 	
 	def Not(self, node):
 		self.write('Not ')
