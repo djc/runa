@@ -163,7 +163,7 @@ class template(ReprId):
 	
 	@property
 	def ir(self):
-		assert False, 'not a concrete type'
+		assert False, '%s is not a concrete type' % self.name
 	
 	def __repr__(self):
 		return '<template: %s>' % self.__class__.__name__
