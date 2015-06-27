@@ -256,11 +256,14 @@ class PrettyPrinter(object):
 		self.visit(node.source)
 	
 	def LPad(self, node):
-		self.write('LPad: {')
+		self.write('LPad: %s {' % node.var)
 		for k, v in util.items(node.map):
 			self.visit(k)
 			self.write(': ' + str(v))
 		self.write('}')
+	
+	def Resume(self, node):
+		self.write('Resume: %s' % node.var)
 	
 	def LoopSetup(self, node):
 		self.write('LoopSetup ')

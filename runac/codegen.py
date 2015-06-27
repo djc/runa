@@ -748,6 +748,9 @@ class CodeGen(object):
 	def LPad(self, node, frame):
 		pass
 	
+	def Resume(self, node, frame):
+		pass
+	
 	def Pass(self, node, frame):
 		pass
 	
