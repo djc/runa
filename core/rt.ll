@@ -3,6 +3,7 @@ declare i8* @malloc({{ WORD }})
 declare void @free(i8*)
 declare i32 @printf(i8*, ...)
 declare void @llvm.memcpy.p0i8.p0i8.{{ WORD }}(i8*, i8*, {{ WORD }}, i32, i1)
+declare i32 @llvm.eh.typeid.for(i8*) nounwind readnone
 
 @fmt_MALLOC = constant [16 x i8] c"malloc(%ld) %p\0a\00"
 @fmt_FREE = constant [10 x i8] c"free(%p)\0a\00"
