@@ -1,5 +1,5 @@
 from . import ast, util
-import rply, sys, os
+import rply
 
 NAME_LIKE = {
 	'and', 'as', 'break', 'class', 'continue', 'def', 'elif', 'else',

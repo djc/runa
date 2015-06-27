@@ -21,7 +21,6 @@ into a control flow graph of basic blocks.
 '''
 
 from . import ast, util, types
-import copy
 
 class SetAttr(ast.Attrib):
 	pass
