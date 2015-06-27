@@ -1197,5 +1197,8 @@ def generate(mod):
 		src = src.replace('{{ BYTES }}', str(int(arch[:2]) // 8))
 		code.append(src)
 	
+	with open(os.path.join(util.CORE_DIR, 'personality.ll')) as f:
+		code.append(f.read())
+	
 	code += gen.buf
 	return ''.join(code)

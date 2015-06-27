@@ -1,5 +1,6 @@
 **.pyc
 .coverage
+core/personality.ll
 test.c
 tests/*.test
 tests/*.ll

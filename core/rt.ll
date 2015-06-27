@@ -1,7 +1,6 @@
 declare void @exit(i32);
 declare i8* @malloc({{ WORD }})
 declare void @free(i8*)
-declare i32 @printf(i8*, ...)
 declare void @llvm.memcpy.p0i8.p0i8.{{ WORD }}(i8*, i8*, {{ WORD }}, i32, i1)
 declare i32 @llvm.eh.typeid.for(i8*) nounwind readnone
 
