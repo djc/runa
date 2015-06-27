@@ -6,7 +6,7 @@ install:
   - pip install rply
   - pip install coveralls
 script:
-  coverage run test.py
+  make coverage
 after_success:
   coveralls
 notifications:
