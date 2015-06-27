@@ -1,9 +1,15 @@
+class UnwEx:
+	ehid: u64
+	clean: &byte
+	priv1: u64
+	priv2: u64
+
 class Exception:
 	
-	ehid: uint
-	clean: &byte
-	priv1: uint
-	priv2: uint
+	header: UnwEx
+	switch_value: i32
+	lsda: &byte
+	lpad: &byte
 	msg: $str
 	
 	def __init__(self, msg: $str):

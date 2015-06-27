@@ -75,7 +75,6 @@ Done:
 	
 }
 
-%UnwEx = type { i64, i8*, i64, i64 }
 %UnwExClean = type void (i32, %UnwEx*)*
 
 declare i32 @_Unwind_RaiseException(%UnwEx*)
