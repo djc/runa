@@ -1,5 +1,3 @@
-from libc.unistd import write
-
 def print(src: &ToStr):
 	s = str(src)
 	write(1, s.data, s.len)

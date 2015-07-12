@@ -1,6 +1,3 @@
-from __internal__ import __malloc__, __memcpy__, __offset__
-from libc.string import strncmp, strlen
-
 class str:
 	
 	len: uint
