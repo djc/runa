@@ -22,18 +22,16 @@ def parse(fn):
 	return parser.parse(fn)
 
 def module(path):
-	'''Takes a file or directory path, returns a Module containing
+	'''Takes a file (or directory, at some point), returns a Module containing
 	declarations and code objects, to be submitted for further processing.'''
-	
-	if not os.path.isdir(path):
-		return blocks.Module('Runa', parser.parse(path))
-	
-	name = os.path.basename(path)
-	mod = blocks.Module('Runa.' + name)
-	for fn in os.listdir(path):
+	assert not os.path.isdir(path), path
+	return blocks.Module('Runa', parser.parse(path))
+
+def _core():
+	mod = blocks.Module('Runa.core')
+	for fn in os.listdir(util.CORE_DIR):
 		if not fn.endswith('.rns'): continue
-		mod.add(parser.parse(os.path.join(path, fn)))
-	
+		mod.add(parser.parse(os.path.join(util.CORE_DIR, fn)))
 	return mod
 
 def show(fn, last):
@@ -46,7 +44,7 @@ def show(fn, last):
 	mod = module(fn)
 	names = [name for (name, code) in mod.code]
 	
-	mod.merge(module(util.CORE_DIR))
+	mod.merge(_core())
 	for name, fun in util.items(PASSES):
 		fun(mod)
 		if name == last:
@@ -66,7 +64,7 @@ def ir(fn):
 	
 	mod = module(fn)
 	if os.path.abspath(fn) != os.path.abspath(util.CORE_DIR):
-		mod.merge(module(util.CORE_DIR))
+		mod.merge(_core())
 	
 	for name, fun in util.items(PASSES):
 		fun(mod)
