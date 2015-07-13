@@ -1,4 +1,0 @@
-def print(src: &ToStr):
-	s = str(src)
-	write(1, s.data, s.len)
-	write(1, "\n".data, 1)

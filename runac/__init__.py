@@ -29,9 +29,7 @@ def module(path):
 
 def _core():
 	mod = blocks.Module('Runa.core')
-	for fn in os.listdir(util.CORE_DIR):
-		if not fn.endswith('.rns'): continue
-		mod.add(parser.parse(os.path.join(util.CORE_DIR, fn)))
+	mod.add(parser.parse(os.path.join(util.CORE_DIR, '__builtins__.rns')))
 	return mod
 
 def show(fn, last):

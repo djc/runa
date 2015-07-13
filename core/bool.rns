@@ -1,6 +1,0 @@
-class NoType:
-	pass
-
-class bool:
-	def __str__(self) -> $str:
-		return 'True' if self else 'False'

@@ -1,3 +1,0 @@
-class array[T]:
-	len: uint
-	data: $T
