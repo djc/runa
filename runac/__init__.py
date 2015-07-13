@@ -21,16 +21,14 @@ def parse(fn):
 	'''Takes a string containing file name, returns an AST File node'''
 	return parser.parse(fn)
 
-def module(path):
+def module(path, name='Runa'):
 	'''Takes a file (or directory, at some point), returns a Module containing
 	declarations and code objects, to be submitted for further processing.'''
 	assert not os.path.isdir(path), path
-	return blocks.Module('Runa', parser.parse(path))
+	return blocks.Module(name, parser.parse(path))
 
 def _core():
-	mod = blocks.Module('Runa.core')
-	mod.add(parser.parse(os.path.join(util.CORE_DIR, '__builtins__.rns')))
-	return mod
+	return module(os.path.join(util.CORE_DIR, '__builtins__.rns'))
 
 def show(fn, last):
 	'''Show Runa high-level intermediate representation for the source code
