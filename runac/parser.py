@@ -69,7 +69,9 @@ def lex(src):
 	hold = []
 	for t in LEXER.lex(src):
 		
-		if t.name == 'NL' and hold:
+		if t.name == 'COM':
+			continue
+		elif t.name == 'NL' and hold:
 			hold = [t]
 			continue
 		elif t.name == 'NL' or (hold and t.name == 'TABS'):
@@ -88,8 +90,6 @@ def lex(src):
 		
 		if t.name == 'NAME' and t.value in NAME_LIKE:
 			t.name = t.value.upper()
-		elif t.name == 'COM':
-			continue
 		
 		yield t
 
