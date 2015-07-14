@@ -1184,7 +1184,7 @@ TRIPLES = {
 def triple():
 	arch, os_key = platform.architecture()[0], sys.platform
 	os_key = 'linux' if os_key.startswith('linux') else os_key
-	return 'target triple = "%s"\n\n' % TRIPLES[arch, os_key]
+	return TRIPLES[arch, os_key]
 
 def rt():
 	arch = platform.architecture()[0]
@@ -1202,7 +1202,7 @@ def generate(mod):
 	gen = CodeGen(mod, 'i' + platform.architecture()[0][:2])
 	gen.generate()
 	
-	code = [triple()]
+	code = ['target triple = "%s"\n\n' % triple()]
 	code += gen.typedecls
 	code.append(rt())
 	code.append(personality())
