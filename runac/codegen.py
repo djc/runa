@@ -1181,6 +1181,8 @@ TRIPLES = {
 	('64bit', 'win32'): 'x86_64-pc-windows-gnu',
 }
 
+TRIPLE_FMT = 'target triple = "%s"\n\n'
+
 def triple():
 	arch, os_key = platform.architecture()[0], sys.platform
 	os_key = 'linux' if os_key.startswith('linux') else os_key
@@ -1202,7 +1204,7 @@ def generate(mod):
 	gen = CodeGen(mod, 'i' + platform.architecture()[0][:2])
 	gen.generate()
 	
-	code = ['target triple = "%s"\n\n' % triple()]
+	code = [TRIPLE_FMT % triple()]
 	code += gen.typedecls
 	code.append(rt())
 	code.append(personality())
