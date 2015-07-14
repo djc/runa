@@ -364,6 +364,12 @@ class FunctionDecl(util.AttribRepr):
 		self.name = decl # might be overridden by the Module
 	
 	@classmethod
+	def from_decl(cls, mod, node):
+		atypes = [mod.type(a.type) for a in node.args]
+		funtype = function(mod.type(node.rtype), atypes)
+		return cls(node.name.name, funtype)
+	
+	@classmethod
 	def from_ast(cls, mod, node, type=None, stubs={}):
 		
 		args = []

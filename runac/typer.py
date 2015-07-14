@@ -684,9 +684,7 @@ def typer(mod):
 	
 	for k, v in util.items(mod):
 		if isinstance(v, ast.Decl):
-			atypes = [mod.type(a.type) for a in v.args]
-			funtype = types.function(mod.type(v.rtype), atypes)
-			mod.scope[k] = types.FunctionDecl(v.name.name, funtype)
+			mod.scope[k] = types.FunctionDecl.from_decl(mod, v)
 	
 	for k, fun in mod.code:
 		
