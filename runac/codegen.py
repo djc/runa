@@ -1181,24 +1181,31 @@ TRIPLES = {
 	('64bit', 'win32'): 'x86_64-pc-windows-gnu',
 }
 
+def triple():
+	arch, os_key = platform.architecture()[0], sys.platform
+	os_key = 'linux' if os_key.startswith('linux') else os_key
+	return 'target triple = "%s"\n\n' % TRIPLES[arch, os_key]
+
+def rt():
+	arch = platform.architecture()[0]
+	with open(os.path.join(util.CORE_DIR, 'rt.ll')) as f:
+		src = f.read().replace('{{ WORD }}', 'i' + arch[:2])
+		src = src.replace('{{ BYTES }}', str(int(arch[:2]) // 8))
+		return src
+
+def personality():
+	with open(os.path.join(util.CORE_DIR, 'personality.ll')) as f:
+		return f.read()
+
 def generate(mod):
 	
-	arch, os_key = platform.architecture()[0], sys.platform
-	word = 'i' + arch[:2]
-	gen = CodeGen(mod, word)
+	gen = CodeGen(mod, 'i' + platform.architecture()[0][:2])
 	gen.generate()
 	
-	os_key = 'linux' if os_key.startswith('linux') else os_key
-	code = ['target triple = "%s"\n\n' % TRIPLES[arch, os_key]]
+	code = [triple()]
 	code += gen.typedecls
-	
-	with open(os.path.join(util.CORE_DIR, 'rt.ll')) as f:
-		src = f.read().replace('{{ WORD }}', word)
-		src = src.replace('{{ BYTES }}', str(int(arch[:2]) // 8))
-		code.append(src)
-	
-	with open(os.path.join(util.CORE_DIR, 'personality.ll')) as f:
-		code.append(f.read())
-	
+	code.append(rt())
+	code.append(personality())
 	code += gen.buf
+	
 	return ''.join(code)
