@@ -76,7 +76,7 @@ def compile(ir, outfn):
 	with open(name, 'wb') as f:
 		f.write(ir.encode('ascii'))
 	
-	triple = re.search('triple = "(.*?)"', ir).groups()[0]
+	triple = codegen.triple()
 	if 'windows-msvc' in triple:
 		cmd = ['clang-cl', '-Fe' + outfn, '-m64', name, '/link', 'msvcrt.lib']
 	else:
