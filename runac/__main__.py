@@ -28,8 +28,7 @@ def generate(fn, opts):
 
 def compile(fn, opts):
 	'''Compile the given program to a binary of the same name'''
-	ir = runac.ir(fn)
-	runac.compile(ir, os.path.basename(fn).rsplit('.rns')[0])
+	runac.compile(fn, os.path.basename(fn).rsplit('.rns')[0])
 
 COMMANDS = {
 	'tokens': tokens,

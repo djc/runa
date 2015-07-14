@@ -67,14 +67,14 @@ def ir(fn):
 	
 	return codegen.generate(mod)
 
-def compile(ir, outfn):
+def compile(fn, outfn):
 	'''Compiles LLVM IR into a binary. Takes a string file name and a string
 	output file name. Writes the IR to a temporary file, then calls clang on
 	it. (Shelling out to clang is pretty inefficient.)'''
 	
 	name = outfn + '.ll'
 	with open(name, 'wb') as f:
-		f.write(ir.encode('ascii'))
+		f.write(ir(fn).encode('ascii'))
 	
 	triple = codegen.triple()
 	if 'windows-msvc' in triple:
