@@ -76,7 +76,10 @@ Done:
 }
 
 %UnwExClean = type void (i32, %UnwEx*)*
+%struct._Unwind_Exception = type { i64, void (i32, %struct._Unwind_Exception*)*, i64, i64 }
+%struct._Unwind_Context = type opaque
 
+declare i32 @__runa_personality(i32 %version, i32 %actions, i64 %exception_class, %struct._Unwind_Exception* %ue_header, %struct._Unwind_Context* %context) nounwind ssp uwtable
 declare i32 @_Unwind_RaiseException(%UnwEx*)
 
 @ExcErr = constant [44 x i8] c"!!! Runa: error while raising exception: %i\0a"

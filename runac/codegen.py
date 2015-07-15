@@ -1200,14 +1200,10 @@ def personality():
 		return f.read()
 
 def generate(mod):
-	
 	gen = CodeGen(mod, 'i' + platform.architecture()[0][:2])
 	gen.generate()
-	
 	code = [TRIPLE_FMT % triple()]
 	code += gen.typedecls
 	code.append(rt())
-	code.append(personality())
 	code += gen.buf
-	
 	return ''.join(code)

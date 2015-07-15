@@ -72,17 +72,25 @@ def compile(fn, outfn):
 	output file name. Writes the IR to a temporary file, then calls clang on
 	it. (Shelling out to clang is pretty inefficient.)'''
 	
-	name = outfn + '.ll'
-	with open(name, 'wb') as f:
-		f.write(ir(fn).encode('ascii'))
+	name = os.path.basename(fn).rsplit('.rns')[0]
+	mod_fn = name + '.ll'
+	with open(mod_fn, 'w') as f:
+		try:
+			f.write(ir(fn).encode('ascii'))
+		except Exception:
+			os.unlink(mod_fn)
+			raise
 	
+	eh_fn = os.path.join(util.CORE_DIR, 'personality.ll')
+	files = eh_fn, mod_fn
 	triple = codegen.triple()
 	if 'windows-msvc' in triple:
-		cmd = ['clang-cl', '-Fe' + outfn, '-m64', name, '/link', 'msvcrt.lib']
+		cmd = ['clang-cl', '-Fe' + outfn, '-m64'] + files
+		cmd += ['/link', 'msvcrt.lib']
 	else:
 		cmd = ['clang', '-o', outfn]
 		cmd.append('-m64' if triple.split('-')[0] == 'x86_64' else '-m32')
-		cmd.append(name)
+		cmd += files
 	
 	try:
 		subprocess.check_call(cmd)
@@ -94,4 +102,4 @@ def compile(fn, outfn):
 	except subprocess.CalledProcessError:
 		pass
 	finally:
-		os.unlink(name)
+		os.unlink(mod_fn)
