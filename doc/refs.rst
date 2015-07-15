@@ -199,3 +199,7 @@ expansion of the language design (e.g. concurrency):
 * `.gcc_except_table
   <http://www.airs.com/blog/archives/464>`_
   Ian Lance Taylor
+
+* `Programmatic access to the call stack in C++
+  <http://eli.thegreenplace.net/2015/programmatic-access-to-the-call-stack-in-c/>`_
+  Eli Bendersky
