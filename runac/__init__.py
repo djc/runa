@@ -81,8 +81,11 @@ def compile(fn, outfn):
 			os.unlink(mod_fn)
 			raise
 	
+	with open('rt.ll', 'w') as f:
+		f.write(codegen.rt())
+	
 	eh_fn = os.path.join(util.CORE_DIR, 'personality.ll')
-	files = eh_fn, mod_fn
+	files = eh_fn, 'rt.ll', mod_fn
 	triple = codegen.triple()
 	if 'windows-msvc' in triple:
 		cmd = ['clang-cl', '-Fe' + outfn, '-m64'] + files
@@ -102,4 +105,5 @@ def compile(fn, outfn):
 	except subprocess.CalledProcessError:
 		pass
 	finally:
+		os.unlink('rt.ll')
 		os.unlink(mod_fn)

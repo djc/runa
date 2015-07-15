@@ -25,8 +25,10 @@ from . import ast, types, blocks, typer, util
 import os, sys, copy, platform
 
 ESCAPES = {'\\n': '\\0a', '\\0': '\\00'}
-PERSONALITY_TYPE = (
-	'i32 (i32, i32, i64, %struct._Unwind_Exception*, %struct._Unwind_Context*)*'
+EH_TYPES = (
+	'{ i64, void (i32, %struct._Unwind_Exception*)*, i64, i64 }',
+	'opaque',
+	'i32 (i32, i32, i64, %struct._Unwind_Exception*, %struct._Unwind_Context*)*',
 )
 
 def literal_length(node):
@@ -754,7 +756,7 @@ class CodeGen(object):
 		personality = 'i8* bitcast (%s @__runa_personality to i8*)'
 		clause = 'catch %s* @%%s.size' % self.word
 		clauses = ' '.join(clause % t.name for t in node.map)
-		bits = res, 'personality ' + (personality % PERSONALITY_TYPE), clauses
+		bits = res, 'personality ' + (personality % EH_TYPES[2]), clauses
 		self.writeline('%s = landingpad { i8*, i32 } %s %s' % bits)
 		frame[node.var] = res
 		
@@ -997,10 +999,6 @@ class CodeGen(object):
 		frame[name] = Value(val.type, '@%s' % name)
 	
 	def declare(self, ref):
-		
-		if ref.decl.startswith('Runa.rt'):
-			return
-		
 		rtype = ref.type.over[0].ir
 		args = ', '.join(t.ir for t in ref.type.over[1])
 		self.writeline('declare %s @%s(%s)' % (rtype, ref.decl, args))
@@ -1010,10 +1008,6 @@ class CodeGen(object):
 		if isinstance(type, types.WRAPPERS):
 			return
 		if isinstance(type, types.opt):
-			return
-		
-		if type.name == 'array[str]':
-			# predefined for args creation function
 			return
 		
 		if type.name.startswith('array['):
@@ -1099,6 +1093,16 @@ class CodeGen(object):
 				continue
 			if k not in mod.defined:
 				self.declare(v)
+		
+		# Define types for exception handling
+		
+		self.writeline('%%struct._Unwind_Exception = type %s' % EH_TYPES[0])
+		self.writeline('%%struct._Unwind_Context = type %s' % EH_TYPES[1])
+		self.writeline(''.join([
+			'declare i32 @__runa_personality(',
+			'i32, i32, i64, %struct._Unwind_Exception*, %struct._Unwind_Context*',
+			') nounwind ssp uwtable',
+		]))
 		
 		# Determine type dependencies for all types that have to defined;
 		# excludes basic types (intrinsically defined by LLVM), abstract
@@ -1193,7 +1197,7 @@ def rt():
 	with open(os.path.join(util.CORE_DIR, 'rt.ll')) as f:
 		src = f.read().replace('{{ WORD }}', 'i' + arch[:2])
 		src = src.replace('{{ BYTES }}', str(int(arch[:2]) // 8))
-		return src
+		return TRIPLE_FMT % triple() + src
 
 def personality():
 	with open(os.path.join(util.CORE_DIR, 'personality.ll')) as f:
@@ -1204,6 +1208,5 @@ def generate(mod):
 	gen.generate()
 	code = [TRIPLE_FMT % triple()]
 	code += gen.typedecls
-	code.append(rt())
 	code += gen.buf
 	return ''.join(code)

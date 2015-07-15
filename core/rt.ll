@@ -2,7 +2,7 @@ declare void @exit(i32);
 declare i8* @malloc({{ WORD }})
 declare void @free(i8*)
 declare void @llvm.memcpy.p0i8.p0i8.{{ WORD }}(i8*, i8*, {{ WORD }}, i32, i1)
-declare i32 @llvm.eh.typeid.for(i8*) nounwind readnone
+declare i64 @write(i32, i8*, i64)
 
 @fmt_MALLOC = constant [16 x i8] c"malloc(%ld) %p\0a\00"
 @fmt_FREE = constant [10 x i8] c"free(%p)\0a\00"
@@ -33,7 +33,10 @@ define void @Runa.rt.memcpy(i8* %dst, i8* %src, {{ WORD }} %len) alwaysinline {
 	ret void
 }
 
+%str = type { {{ WORD }}, i8* }
+@str.size = external constant i64
 %array$str = type { {{ WORD }}, [0 x %str] }
+declare void @Runa.str.__init__$Rstr.Obyte(%str* %self, i8* %data) uwtable
 
 define %array$str* @Runa.rt.args(i32 %argc, i8** %argv) {
 	
@@ -75,11 +78,10 @@ Done:
 	
 }
 
+%UnwEx = type { i64, i8*, i64, i64 }
+%Exception = type { %UnwEx, i32, i8*, i8*, %str* }
 %UnwExClean = type void (i32, %UnwEx*)*
-%struct._Unwind_Exception = type { i64, void (i32, %struct._Unwind_Exception*)*, i64, i64 }
-%struct._Unwind_Context = type opaque
 
-declare i32 @__runa_personality(i32 %version, i32 %actions, i64 %exception_class, %struct._Unwind_Exception* %ue_header, %struct._Unwind_Context* %context) nounwind ssp uwtable
 declare i32 @_Unwind_RaiseException(%UnwEx*)
 
 @ExcErr = constant [44 x i8] c"!!! Runa: error while raising exception: %i\0a"

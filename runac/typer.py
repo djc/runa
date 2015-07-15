@@ -75,6 +75,9 @@ ROOT = Declarations('', {
 			'&byte', '&byte', 'uint'
 		)),
 		'__offset__': declare('Runa.rt.offset', '&byte', ('&byte', 'uint')),
+		'__raise__': declare('Runa.rt.raise', 'void', ('$Exception',)),
+		'__typeid__': declare('llvm.eh.typeid.for', 'i32', ('&byte',)),
+		'__args__': declare('Runa.rt.args', '&array[str]', ('i32', '&&byte')),
 	}),
 	'libc': Declarations('libc', {
 		'stdlib': Declarations('libc.stdlib', {
@@ -681,6 +684,10 @@ def typer(mod):
 			types.fill(mod, v)
 	
 	# Build function definitions from declarations
+	
+	for k in ('__free__', '__raise__', '__typeid__', '__args__'):
+		decl = ROOT.attribs['__internal__'].attribs[k]
+		mod.scope[k] = types.FunctionDecl.from_decl(mod, decl)
 	
 	for k, v in util.items(mod):
 		if isinstance(v, ast.Decl):
