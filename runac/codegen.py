@@ -945,7 +945,7 @@ class CodeGen(object):
 			addr = self.load(Value(self.mod.type('&&byte'), addrp))
 			name = self.alloca(strt.over)
 			
-			wrapfun = '@Runa.str.__init__$Rstr.Obyte'
+			wrapfun = '@Runa.core.str.__init__$Rstr.Obyte'
 			bits = wrapfun, strt.ir, name.var, addr.var
 			self.writeline('call void %s(%s %s, i8* %s)' % bits)
 			frame['name'] = name
@@ -1002,8 +1002,13 @@ class CodeGen(object):
 		rtype = ref.type.over[0].ir
 		args = ', '.join(t.ir for t in ref.type.over[1])
 		self.writeline('declare %s @%s(%s)' % (rtype, ref.decl, args))
-		
-	def type(self, type):
+	
+	def methods(self, t):
+		for name, methods in t.methods.iteritems():
+			for method in methods:
+				self.declare(method)
+	
+	def type(self, type, external=False):
 		
 		if isinstance(type, types.WRAPPERS):
 			return
@@ -1030,10 +1035,18 @@ class CodeGen(object):
 		self.writeline('%s = type { %s }' % (type.ir, s))
 		
 		t = type.ir
-		gep = '%s* getelementptr (%s* null, i32 1)' % (t, t)
-		cast = 'constant %s ptrtoint (%s to %s)' % (self.word, gep, self.word)
-		self.writeline('@%s.size = %s' % (t[1:], cast))
+		if not external:
+			gep = '%s* getelementptr (%s* null, i32 1)' % (t, t)
+			bits = self.word, gep, self.word
+			cast = 'constant %s ptrtoint (%s to %s)' % bits
+			self.writeline('@%s.size = %s' % (t[1:], cast))
+		else:
+			bits = t[1:], self.word
+			self.writeline('@%s.size = external constant %s' % bits)
+		
 		self.newline()
+		if external:
+			self.methods(type)
 	
 	def trait(self, t):
 		
@@ -1088,7 +1101,7 @@ class CodeGen(object):
 		
 		# Declare functions not defined in this module
 		
-		for k, v in util.items(mod.scope):
+		for k, v in mod.scope.allitems():
 			if not isinstance(v, types.FunctionDecl):
 				continue
 			if k not in mod.defined:
@@ -1112,9 +1125,13 @@ class CodeGen(object):
 		
 		self.newline()
 		deps, ctxs = {}, []
-		for k, v in util.items(mod.scope):
+		for k, v in mod.scope.allitems():
 			
-			if not isinstance(v, types.base) or k in types.BASIC:
+			if k in types.BASIC:
+				if mod.name != 'Runa.core':
+					self.methods(v)
+				continue
+			elif not isinstance(v, types.base):
 				continue
 			elif isinstance(v, types.BASE):
 				continue
@@ -1140,7 +1157,7 @@ class CodeGen(object):
 			done = set()
 			for k in remains:
 				if not deps[k][1]:
-					self.type(deps[k][0])
+					self.type(deps[k][0], external=not mod.scope.local(k))
 					done.add(deps[k][0])
 			
 			# Remove the processed types from dependency lists
@@ -1151,11 +1168,11 @@ class CodeGen(object):
 					if t in deps[k][1]:
 						deps[k][1].remove(t)
 			
-			assert done # check that we made progress
+			assert done, remains # check that we made progress
 		
 		# Declare traits and contexts
 		
-		for k, v in util.items(mod.scope):
+		for k, v in mod.scope.allitems():
 			if isinstance(v, types.trait):
 				self.trait(v)
 		

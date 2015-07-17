@@ -685,9 +685,10 @@ def typer(mod):
 	
 	# Build function definitions from declarations
 	
-	for k in ('__free__', '__raise__', '__typeid__', '__args__'):
-		decl = ROOT.attribs['__internal__'].attribs[k]
-		mod.scope[k] = types.FunctionDecl.from_decl(mod, decl)
+	if mod.name == 'Runa.core':
+		for k in ('__free__', '__raise__', '__typeid__', '__args__'):
+			decl = ROOT.attribs['__internal__'].attribs[k]
+			mod.scope[k] = types.FunctionDecl.from_decl(mod, decl)
 	
 	for k, v in util.items(mod):
 		if isinstance(v, ast.Decl):

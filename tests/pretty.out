@@ -33,10 +33,10 @@ def opt_check() -> void:
  {02} CondBranch $0 [bool] ? 1 : 2
    1: [if-suite]
  {00} $1 [$str] = 'no val' [&str]
- {01} Runa.print($1 [$str]) [void]
+ {01} Runa.core.print($1 [$str]) [void]
  {02} Branch 3
    2: [if-suite]
- {00} Runa.print(False [bool]) [void]
+ {00} Runa.core.print(False [bool]) [void]
  {01} Branch 3
    3: [if-exit]
  {00} obj [$test?] = Runa.maybe(3 [int]) [$test?]
@@ -44,11 +44,11 @@ def opt_check() -> void:
  {02} CondBranch $2 [bool] ? 4 : 5
    4: [if-suite]
  {00} $3 [$str] = 'no val' [&str]
- {01} Runa.print($3 [$str]) [void]
+ {01} Runa.core.print($3 [$str]) [void]
  {02} Branch 6
    5: [if-suite]
  {00} $4 [uint] = obj [$test] . val [uint]
- {01} Runa.print($4 [uint]) [void]
+ {01} Runa.core.print($4 [uint]) [void]
  {02} Branch 6
    6: [if-exit]
  {00} Return
@@ -59,41 +59,41 @@ def math() -> void:
  {01} $3 [int] = Mul 5 [int] 6 [int]
  {02} $2 [int] = Div $3 [int] 7 [int]
  {03} $0 [int] = Sub $1 [int] $2 [int]
- {04} Runa.print($0 [int]) [void]
- {05} Runa.print(0.1 [float]) [void]
+ {04} Runa.core.print($0 [int]) [void]
+ {05} Runa.core.print(0.1 [float]) [void]
  {06} $4 [bool] = GT 5 [int] 3 [int]
- {07} Runa.print($4 [bool]) [void]
+ {07} Runa.core.print($4 [bool]) [void]
  {08} $5 [bool] = LT 6 [int] 4 [int]
- {09} Runa.print($5 [bool]) [void]
+ {09} Runa.core.print($5 [bool]) [void]
  {10} $6 [int] = Mod 4 [int] 3 [int]
- {11} Runa.print($6 [int]) [void]
+ {11} Runa.core.print($6 [int]) [void]
  {12} Return
 
 def binary() -> void:
    0: [entry]
  {00} $0 [int] = BWAnd 3 [int] 1 [int]
- {01} Runa.print($0 [int]) [void]
+ {01} Runa.core.print($0 [int]) [void]
  {02} $1 [int] = BWOr 2 [int] 6 [int]
- {03} Runa.print($1 [int]) [void]
+ {03} Runa.core.print($1 [int]) [void]
  {04} $2 [int] = BWXor 3 [int] 2 [int]
- {05} Runa.print($2 [int]) [void]
+ {05} Runa.core.print($2 [int]) [void]
  {06} $5 [$str] = '' [&str]
  {07} $6 [$str] = 'b' [&str]
  {08} $4 [$str] = And $5 [$str] $6 [$str]
  {09} $7 [$str] = 'c' [&str]
  {10} $3 [$str] = Or $4 [$str] $7 [$str]
- {11} Runa.print($3 [$str]) [void]
+ {11} Runa.core.print($3 [$str]) [void]
  {12} $9 [$str] = 'a' [&str]
  {13} $10 [$str] = 'b' [&str]
  {14} $8 [bool] = NE $9 [$str] $10 [$str]
- {15} Runa.print($8 [bool]) [void]
+ {15} Runa.core.print($8 [bool]) [void]
  {16} $12 [$str] = 'c' [&str]
  {17} $13 [$str] = 'c' [&str]
  {18} $11 [bool] = EQ $12 [$str] $13 [$str]
- {19} Runa.print($11 [bool]) [void]
+ {19} Runa.core.print($11 [bool]) [void]
  {20} $15 [$str] = '' [&str]
  {21} $14 [bool] = Not $15 [$str]
- {22} Runa.print($14 [bool]) [void]
+ {22} Runa.core.print($14 [bool]) [void]
  {23} CondBranch 7 [int] ? 1 : 2
    1: [if-suite]
  {00} Pass
@@ -121,18 +121,18 @@ def range(end [int]) -> iter[int]:
 def loop(args [array[str]]) -> void:
    0: [entry]
  {00} $0 [str] = Elem(args [array[str]], 0 [int]) [str]
- {01} Runa.print($0 [str]) [void]
+ {01} Runa.core.print($0 [str]) [void]
  {02} $1 [Runa.range$ctx] = LoopSetup i [int] <- Runa.range(3 [int]) [iter[int]]
  {03} Branch 1
    1: [for-head]
  {00} LoopHeader ctx:$1 [Runa.range$ctx] lvar:i [int] 2:3
    2: [for-body]
- {00} Runa.print(i [int]) [void]
+ {00} Runa.core.print(i [int]) [void]
  {01} Branch 1
    3: [for-exit]
  {00} Return
 
 def raises() -> void:
    0: [entry]
- {00} Raise Runa.Exception.__init__(Init $Exception, 'foo' [$str:E]) [$Exception]
+ {00} Raise Runa.core.Exception.__init__(Init $Exception, 'foo' [$str:E]) [$Exception]
 

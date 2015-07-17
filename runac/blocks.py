@@ -543,16 +543,54 @@ FINAL = (
 	Branch, CondBranch, LoopHeader, LPad, Resume,
 )
 
+class Scope(object):
+	
+	def __init__(self, parent=None):
+		self.parent = parent or {}
+		self.data = {}
+	
+	def __contains__(self, key):
+		if key in self.data:
+			return True
+		return key in self.parent
+	
+	def __getitem__(self, key):
+		if key in self.data:
+			return self.data[key]
+		return self.parent[key]
+	
+	def __setitem__(self, key, val):
+		self.data[key] = val
+	
+	def get(self, key, default=None):
+		if key in self.data:
+			return self.data[key]
+		return self.parent.get(key, default)
+	
+	def items(self):
+		return self.data.items()
+	
+	def iteritems(self):
+		return self.data.iteritems()
+	
+	def local(self, key):
+		return key in self.data
+	
+	def allitems(self):
+		for k, v in util.items(self.parent):
+			yield k, v
+		for k, v in util.items(self):
+			yield k, v
+
 class Module(object):
 	
-	def __init__(self, name, node=None):
+	def __init__(self, name, node, parent=None):
 		self.name = name
 		self.names = {}
 		self.code = []
 		self.defined = set()
-		self.scope = {t.__name__: t() for t in types.BASE}
-		if node is not None:
-			self.add(node)
+		self.scope = Scope(parent)
+		self.add(node)
 	
 	def __repr__(self):
 		contents = sorted(util.items(self.__dict__))
@@ -622,13 +660,6 @@ class Module(object):
 			return obj
 		else:
 			assert False, 'no type %s' % t
-	
-	def merge(self, mod):
-		for k, v in util.items(mod):
-			self.names[k] = v
-		for name, fun in mod.code:
-			self.code.append((name, fun))
-		self.defined |= mod.defined
 	
 	def add(self, node):
 		

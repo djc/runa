@@ -36,7 +36,7 @@ define void @Runa.rt.memcpy(i8* %dst, i8* %src, {{ WORD }} %len) alwaysinline {
 %str = type { {{ WORD }}, i8* }
 @str.size = external constant i64
 %array$str = type { {{ WORD }}, [0 x %str] }
-declare void @Runa.str.__init__$Rstr.Obyte(%str* %self, i8* %data) uwtable
+declare void @Runa.core.str.__init__$Rstr.Obyte(%str* %self, i8* %data) uwtable
 
 define %array$str* @Runa.rt.args(i32 %argc, i8** %argv) {
 	
@@ -66,7 +66,7 @@ Body:
 	%arg = load i8** %arg.ptr
 	
 	%obj = getelementptr [0 x %str]* %array.data, i32 0, {{ WORD }} %idx
-	call void @Runa.str.__init__$Rstr.Obyte(%str* %obj, i8* %arg)
+	call void @Runa.core.str.__init__$Rstr.Obyte(%str* %obj, i8* %arg)
 	
 	%next = add {{ WORD }} %idx, 1
 	store {{ WORD }} %next, {{ WORD }}* %itervar
