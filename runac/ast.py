@@ -146,6 +146,9 @@ class Tuple(Expr):
 class Call(Expr):
 	fields = 'args',
 
+class NamedArg(Expr):
+	fields = 'val', # plus non-field 'name'
+
 # Statement-level
 
 class Assign(Node):

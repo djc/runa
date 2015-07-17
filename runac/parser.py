@@ -594,6 +594,13 @@ def actuals_single(s, p):
 def actuals_empty(s, p):
 	return []
 
+@pg.production('actual : var ASGT ternary')
+def named_actual(s, p):
+	res = ast.NamedArg(p[0].pos)
+	res.name = p[0].name
+	res.val = p[2]
+	return res
+
 @pg.production('actual : ternary')
 def expr_actual(s, p):
 	return p[0]

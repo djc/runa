@@ -201,6 +201,10 @@ class TypeChecker(object):
 			self.visit(v, scope)
 		node.type = self.mod.type(('tuple', (v.type for v in node.values)))
 	
+	def NamedArg(self, node, scope):
+		self.visit(node.val, scope)
+		node.type = node.val.type
+	
 	# Boolean operators
 	
 	def Not(self, node, scope):
@@ -413,11 +417,26 @@ class TypeChecker(object):
 		
 		node.type = objt.attribs['data'][1].over
 	
+	def args(self, args):
+		
+		positional, named = [], {}
+		for a in args:
+			if isinstance(a, ast.NamedArg):
+				named[a.name] = a.val.type
+			elif named:
+				msg = 'positional arguments must come before named arguments'
+				raise util.Error(a, msg)
+			else:
+				positional.append(a.type)
+		
+		return positional, named
+	
 	def Call(self, node, scope):
 		
 		for arg in node.args:
 			self.visit(arg, scope)
 		
+		positional, named = self.args(node.args)
 		if isinstance(node.name, ast.Attrib):
 			
 			if node.name.obj.type is None:
@@ -429,8 +448,8 @@ class TypeChecker(object):
 				node.virtual = True
 			
 			node.args.insert(0, node.name.obj)
-			actual = [a.type for a in node.args]
-			node.fun = t.select(node, node.name.attrib, actual)
+			positional, named = self.args(node.args)
+			node.fun = t.select(node, node.name.attrib, positional, named)
 			node.type = node.fun.type.over[0]
 		
 		else:
@@ -448,15 +467,29 @@ class TypeChecker(object):
 				node.type = node.fun.type.over[0]
 			else:
 				# initializing a type
-				actual = [a.type for a in node.args]
-				node.fun = obj.select(node, '__init__', actual)
+				node.fun = obj.select(node, '__init__', positional, named)
 				node.name.name = node.fun.decl
 				node.type = types.owner(obj)
 				if '__init__' in node.fun.decl:
 					node.args.insert(0, Init(types.owner(obj)))
+					positional, named = self.args(node.args)
 			
 			if isinstance(obj, types.FunctionDecl):
 				node.name.name = obj.name
+		
+		if named:
+			
+			new, names = [], {}
+			for arg in node.args:
+				if not isinstance(arg, ast.NamedArg):
+					new.append(arg)
+				else:
+					names[arg.name] = arg.val
+			
+			for aname in node.fun.type.args[len(new):]:
+				new.append(names[aname])
+			
+			node.args = new
 		
 		actual = [a.type for a in node.args]
 		if not types.compat(actual, node.fun.type.over[1]):

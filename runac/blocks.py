@@ -147,6 +147,12 @@ class FlowFinder(object):
 	
 	def inter(self, node):
 		
+		if isinstance(node, ast.NamedArg):
+			if isinstance(node.val, ATOMIC):
+				return node
+			node.val = self.inter(node.val)
+			return node
+		
 		if isinstance(node, ATOMIC):
 			return node
 		

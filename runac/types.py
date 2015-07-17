@@ -60,7 +60,7 @@ class ReprId(object):
 	def __ne__(self, other):
 		return not self.__eq__(other)
 	
-	def select(self, node, name, actual):
+	def select(self, node, name, positional, named):
 		
 		if name not in self.methods:
 			msg = "%s does not have a method '%s'"
@@ -76,16 +76,19 @@ class ReprId(object):
 		if name == '__init__' and '__new__' in self.methods:
 			opts += self.methods['__new__']
 		
+		if named:
+			assert False, named
+		
 		res = []
 		formals = []
 		for fun in opts:
 			
 			formals.append([t.name for t in fun.type.over[1]][1:])
-			tmp = actual
+			tmp = positional
 			if '__init__' in fun.decl:
-				tmp = [ref(self)] + actual
+				tmp = [ref(self)] + positional
 			
-			if len(fun.type.over[1]) != len(tmp):
+			if len(fun.type.over[1]) != len(tmp) + len(named):
 				continue
 			
 			score = 0
@@ -100,9 +103,9 @@ class ReprId(object):
 			
 			if score > 0:
 				res.append(fun)
-		
+			
 		if not res:
-			astr = ', '.join([t.name for t in actual][1:])
+			astr = ', '.join([t.name for t in positional][1:])
 			bits = astr, '), ('.join(', '.join(f) for f in formals)
 			msg = '(%s) does not fit any of (%s)'
 			raise util.Error(node, msg % bits)

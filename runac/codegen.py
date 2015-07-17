@@ -468,7 +468,7 @@ class CodeGen(object):
 			inv = True
 		
 		t = types.unwrap(left.type)
-		fun = t.select(left, '__%s__' % op, (left.type, right.type))
+		fun = t.select(left, '__%s__' % op, (left.type, right.type), {})
 		args = ['%s %s' % (a.type.ir, a.var) for a in (left, right)]
 		bits = self.varname(), fun.type.over[0].ir, fun.decl, ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
@@ -517,7 +517,7 @@ class CodeGen(object):
 		assert isinstance(right.type, types.WRAPPERS)
 		
 		t = types.unwrap(left.type)
-		fun = t.select(left, '__%s__' % op, (left.type, right.type))
+		fun = t.select(left, '__%s__' % op, (left.type, right.type), {})
 		args = ['%s %s' % (a.type.ir, a.var) for a in (left, right)]
 		bits = self.varname(), fun.type.over[0].ir, fun.decl, ', '.join(args)
 		self.writeline('%s = call %s @%s(%s)' % bits)
