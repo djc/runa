@@ -1,0 +1,3 @@
+pos-after-named.rns [6.15]: positional arguments must come before named arguments
+    test(b=2, 1)
+              ^

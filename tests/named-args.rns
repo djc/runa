@@ -1,0 +1,8 @@
+def test(a: uint, b: uint):
+	print(a)
+	print(b)
+
+def main():
+	test(b=2, a=1)
+	test(3, b=4)
+	test(5, 6)
