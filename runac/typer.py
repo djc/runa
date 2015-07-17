@@ -415,10 +415,8 @@ class TypeChecker(object):
 	
 	def Call(self, node, scope):
 		
-		actual = []
 		for arg in node.args:
 			self.visit(arg, scope)
-			actual.append(arg.type)
 		
 		if isinstance(node.name, ast.Attrib):
 			
@@ -434,51 +432,43 @@ class TypeChecker(object):
 			actual = [a.type for a in node.args]
 			node.fun = t.select(node, node.name.attrib, actual)
 			node.type = node.fun.type.over[0]
-			
-			if not types.compat(actual, node.fun.type.over[1]):
-				assert False
-			
-			for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
-				if isinstance(f, types.owner):
-					if isinstance(node.args[i], ast.Name):
-						del scope[node.args[i].name]
-			
-			return
 		
-		self.visit(node.name, scope)
-		allowed = types.function, types.Type
-		if not isinstance(node.name.type, allowed):
-			msg = 'object is not a function'
-			raise util.Error(node.name, msg)
-		
-		obj = self.scopes[None][node.name.name]
-		if not isinstance(obj, types.base):
-			
-			# calling a function
-			node.fun = obj
-			node.type = node.fun.type.over[0]
-			if not types.compat(actual, node.fun.type.over[1]):
-				astr = ', '.join(t.name for t in actual)
-				fstr = ', '.join(t.name for t in node.fun.type.over[1])
-				msg = 'arguments (%s) cannot be passed as (%s)'
-				raise util.Error(node, msg % (astr, fstr))
-			
 		else:
 			
-			# initializing a type
-			node.fun = obj.select(node, '__init__', actual)
-			node.name.name = node.fun.decl
-			node.type = types.owner(obj)
-			if '__init__' in node.fun.decl:
-				node.args.insert(0, Init(types.owner(obj)))
+			self.visit(node.name, scope)
+			allowed = types.function, types.Type
+			if not isinstance(node.name.type, allowed):
+				msg = 'object is not a function'
+				raise util.Error(node.name, msg)
+			
+			obj = self.scopes[None][node.name.name]
+			if not isinstance(obj, types.base):
+				# calling a function
+				node.fun = obj
+				node.type = node.fun.type.over[0]
+			else:
+				# initializing a type
+				actual = [a.type for a in node.args]
+				node.fun = obj.select(node, '__init__', actual)
+				node.name.name = node.fun.decl
+				node.type = types.owner(obj)
+				if '__init__' in node.fun.decl:
+					node.args.insert(0, Init(types.owner(obj)))
+			
+			if isinstance(obj, types.FunctionDecl):
+				node.name.name = obj.name
+		
+		actual = [a.type for a in node.args]
+		if not types.compat(actual, node.fun.type.over[1]):
+			astr = ', '.join(t.name for t in actual)
+			fstr = ', '.join(t.name for t in node.fun.type.over[1])
+			msg = 'arguments (%s) cannot be passed as (%s)'
+			raise util.Error(node, msg % (astr, fstr))
 		
 		for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
 			if isinstance(f, types.owner):
 				if isinstance(node.args[i], ast.Name):
 					del scope[node.args[i].name]
-		
-		if isinstance(obj, types.FunctionDecl):
-			node.name.name = obj.name
 	
 	def CondBranch(self, node, scope):
 		self.visit(node.cond, scope)
