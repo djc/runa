@@ -2,7 +2,7 @@ declare void @exit(i32);
 declare i8* @malloc({{ WORD }})
 declare void @free(i8*)
 declare void @llvm.memcpy.p0i8.p0i8.{{ WORD }}(i8*, i8*, {{ WORD }}, i32, i1)
-declare i64 @write(i32, i8*, i64)
+declare {{ WORD }} @write(i32, i8*, {{ WORD }})
 
 @fmt_MALLOC = constant [16 x i8] c"malloc(%ld) %p\0a\00"
 @fmt_FREE = constant [10 x i8] c"free(%p)\0a\00"
@@ -34,7 +34,7 @@ define void @Runa.rt.memcpy(i8* %dst, i8* %src, {{ WORD }} %len) alwaysinline {
 }
 
 %str = type { {{ WORD }}, i8* }
-@str.size = external constant i64
+@str.size = external constant {{ WORD }}
 %array$str = type { {{ WORD }}, [0 x %str] }
 declare void @Runa.core.str.__init__$Rstr.Obyte(%str* %self, i8* %data) uwtable
 
