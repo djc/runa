@@ -5,7 +5,7 @@ from runac import parser
 TITLE = 'Language grammar'
 PARSER_FILE = '../runac/parser.py'
 
-INTRO = '''The table below (which is generated from parser's source code)
+INTRO = '''The table below (which is generated from the parser's source code)
 can serve as a guide to Runa's grammar.
 Code literals in rules represent regular expressions.
 The special INDENT and DEDENT tokens are inserted by a secondary pass,
