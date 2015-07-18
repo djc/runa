@@ -65,13 +65,15 @@ def ir(fn):
 		fun(mod)
 	return codegen.generate(mod)
 
+CORE_IR = codegen.generate(CORE)
+
 def compile(fn, outfn):
 	'''Compiles LLVM IR into a binary. Takes a string file name and a string
 	output file name. Writes the IR to a temporary file, then calls clang on
 	it. (Shelling out to clang is pretty inefficient.)'''
 	
 	with open('builtins.ll', 'w') as f:
-		f.write(codegen.generate(CORE).encode('ascii'))
+		f.write(CORE_IR.encode('ascii'))
 	
 	name = os.path.basename(fn).rsplit('.rns')[0]
 	mod_fn = name + '.ll'
