@@ -70,11 +70,15 @@ RT_IR = codegen.rt()
 
 def compile(fn, outfn):
 	'''Compiles LLVM IR into a binary. Takes a string file name and a string
-	output file name. Writes the IR to a temporary file, then calls clang on
-	it. (Shelling out to clang is pretty inefficient.)'''
+	output file name. Writes IR to a temporary file for the main module as
+	well as personality, rt, and builtins modules, then calls clang on them.
+	(Fix me: shelling out to clang is pretty inefficient.)'''
 	
 	with open('builtins.ll', 'w') as f:
 		f.write(CORE_IR.encode('ascii'))
+	
+	# Write LLVM IR for main module to a file, making sure that the file
+	# is cleaned up if an error occurs during code generation.
 	
 	name = os.path.basename(fn).rsplit('.rns')[0]
 	mod_fn = name + '.ll'
@@ -85,9 +89,13 @@ def compile(fn, outfn):
 			os.unlink(mod_fn)
 			raise
 	
+	# Write LLVM IR for rt library
+	
 	with open('rt.ll', 'w') as f:
 		f.write(RT_IR)
-
+	
+	# Prepare clang command for compiling, depending on platform
+	
 	eh_fn = os.path.join(util.CORE_DIR, 'personality.ll')
 	files = eh_fn, 'rt.ll', 'builtins.ll', mod_fn
 	triple = codegen.triple()
@@ -98,6 +106,8 @@ def compile(fn, outfn):
 		cmd = ['clang', '-o', outfn]
 		cmd.append('-m64' if triple.split('-')[0] == 'x86_64' else '-m32')
 		cmd += files
+	
+	# Execute clang, cleaning up as necessary
 	
 	try:
 		subprocess.check_call(cmd)
