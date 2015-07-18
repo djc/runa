@@ -433,11 +433,18 @@ class TypeChecker(object):
 	
 	def Call(self, node, scope):
 		
+		# Make sure to visit all arguments so that types are available
+		
 		for arg in node.args:
 			self.visit(arg, scope)
 		
+		# Figuring out what function to call, there are three cases...
+		
 		positional, named = self.args(node.args)
 		if isinstance(node.name, ast.Attrib):
+			
+			# 1. Calling a method: figure out the type of the object, then find
+			# the appropriate method to call for the given arguments.
 			
 			if node.name.obj.type is None:
 				self.visit(node.name.obj, scope)
@@ -460,13 +467,14 @@ class TypeChecker(object):
 				msg = 'object is not a function'
 				raise util.Error(node.name, msg)
 			
+			# 2. Calling a normal function, this is the simple case.
+			
 			obj = self.scopes[None][node.name.name]
 			if not isinstance(obj, types.base):
-				# calling a function
 				node.fun = obj
 				node.type = node.fun.type.over[0]
 			else:
-				# initializing a type
+				# 3. Calling a type constructor.
 				node.fun = obj.select(node, '__init__', positional, named)
 				node.name.name = node.fun.decl
 				node.type = types.owner(obj)
@@ -476,6 +484,8 @@ class TypeChecker(object):
 			
 			if isinstance(obj, types.FunctionDecl):
 				node.name.name = obj.name
+		
+		# Rebuild arguments by putting named arguments in correct order
 		
 		if named:
 			
@@ -491,12 +501,16 @@ class TypeChecker(object):
 			
 			node.args = new
 		
+		# Check that the actual types match the function's formal types
+		
 		actual = [a.type for a in node.args]
 		if not types.compat(actual, node.fun.type.over[1]):
 			astr = ', '.join(t.name for t in actual)
 			fstr = ', '.join(t.name for t in node.fun.type.over[1])
 			msg = 'arguments (%s) cannot be passed as (%s)'
 			raise util.Error(node, msg % (astr, fstr))
+		
+		# If any arguments were of the owner type, render them inaccessible
 		
 		for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
 			if isinstance(f, types.owner):
