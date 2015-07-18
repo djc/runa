@@ -639,24 +639,35 @@ VOID = {'__init__', '__del__'}
 
 def process(mod, base, fun, cls):
 	
+	# Some methods must have return type 'void'
+	
 	if fun.name.name in VOID and fun.rtype is not None:
 		msg = "method '%s' must return type 'void'"
 		raise util.Error(fun.rtype, msg % fun.name.name)
+	
+	# If this is a method on a template class, figure out type substitutions
 	
 	start = copy.copy(base)
 	stubs = {}
 	if cls is not None and isinstance(cls, types.template):
 		stubs = {k: types.Stub(k) for k in cls.params}
 	
+	# Set the type object for the return type
+	
 	if fun.rtype is None:
 		fun.rtype = types.void()
 	elif not isinstance(fun.rtype, types.base):
 		fun.rtype = mod.type(fun.rtype, stubs)
 	
+	# Add arguments
+	
 	for arg in fun.args:
 		if not isinstance(arg.type, types.base):
 			arg.type = mod.type(arg.type, stubs)
 		start[arg.name.name] = arg
+	
+	# If this is a generator, prepare a context class to hold state
+	# across invocations. This will contain all the live variables.
 	
 	if fun.flow.yields:
 		
@@ -673,6 +684,8 @@ def process(mod, base, fun, cls):
 			'function': defn,
 			'attribs': {}
 		})()
+	
+	# Run the type inferencing & type checking process
 	
 	checker = TypeChecker(mod, fun)
 	checker.check(start)
