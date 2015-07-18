@@ -402,7 +402,7 @@ class FunctionDecl(util.AttribRepr):
 				irname = irname + '$' + wrangled
 				assert funtype.over[0] == type.methods[name][0].type.over[0]
 		
-		irname = 'main' if irname == 'Runa.main' else irname
+		irname = 'main' if irname == 'Runa.__main__.main' else irname
 		return cls(irname, funtype)
 
 def create(node):

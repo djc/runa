@@ -8,7 +8,7 @@ def maybe(i [int]) -> $test?:
  {00} $1 [int] = BWAnd i [int] 2 [int]
  {01} CondBranch $1 [int] ? 1 : 2
    1: [ternary-left]
- {00} $2 [$test] = Runa.test.__init__(Init $test, 1 [uint]) [$test]
+ {00} $2 [$test] = Runa.__main__.test.__init__(Init $test, 1 [uint]) [$test]
  {01} Branch 3
    2: [ternary-right]
  {00} Branch 3
@@ -28,7 +28,7 @@ def cast(a [&byte]) -> void:
 
 def opt_check() -> void:
    0: [entry]
- {00} obj [$test?] = Runa.maybe(1 [int]) [$test?]
+ {00} obj [$test?] = Runa.__main__.maybe(1 [int]) [$test?]
  {01} $0 [bool] = Is obj [$test?] NoneVal [NoType]
  {02} CondBranch $0 [bool] ? 1 : 2
    1: [if-suite]
@@ -39,7 +39,7 @@ def opt_check() -> void:
  {00} Runa.core.print(False [bool]) [void]
  {01} Branch 3
    3: [if-exit]
- {00} obj [$test?] = Runa.maybe(3 [int]) [$test?]
+ {00} obj [$test?] = Runa.__main__.maybe(3 [int]) [$test?]
  {01} $2 [bool] = Is obj [$test?] NoneVal [NoType]
  {02} CondBranch $2 [bool] ? 4 : 5
    4: [if-suite]
@@ -122,10 +122,10 @@ def loop(args [array[str]]) -> void:
    0: [entry]
  {00} $0 [str] = Elem(args [array[str]], 0 [int]) [str]
  {01} Runa.core.print($0 [str]) [void]
- {02} $1 [Runa.range$ctx] = LoopSetup i [int] <- Runa.range(3 [int]) [iter[int]]
+ {02} $1 [Runa.__main__.range$ctx] = LoopSetup i [int] <- Runa.__main__.range(3 [int]) [iter[int]]
  {03} Branch 1
    1: [for-head]
- {00} LoopHeader ctx:$1 [Runa.range$ctx] lvar:i [int] 2:3
+ {00} LoopHeader ctx:$1 [Runa.__main__.range$ctx] lvar:i [int] 2:3
    2: [for-body]
  {00} Runa.core.print(i [int]) [void]
  {01} Branch 1

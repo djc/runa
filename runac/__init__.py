@@ -31,7 +31,7 @@ def _core():
 
 CORE = _core()
 
-def module(path, name='Runa'):
+def module(path, name='Runa.__main__'):
 	'''Takes a file (or directory, at some point), returns a Module containing
 	declarations and code objects, to be submitted for further processing.'''
 	assert not os.path.isdir(path), path
