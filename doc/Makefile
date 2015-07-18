@@ -49,7 +49,10 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
-html:
+grammar.rst: grammar.py ../runac/parser.py
+	python grammar.py > $@
+
+html: grammar.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

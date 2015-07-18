@@ -32,5 +32,6 @@ Table of contents
    :maxdepth: 2
    
    hacking.rst
+   grammar.rst
    refs.rst
    notes.rst
