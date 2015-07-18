@@ -66,6 +66,7 @@ def ir(fn):
 	return codegen.generate(mod)
 
 CORE_IR = codegen.generate(CORE)
+RT_IR = codegen.rt()
 
 def compile(fn, outfn):
 	'''Compiles LLVM IR into a binary. Takes a string file name and a string
@@ -85,7 +86,7 @@ def compile(fn, outfn):
 			raise
 	
 	with open('rt.ll', 'w') as f:
-		f.write(codegen.rt())
+		f.write(RT_IR)
 
 	eh_fn = os.path.join(util.CORE_DIR, 'personality.ll')
 	files = eh_fn, 'rt.ll', 'builtins.ll', mod_fn
