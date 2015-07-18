@@ -1216,10 +1216,6 @@ def rt():
 		src = src.replace('{{ BYTES }}', str(int(arch[:2]) // 8))
 		return TRIPLE_FMT % triple() + src
 
-def personality():
-	with open(os.path.join(util.CORE_DIR, 'personality.ll')) as f:
-		return f.read()
-
 def generate(mod):
 	gen = CodeGen(mod, 'i' + platform.architecture()[0][:2])
 	gen.generate()
