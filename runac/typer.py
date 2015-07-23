@@ -138,8 +138,8 @@ class TypeChecker(object):
 				continue
 			
 			if id == self.cur[0].id:
-				assigned = min(self.cur[0].assigns[node.name])
-				if self.cur[1] <= assigned:
+				sets = self.flow.vars[node.name]['sets'][self.cur[0].id]
+				if self.cur[1] <= min(sets):
 					continue
 			
 			blocks.append(id)

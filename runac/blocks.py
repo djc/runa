@@ -84,8 +84,6 @@ class Block(util.AttribRepr):
 		self.raises = False
 		self.steps = []
 		self.preds = []
-		self.assigns = None
-		self.uses = None
 		self.escapes = {}
 		self.checks = {}
 	
@@ -102,6 +100,7 @@ class FlowGraph(util.AttribRepr):
 		self.edges = {}
 		self.yields = {}
 		self.checks = {}
+		self.vars = {}
 	
 	def block(self, anno=None):
 		id = len(self.blocks)

@@ -40,10 +40,14 @@ def destructify(mod, code):
 		# Find assignments to owner variables; the last assignment
 		# will be freed before return, earlier ones before next assign.
 		
-		for var, steps in util.items(bl.assigns):
-			assigns = sorted(steps)
+		for var, data in util.items(code.flow.vars):
+			
+			if bl.id not in data.get('sets', {}):
+				continue
+			
+			assigns = sorted(data['sets'][bl.id])
 			for idx, sid in enumerate(assigns):
-
+				
 				step = bl.steps[sid]
 				if isinstance(step, blocks.LoopHeader):
 					type = step.lvar.type

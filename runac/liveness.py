@@ -75,9 +75,9 @@ class Analyzer(object):
 		self.visit(node.left[1])
 		self.visit(node.right[1])
 
-def defined(name, bl, seen):
+def defined(vars, name, bl, seen):
 	
-	if name in bl.assigns:
+	if bl.id in vars.get(name, {}).get('sets', {}):
 		return {bl.id}
 	elif not bl.preds:
 		return {None}
@@ -85,7 +85,7 @@ def defined(name, bl, seen):
 	all = set()
 	for p in bl.preds:
 		if p.id not in seen:
-			all.update(defined(name, p, seen | {bl.id}))
+			all.update(defined(vars, name, p, seen | {bl.id}))
 	
 	return all
 
@@ -94,11 +94,9 @@ def liveness(mod):
 	analyzer = Analyzer()
 	for fname, code in mod.code:
 		
+		vars = code.flow.vars
 		refs, blocks = {}, sorted(util.items(code.flow.blocks))
 		for id, bl in blocks:
-			
-			bl.uses = {}
-			bl.assigns = {}
 			
 			for i, step in enumerate(bl.steps):
 				
@@ -106,11 +104,13 @@ def liveness(mod):
 				analyzer.visit(step)
 				
 				for name in analyzer.vars[0]:
-					bl.uses.setdefault(name, set()).add(i)
+					uses = vars.setdefault(name, {}).setdefault('uses', {})
+					uses.setdefault(id, set()).add(i)
 					refs.setdefault(id, []).append((i, name))
 				
 				for name in analyzer.vars[1]:
-					bl.assigns.setdefault(name, set()).add(i)
+					sets = vars.setdefault(name, {}).setdefault('sets', {})
+					sets.setdefault(id, set()).add(i)
 					refs.setdefault(id, []).append((i, name))
 		
 		for id, bl in blocks:
@@ -119,7 +119,7 @@ def liveness(mod):
 			for sid, name in refs.get(id, []):
 				
 				origin = bl.origin[name, sid] = set()
-				assigned = bl.assigns.get(name, set())
+				assigned = vars[name].get('sets', {}).get(id, set())
 				if assigned and min(assigned) < sid:
 					origin.add(id)
 					continue
@@ -129,4 +129,4 @@ def liveness(mod):
 					continue
 				
 				for p in bl.preds:
-					origin.update(defined(name, p, set()))
+					origin.update(defined(vars, name, p, set()))
