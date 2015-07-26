@@ -113,7 +113,7 @@ def range(end [int]) -> iter[int]:
    2: [while-body]
  {00} Yield i [int]
    3: [yield-to]
- {00} i [int] = Add i [int] 1 [int]
+ {00} IAdd i [int] 1 [int]
  {01} Branch 1
    4: [while-exit]
  {00} Return
