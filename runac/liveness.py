@@ -75,27 +75,13 @@ class Analyzer(object):
 		self.visit(node.left[1])
 		self.visit(node.right[1])
 
-def defined(vars, name, bl, seen):
-	
-	if bl.id in vars.get(name, {}).get('sets', {}):
-		return {bl.id}
-	elif not bl.preds:
-		return {None}
-	
-	all = set()
-	for p in bl.preds:
-		if p.id not in seen:
-			all.update(defined(vars, name, p, seen | {bl.id}))
-	
-	return all
-
 def liveness(mod):
 	
 	analyzer = Analyzer()
 	for fname, code in mod.code:
 		
 		vars = code.flow.vars
-		refs, blocks = {}, sorted(util.items(code.flow.blocks))
+		blocks = sorted(util.items(code.flow.blocks))
 		for id, bl in blocks:
 			
 			for i, step in enumerate(bl.steps):
@@ -106,27 +92,7 @@ def liveness(mod):
 				for name in analyzer.vars[0]:
 					uses = vars.setdefault(name, {}).setdefault('uses', {})
 					uses.setdefault(id, set()).add(i)
-					refs.setdefault(id, []).append((i, name))
 				
 				for name in analyzer.vars[1]:
 					sets = vars.setdefault(name, {}).setdefault('sets', {})
 					sets.setdefault(id, set()).add(i)
-					refs.setdefault(id, []).append((i, name))
-		
-		for id, bl in blocks:
-			
-			bl.origin = {}
-			for sid, name in refs.get(id, []):
-				
-				origin = bl.origin[name, sid] = set()
-				assigned = vars[name].get('sets', {}).get(id, set())
-				if assigned and min(assigned) < sid:
-					origin.add(id)
-					continue
-				elif not bl.preds:
-					if not (assigned and min(assigned) < sid):
-						origin.add(None)
-					continue
-				
-				for p in bl.preds:
-					origin.update(defined(vars, name, p, set()))

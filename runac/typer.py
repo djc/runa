@@ -132,7 +132,8 @@ class TypeChecker(object):
 	def Name(self, node, scope, strict=True):
 		
 		defined, blocks = [], []
-		for id in self.cur[0].origin[node.name, self.cur[1]]:
+		origins = self.flow.origins(node.name, (self.cur[0].id, self.cur[1]))
+		for id in origins:
 			
 			if id not in self.scopes:
 				continue

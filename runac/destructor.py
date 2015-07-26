@@ -57,7 +57,7 @@ def destructify(mod, code):
 				if not isinstance(type, types.owner):
 					continue
 				
-				if bl.origin.get((var, sid), set()) - {None}:
+				if code.flow.origins(var, (bl.id, sid)) - {None}:
 					reassign.append((var, i, sid, type))
 					continue
 				

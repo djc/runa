@@ -111,6 +111,37 @@ class FlowGraph(util.AttribRepr):
 		self.edges.setdefault(src, []).append(dst)
 		if checked:
 			self.checks[src, dst] = {n.name: chk for (n, chk) in checked}
+	
+	def origins(self, name, cur, debug=False):
+		
+		sets = self.vars[name].get('sets', {})
+		assigned = sets.get(cur[0], set())
+		if assigned and min(assigned) < cur[1]:
+			return {cur[0]} # assigned in this block, before current step
+		
+		bl = self.blocks[cur[0]]
+		if not bl.preds:
+			return {None}
+		
+		# Check all transitively predecessing blocks for assignments
+		
+		res = set()
+		test = set(bl.preds)
+		seen = {cur[0]} | {b.id for b in test}
+		while test:
+			pred = test.pop()
+			seen.add(pred.id)
+			if pred.id in sets:
+				res.add(pred.id)
+			elif pred.preds:
+				for b in pred.preds:
+					if b.id not in seen:
+						test.add(b)
+						seen.add(b.id)
+			else:
+				res.add(None)
+		
+		return res
 
 ATOMIC = ast.NoneVal, ast.Bool, ast.Int, ast.Float, ast.Name
 
