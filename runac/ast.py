@@ -138,7 +138,7 @@ class GT(Expr):
 	fields = 'left', 'right'
 
 class As(Expr):
-	fields = 'left', 'right'
+	fields = 'left',
 
 class Tuple(Expr):
 	fields = 'values',
