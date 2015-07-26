@@ -568,7 +568,7 @@ class TypeChecker(object):
 	def IAdd(self, node, scope):
 		self.visit(node.left, scope)
 		self.visit(node.right, scope)
-		if node.left.type != node.right.type:
+		if not types.compat(node.right.type, node.left.type):
 			bits = node.right.type.name, node.left.type.name
 			raise util.Error(node, "cannot add '%s' to '%s'" % bits)
 	
