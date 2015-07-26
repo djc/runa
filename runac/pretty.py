@@ -173,6 +173,9 @@ class PrettyPrinter(object):
 	def BWXor(self, node):
 		self.binary('BWXor', node)
 	
+	def IAdd(self, node):
+		self.binary('IAdd', node)
+	
 	def Pass(self, node):
 		self.write('Pass')
 	
