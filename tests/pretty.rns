@@ -27,6 +27,8 @@ def opt_check():
 		print('no val')
 	else:
 		print(obj.val)
+	
+	raise Exception('fail!')
 
 def math():
 	print(3 + 4 - 5 * 6 / 7)
@@ -34,6 +36,10 @@ def math():
 	print(5 > 3)
 	print(6 < 4)
 	print(4 % 3)
+	try:
+		opt_check()
+	except Exception:
+		print('caught')
 
 def binary():
 	print(3 & 1)
@@ -44,6 +50,10 @@ def binary():
 	print('c' == 'c')
 	print(not '')
 	if 7:
+		pass
+	elif 0:
+		pass
+	else:
 		pass
 
 def range(end: int) -> iter[int]:

@@ -51,7 +51,7 @@ def opt_check() -> void:
  {01} Runa.core.print($4 [uint]) [void]
  {02} Branch 6
    6: [if-exit]
- {00} Return
+ {00} Raise Runa.core.Exception.__init__(Init $Exception, 'fail!' [$str:E]) [$Exception]
 
 def math() -> void:
    0: [entry]
@@ -67,7 +67,17 @@ def math() -> void:
  {09} Runa.core.print($5 [bool]) [void]
  {10} $6 [int] = Mod 4 [int] 3 [int]
  {11} Runa.core.print($6 [int]) [void]
- {12} Return
+ {12} Runa.__main__.opt_check() [void] => 4, 1
+   1: [landing-pad]
+ {00} LPad: $8 {Exception: 2}
+   2: [catch]
+ {00} $7 [$str] = 'caught' [&str]
+ {01} Runa.core.print($7 [$str]) [void]
+ {02} Branch 4
+   3: [caught-no-match]
+ {00} Resume: $8
+   4: [try-exit]
+ {00} Return
 
 def binary() -> void:
    0: [entry]
@@ -97,8 +107,16 @@ def binary() -> void:
  {23} CondBranch 7 [int] ? 1 : 2
    1: [if-suite]
  {00} Pass
- {01} Branch 2
-   2: [if-exit]
+ {01} Branch 5
+   2: [if-cond]
+ {00} CondBranch 0 [int] ? 3 : 4
+   3: [if-suite]
+ {00} Pass
+ {01} Branch 5
+   4: [if-suite]
+ {00} Pass
+ {01} Branch 5
+   5: [if-exit]
  {00} Free($3 [$str])
  {01} Free($4 [$str])
  {02} Return
