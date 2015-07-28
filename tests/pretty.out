@@ -3,7 +3,7 @@ def test.__init__(self [&test], v [uint]) -> void:
  {00} self [&test] . val [uint] = v [uint]
  {01} Return
 
-def maybe(i [int]) -> $test?:
+def maybe(i [int]) -> ?$test:
    0: [entry]
  {00} $1 [int] = BWAnd i [int] 2 [int]
  {01} CondBranch $1 [int] ? 1 : 2
@@ -13,8 +13,8 @@ def maybe(i [int]) -> $test?:
    2: [ternary-right]
  {00} Branch 3
    3: [ternary-exit]
- {00} $0 [$test?] = Phi 1:$2 [$test], 2:NoneVal [$test?]
- {01} Return $0 [$test?]
+ {00} $0 [?$test] = Phi 1:$2 [$test], 2:NoneVal [?$test]
+ {01} Return $0 [?$test]
 
 def multi() -> tuple[uint, uint]:
    0: [entry]
@@ -28,8 +28,8 @@ def cast(a [&byte]) -> void:
 
 def opt_check() -> void:
    0: [entry]
- {00} obj [$test?] = Runa.__main__.maybe(1 [int]) [$test?]
- {01} $0 [bool] = Is obj [$test?] NoneVal [NoType]
+ {00} obj [?$test] = Runa.__main__.maybe(1 [int]) [?$test]
+ {01} $0 [bool] = Is obj [?$test] NoneVal [NoType]
  {02} CondBranch $0 [bool] ? 1 : 2
    1: [if-suite]
  {00} $1 [$str] = 'no val' [&str]
@@ -39,8 +39,8 @@ def opt_check() -> void:
  {00} Runa.core.print(False [bool]) [void]
  {01} Branch 3
    3: [if-exit]
- {00} obj [$test?] = Runa.__main__.maybe(3 [int]) [$test?]
- {01} $2 [bool] = Is obj [$test?] NoneVal [NoType]
+ {00} obj [?$test] = Runa.__main__.maybe(3 [int]) [?$test]
+ {01} $2 [bool] = Is obj [?$test] NoneVal [NoType]
  {02} CondBranch $2 [bool] ? 4 : 5
    4: [if-suite]
  {00} $3 [$str] = 'no val' [&str]

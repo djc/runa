@@ -506,10 +506,10 @@ def two_type_tuple(s, p):
 	res.values = [p[0], p[2]]
 	return res
 
-@pg.production('type : type QM')
+@pg.production('type : QM type')
 def opt_type(s, p):
-	res = ast.Opt(p[0].pos)
-	res.value = p[0]
+	res = ast.Opt(s.pos(p[0]))
+	res.value = p[1]
 	return res
 
 @pg.production('type : DOLLAR vtype')

@@ -244,14 +244,14 @@ class opt(base):
 	
 	@property
 	def name(self):
-		return '%s?' % self.over.name
+		return '?%s' % self.over.name
 	
 	@property
 	def ir(self):
 		return self.over.ir
 	
 	def __repr__(self):
-		return '<type: %s?>' % (self.over.name)
+		return '<type: ?%s>' % (self.over.name)
 
 SINTS = {anyint()}
 UINTS = set()
