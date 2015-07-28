@@ -81,6 +81,11 @@ def liveness(mod):
 	for fname, code in mod.code:
 		
 		vars = code.flow.vars
+		for arg in code.args:
+			name = arg.name.name
+			sets = vars.setdefault(name, {}).setdefault('sets', {})
+			sets[None] = {-1: None}
+		
 		blocks = sorted(util.items(code.flow.blocks))
 		for id, bl in blocks:
 			
@@ -95,4 +100,4 @@ def liveness(mod):
 				
 				for name in analyzer.vars[1]:
 					sets = vars.setdefault(name, {}).setdefault('sets', {})
-					sets.setdefault(id, set()).add(i)
+					sets.setdefault(id, {})[i] = None

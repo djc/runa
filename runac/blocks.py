@@ -112,16 +112,32 @@ class FlowGraph(util.AttribRepr):
 		if checked:
 			self.checks[src, dst] = {n.name: chk for (n, chk) in checked}
 	
-	def origins(self, name, cur, debug=False):
+	def origins(self, name, cur):
+		
+		# Prepare some data that we need
 		
 		sets = self.vars[name].get('sets', {})
-		assigned = sets.get(cur[0], set())
+		clears = self.vars[name].get('clear', {})
+		
+		# For current block, find assignments before current step but after
+		# last clear (clearing is done by using up owning references)
+		
+		assigned = sets.get(cur[0], {})
+		cleared = set(i for i in clears.get(cur[0], set()) if i < cur[1])
+		if cleared:
+			cleared = max(cleared)
+			assigned = set(i for i in assigned if i < cur[1] and i > cleared)
+		
+		# If assigned in this block, return from here
+		
 		if assigned and min(assigned) < cur[1]:
-			return {cur[0]} # assigned in this block, before current step
+			return {cur[0]}
+		
+		# If this block does not have any predecessors, return nothing
 		
 		bl = self.blocks[cur[0]]
-		if not bl.preds:
-			return {None}
+		if not bl.preds and None in sets:
+			return {None} if None in sets else set()
 		
 		# Check all transitively predecessing blocks for assignments
 		
@@ -129,17 +145,38 @@ class FlowGraph(util.AttribRepr):
 		test = set(bl.preds)
 		seen = {cur[0]} | {b.id for b in test}
 		while test:
+			
 			pred = test.pop()
 			seen.add(pred.id)
+			
+			# If predecessor block sets, check that it sets after clearing
+			# and add it to the set of possible origins for the current step
+			
 			if pred.id in sets:
-				res.add(pred.id)
-			elif pred.preds:
+				asgt = sets.get(pred.id, set())
+				clear = clears.get(pred.id, set())
+				if not clear or max(asgt) > max(clear):
+					res.add(pred.id)
+			
+			# If predecessor does not set, but does clear, do not process
+			# any of its predecessors, as they will be invisible
+			
+			elif pred.id in clears:
+				continue
+			
+			# If block has no predecessors, check for arguments
+			
+			elif not pred.preds:
+				if None in sets:
+					res.add(None)
+			
+			# Else, add predecessor blocks to the search list
+			
+			else:
 				for b in pred.preds:
 					if b.id not in seen:
 						test.add(b)
 						seen.add(b.id)
-			else:
-				res.add(None)
 		
 		return res
 

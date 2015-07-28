@@ -39,10 +39,6 @@ provide enough context to be actionable.
 from . import types, ast, blocks, util
 import copy
 
-class Object(util.AttribRepr):
-	def __init__(self, type):
-		self.type = type
-
 class Init(ast.Expr):
 	def __init__(self, type):
 		ast.Expr.__init__(self, None)
@@ -100,24 +96,22 @@ ROOT = Declarations('', {
 
 class TypeChecker(object):
 	
-	def __init__(self, mod, fun):
+	def __init__(self, mod, fun, scope):
 		self.mod = mod
 		self.fun = fun
 		self.flow = fun.flow
-		self.scopes = {}
+		self.scope = scope
 		self.cur = None, None
 		self.checked = {}
 	
-	def check(self, scope):
-		self.scopes[None] = scope
+	def check(self):
 		for i, b in sorted(util.items(self.flow.blocks)):
-			scope = self.scopes[i] = {}
 			for sid, step in enumerate(b.steps):
 				self.cur = b, sid
-				self.visit(step, scope)
+				self.visit(step)
 	
-	def visit(self, node, scope):
-		getattr(self, node.__class__.__name__)(node, scope)
+	def visit(self, node):
+		getattr(self, node.__class__.__name__)(node)
 	
 	def checkopt(self, posnode, val):
 		if self.checked.get((self.cur[0].id, val.name)):
@@ -127,39 +121,50 @@ class TypeChecker(object):
 			msg = "opt type '%s' not allowed here"
 			raise util.Error(posnode, msg % val.type.name)
 	
+	def settype(self, name, type):
+		bid, sid = self.cur[0].id, self.cur[1]
+		sets = self.flow.vars[name]['sets']
+		assert sid in sets.get(bid, {}), name
+		sets[bid][sid] = type
+	
 	# Constants
 	
-	def Name(self, node, scope, strict=True):
+	def Name(self, node, strict=True):
 		
 		defined, blocks = [], []
 		origins = self.flow.origins(node.name, (self.cur[0].id, self.cur[1]))
+		if not origins and node.name in self.scope:
+			node.type = self.scope[node.name].type
+			return
+		
 		for id in origins:
 			
-			if id not in self.scopes:
+			if self.cur[0].id < id:
 				continue
 			
+			sets = self.flow.vars[node.name]['sets'][id]
 			if id == self.cur[0].id:
-				sets = self.flow.vars[node.name]['sets'][self.cur[0].id]
 				if self.cur[1] <= min(sets):
 					continue
+				sets = {s: t for (s, t) in util.items(sets) if s < self.cur[1]}
 			
 			blocks.append(id)
-			defined.append(self.scopes[id].get(node.name))
+			defined.append(sets[max(sets)])
 		
 		if not strict:
 			defined = [i for i in defined if i is not None]
 		if not defined or not all(defined):
 			raise util.Error(node, "undefined name '%s'" % node.name)
 		
-		first = defined[0].type
+		first = defined[0]
 		for n in defined:
-			if not types.compat(n.type, first):
+			if not types.compat(n, first):
 				msg = "unmatched types '%s', '%s' on incoming branches"
-				raise util.Error(node, msg % (n.type.name, first.name))
+				raise util.Error(node, msg % (n.name, first.name))
 		
 		# Deopt for all incoming edges where check is True
 		
-		opts = [isinstance(n.type, types.opt) for n in defined]
+		opts = [isinstance(n, types.opt) for n in defined]
 		if any(opts):
 			for (i, opt) in enumerate(opts):
 				
@@ -182,56 +187,56 @@ class TypeChecker(object):
 		
 		node.type = first
 	
-	def NoneVal(self, node, scope):
+	def NoneVal(self, node):
 		node.type = self.mod.type('NoType')
 	
-	def Bool(self, node, scope):
+	def Bool(self, node):
 		node.type = self.mod.type('bool')
 	
-	def Int(self, node, scope):
+	def Int(self, node):
 		node.type = types.anyint()
 	
-	def Float(self, node, scope):
+	def Float(self, node):
 		node.type = types.anyfloat()
 	
-	def String(self, node, scope):
+	def String(self, node):
 		node.type = types.owner(self.mod.type('str'))
 	
-	def Tuple(self, node, scope):
+	def Tuple(self, node):
 		for v in node.values:
-			self.visit(v, scope)
+			self.visit(v)
 		node.type = self.mod.type(('tuple', (v.type for v in node.values)))
 	
-	def NamedArg(self, node, scope):
-		self.visit(node.val, scope)
+	def NamedArg(self, node):
+		self.visit(node.val)
 		node.type = node.val.type
 	
 	# Boolean operators
 	
-	def Not(self, node, scope):
-		self.visit(node.value, scope)
+	def Not(self, node):
+		self.visit(node.value)
 		node.type = self.mod.type('bool')
 	
-	def boolean(self, op, node, scope):
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
+	def boolean(self, op, node):
+		self.visit(node.left)
+		self.visit(node.right)
 		if node.left.type == node.right.type:
 			node.type = node.left.type
 		else:
 			node.type = self.mod.type('bool')
 	
-	def And(self, node, scope):
-		self.boolean('and', node, scope)
+	def And(self, node):
+		self.boolean('and', node)
 	
-	def Or(self, node, scope):
-		self.boolean('or', node, scope)
+	def Or(self, node):
+		self.boolean('or', node)
 	
 	# Comparison operators
 	
-	def Is(self, node, scope):
+	def Is(self, node):
 		
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
+		self.visit(node.left)
+		self.visit(node.right)
 		assert isinstance(node.right, ast.NoneVal), node.right
 		
 		if not isinstance(node.left.type, types.opt):
@@ -239,10 +244,10 @@ class TypeChecker(object):
 		
 		node.type = self.mod.type('bool')
 	
-	def compare(self, op, node, scope):
+	def compare(self, op, node):
 		
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
+		self.visit(node.left)
+		self.visit(node.right)
 		
 		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
 		if node.left.type == node.right.type:
@@ -259,24 +264,24 @@ class TypeChecker(object):
 		
 		node.type = self.mod.type('bool')
 	
-	def EQ(self, node, scope):
-		self.compare('eq', node, scope)
+	def EQ(self, node):
+		self.compare('eq', node)
 	
-	def NE(self, node, scope):
-		self.compare('ne', node, scope)
+	def NE(self, node):
+		self.compare('ne', node)
 	
-	def LT(self, node, scope):
-		self.compare('lt', node, scope)
+	def LT(self, node):
+		self.compare('lt', node)
 	
-	def GT(self, node, scope):
-		self.compare('gt', node, scope)
+	def GT(self, node):
+		self.compare('gt', node)
 	
 	# Arithmetic operators
 	
-	def arith(self, op, node, scope):
+	def arith(self, op, node):
 		
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
+		self.visit(node.left)
+		self.visit(node.right)
 		
 		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
 		if node.left.type == node.right.type:
@@ -287,27 +292,27 @@ class TypeChecker(object):
 		else:
 			assert False, op + ' sides different types'
 	
-	def Add(self, node, scope):
-		self.arith('add', node, scope)
+	def Add(self, node):
+		self.arith('add', node)
 	
-	def Sub(self, node, scope):
-		self.arith('sub', node, scope)
+	def Sub(self, node):
+		self.arith('sub', node)
 	
-	def Mod(self, node, scope):
-		self.arith('mod', node, scope)
+	def Mod(self, node):
+		self.arith('mod', node)
 	
-	def Mul(self, node, scope):
-		self.arith('mul', node, scope)
+	def Mul(self, node):
+		self.arith('mul', node)
 	
-	def Div(self, node, scope):
-		self.arith('div', node, scope)
+	def Div(self, node):
+		self.arith('div', node)
 	
 	# Bitwise operators
 	
-	def bitwise(self, op, node, scope):
+	def bitwise(self, op, node):
 		
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
+		self.visit(node.left)
+		self.visit(node.right)
 		
 		lt, rt = types.unwrap(node.left.type), types.unwrap(node.right.type)
 		if node.left.type == node.right.type:
@@ -321,28 +326,28 @@ class TypeChecker(object):
 		
 		node.type = node.left.type
 	
-	def BWAnd(self, node, scope):
-		self.bitwise('and', node, scope)
+	def BWAnd(self, node):
+		self.bitwise('and', node)
 	
-	def BWOr(self, node, scope):
-		self.bitwise('or', node, scope)
+	def BWOr(self, node):
+		self.bitwise('or', node)
 	
-	def BWXor(self, node, scope):
-		self.bitwise('xor', node, scope)
+	def BWXor(self, node):
+		self.bitwise('xor', node)
 	
 	# Iteration-related nodes
 	
-	def Yield(self, node, scope):
-		self.visit(node.value, scope)
+	def Yield(self, node):
+		self.visit(node.value)
 		if not types.compat(node.value.type, self.fun.rtype.params[0]):
 			msg = 'yield value type does not match declared type\n'
 			msg += "    '%s' vs '%s'"
 			bits = node.value.type.name, self.fun.rtype.params[0].name
 			raise util.Error(node.value, msg % bits)
 
-	def LoopSetup(self, node, scope):
+	def LoopSetup(self, node):
 		
-		self.visit(node.loop.source, scope)
+		self.visit(node.loop.source)
 		t = types.unwrap(node.loop.source.type)
 		if not t.name.startswith('iter['):
 			call = ast.Call(None)
@@ -352,36 +357,37 @@ class TypeChecker(object):
 			call.args = []
 			call.fun = None
 			call.virtual = None
-			self.visit(call, scope)
+			self.visit(call)
 			node.loop.source = call
 		
 		name = node.loop.source.fun.name + '$ctx'
 		node.type = self.mod.type(name)
 	
-	def LoopHeader(self, node, scope):
+	def LoopHeader(self, node):
 		
 		name = node.lvar.name
 		vart = node.ctx.type.yields
-		if name in scope and scope[name].type != vart:
-			assert False, 'reassignment'
+		origins = self.flow.origins(name, (self.cur[0].id, self.cur[1]))
+		if origins:
+			assert False, 'reassignment of loop variable'
 		
-		scope[name] = Object(vart)
+		self.settype(name, vart)
 		node.lvar.type = vart
 	
 	# Miscellaneous
 	
-	def As(self, node, scope):
-		self.visit(node.left, scope)
+	def As(self, node):
+		self.visit(node.left)
 		node.type = self.mod.type(node.right)
 		# TODO: check if the conversion makes sense
 	
-	def Raise(self, node, scope):
-		self.visit(node.value, scope)
+	def Raise(self, node):
+		self.visit(node.value)
 		assert node.value is not None
 	
-	def Attrib(self, node, scope):
+	def Attrib(self, node):
 		
-		self.visit(node.obj, scope)
+		self.visit(node.obj)
 		self.checkopt(node, node.obj)
 		
 		t = node.obj.type
@@ -393,9 +399,9 @@ class TypeChecker(object):
 		if isinstance(node.type, types.owner):
 			node.type = types.ref(node.type.over)
 	
-	def SetAttr(self, node, scope):
+	def SetAttr(self, node):
 		
-		self.visit(node.obj, scope)
+		self.visit(node.obj)
 		self.checkopt(node, node.obj)
 		
 		t = node.obj.type
@@ -405,10 +411,10 @@ class TypeChecker(object):
 		node.type = t.attribs[node.attrib][1]
 		assert node.type is not None, 'FAIL'
 	
-	def Elem(self, node, scope):
+	def Elem(self, node):
 		
-		self.visit(node.key, scope)
-		self.visit(node.obj, scope)
+		self.visit(node.key)
+		self.visit(node.obj)
 		self.checkopt(node, node.obj)
 		
 		objt = types.unwrap(node.obj.type)
@@ -432,12 +438,12 @@ class TypeChecker(object):
 		
 		return positional, named
 	
-	def Call(self, node, scope):
+	def Call(self, node):
 		
 		# Make sure to visit all arguments so that types are available
 		
 		for arg in node.args:
-			self.visit(arg, scope)
+			self.visit(arg)
 		
 		# Figuring out what function to call, there are three cases...
 		
@@ -448,7 +454,7 @@ class TypeChecker(object):
 			# the appropriate method to call for the given arguments.
 			
 			if node.name.obj.type is None:
-				self.visit(node.name.obj, scope)
+				self.visit(node.name.obj)
 			
 			assert isinstance(node.name.obj.type, types.base), node.name.obj
 			t = types.unwrap(node.name.obj.type)
@@ -462,7 +468,7 @@ class TypeChecker(object):
 		
 		else:
 			
-			self.visit(node.name, scope)
+			self.visit(node.name)
 			allowed = types.function, types.Type
 			if not isinstance(node.name.type, allowed):
 				msg = 'object is not a function'
@@ -470,7 +476,7 @@ class TypeChecker(object):
 			
 			# 2. Calling a normal function, this is the simple case.
 			
-			obj = self.scopes[None][node.name.name]
+			obj = self.scope[node.name.name]
 			if not isinstance(obj, types.base):
 				node.fun = obj
 				node.type = node.fun.type.over[0]
@@ -515,28 +521,34 @@ class TypeChecker(object):
 		
 		for i, (a, f) in enumerate(zip(actual, node.fun.type.over[1])):
 			if isinstance(f, types.owner):
-				if isinstance(node.args[i], ast.Name):
-					del scope[node.args[i].name]
+				
+				if not isinstance(node.args[i], ast.Name):
+					continue
+				
+				var_data = self.flow.vars[node.args[i].name]
+				clear = var_data.setdefault('clear', {})
+				clear.setdefault(self.cur[0].id, set()).add(self.cur[1])
 	
-	def CondBranch(self, node, scope):
-		self.visit(node.cond, scope)
+	def CondBranch(self, node):
+		self.visit(node.cond)
 	
-	def Assign(self, node, scope):
+	def Assign(self, node):
 		
-		self.visit(node.right, scope)
+		self.visit(node.right)
 		if isinstance(node.left, ast.Tuple):
 			
-			ttypes = []
+			ttypes, pos = [], (self.cur[0].id, self.cur[1])
 			assert node.right.type.name.startswith('tuple[')
 			for i, dst in enumerate(node.left.values):
 				
 				assert isinstance(dst, ast.Name)
 				t = node.right.type.params[i]
-				if dst in scope and scope[dst.name].type != t:
-					assert False, 'reassignment'
+				origins = self.flow.origins(dst.name, pos)
+				if origins:
+					assert False, 'reassignment in tuple assignment'
 				
 				assert t is not None
-				scope[dst.name] = Object(t)
+				self.settype(dst.name, t)
 				dst.type = t
 				ttypes.append(t)
 			
@@ -545,7 +557,7 @@ class TypeChecker(object):
 		
 		new, var = False, isinstance(node.left, ast.Name)
 		try:
-			self.visit(node.left, scope)
+			self.visit(node.left)
 		except util.Error as e:
 			if not e.msg.startswith('undefined name'):
 				raise
@@ -562,27 +574,27 @@ class TypeChecker(object):
 			raise util.Error(node, msg % bits)
 		
 		if var:
-			scope[node.left.name] = node.right
+			self.settype(node.left.name, node.right.type)
 		node.left.type = node.right.type
 	
-	def IAdd(self, node, scope):
-		self.visit(node.left, scope)
-		self.visit(node.right, scope)
+	def IAdd(self, node):
+		self.visit(node.left)
+		self.visit(node.right)
 		if not types.compat(node.right.type, node.left.type):
 			bits = node.right.type.name, node.left.type.name
 			raise util.Error(node, "cannot add '%s' to '%s'" % bits)
 	
-	def Phi(self, node, scope):
+	def Phi(self, node):
 		
 		if isinstance(node.left[1], ast.Name):
-			self.Name(node.left[1], scope, strict=False)
+			self.Name(node.left[1], strict=False)
 		else:
-			self.visit(node.left[1], scope)
+			self.visit(node.left[1])
 		
 		if isinstance(node.right[1], ast.Name):
-			self.Name(node.right[1], scope, strict=False)
+			self.Name(node.right[1], strict=False)
 		else:
-			self.visit(node.right[1], scope)
+			self.visit(node.right[1])
 		
 		if node.left[1].type == node.right[1].type:
 			node.type = node.left[1].type
@@ -599,21 +611,21 @@ class TypeChecker(object):
 		bits = tuple(i.type.name for i in (node.left[1], node.right[1]))
 		raise util.Error(node, "unmatched types '%s', '%s'" % bits)
 	
-	def LPad(self, node, scope):
+	def LPad(self, node):
 		for type in node.map:
 			t = self.mod.type(type)
 			assert t.name == 'Exception'
 	
-	def Resume(self, node, scope):
+	def Resume(self, node):
 		pass
 	
-	def Branch(self, node, scope):
+	def Branch(self, node):
 		return
 	
-	def Pass(self, node, scope):
+	def Pass(self, node):
 		return
 	
-	def Return(self, node, scope):
+	def Return(self, node):
 		
 		if self.flow.yields:
 			assert node.value is None
@@ -624,12 +636,12 @@ class TypeChecker(object):
 			raise util.Error(node, msg)
 		elif node.value is not None and self.fun.rtype == types.void():
 			msg = "function must return type 'void' ('%s' not allowed)"
-			self.visit(node.value, scope)
+			self.visit(node.value)
 			raise util.Error(node.value, msg % (node.value.type.name))
 		elif node.value is None:
 			return
 		
-		self.visit(node.value, scope)
+		self.visit(node.value)
 		if not types.compat(node.value.type, self.fun.rtype):
 			msg = "return value type does not match declared return type\n"
 			msg += "    '%s' vs '%s'"
@@ -648,7 +660,6 @@ def process(mod, base, fun, cls):
 	
 	# If this is a method on a template class, figure out type substitutions
 	
-	start = copy.copy(base)
 	stubs = {}
 	if cls is not None and isinstance(cls, types.template):
 		stubs = {k: types.Stub(k) for k in cls.params}
@@ -663,9 +674,13 @@ def process(mod, base, fun, cls):
 	# Add arguments
 	
 	for arg in fun.args:
+		
 		if not isinstance(arg.type, types.base):
 			arg.type = mod.type(arg.type, stubs)
-		start[arg.name.name] = arg
+		
+		var_data = fun.flow.vars.setdefault(arg.name.name, {})
+		assert -1 in var_data.get('sets', {})[None]
+		var_data.setdefault('sets', {})[None] = {-1: arg.type}
 	
 	# If this is a generator, prepare a context class to hold state
 	# across invocations. This will contain all the live variables.
@@ -688,8 +703,7 @@ def process(mod, base, fun, cls):
 	
 	# Run the type inferencing & type checking process
 	
-	checker = TypeChecker(mod, fun)
-	checker.check(start)
+	TypeChecker(mod, fun, base).check()
 
 def typer(mod):
 	
