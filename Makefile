@@ -1,15 +1,10 @@
-.PHONY: test doc built
+.PHONY: test doc
 
-test: built
+test:
 	python test.py
 
-coverage: built
+coverage:
 	coverage run test.py
 
 doc:
 	make -C doc html
-
-built: core/personality.ll
-
-core/personality.ll: core/personality.c
-	clang -emit-llvm -S -O0 -o $@ $<

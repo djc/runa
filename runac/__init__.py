@@ -96,7 +96,7 @@ def compile(fn, outfn):
 	
 	# Prepare clang command for compiling, depending on platform
 	
-	eh_fn = os.path.join(util.CORE_DIR, 'personality.ll')
+	eh_fn = os.path.join(util.CORE_DIR, 'personality.c')
 	files = eh_fn, 'rt.ll', 'builtins.ll', mod_fn
 	triple = codegen.triple()
 	if 'windows-msvc' in triple:
