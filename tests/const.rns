@@ -4,4 +4,4 @@ YEAR = 1983
 
 def main():
 	print(URL)
-	print(str(YEAR))
+	print(Str(YEAR))

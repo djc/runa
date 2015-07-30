@@ -44,7 +44,7 @@ class EscapeFinder(object):
 	
 	def String(self, node, escape=None):
 		if not escape:
-			node.type = self.mod.type('&str')
+			node.type = self.mod.type('&Str')
 		else:
 			node.escapes = True
 	

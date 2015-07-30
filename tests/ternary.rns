@@ -1,11 +1,11 @@
 def main():
 	
-	print(str(1 if 0 else 2))
-	print(str(2 if 111 else 1))
+	print(Str(1 if 0 else 2))
+	print(Str(2 if 111 else 1))
 	
 	print('true' if 111 else 'false')
 	print('true' if 0 else 'false')
 	
-	print(str(1 if 'a' else 0))
-	print(str(1 if '' else 0))
-	print(str(1 if not '' else 0))
+	print(Str(1 if 'a' else 0))
+	print(Str(1 if '' else 0))
+	print(Str(1 if not '' else 0))

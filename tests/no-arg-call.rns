@@ -1,4 +1,4 @@
-def rpsls() -> $str:
+def rpsls() -> $Str:
 	return 'Spock'
 
 def main():

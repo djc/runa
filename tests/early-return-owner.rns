@@ -1,4 +1,4 @@
-def trains() -> $str:
+def trains() -> $Str:
 	return 'winter'
 
 def main():

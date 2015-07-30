@@ -339,13 +339,13 @@ class CodeGen(object):
 			
 		else:
 			
-			size = self.load(Value(self.mod.type('&uint'), '@str.size'))
+			size = self.load(Value(self.mod.type('&uint'), '@Str.size'))
 			tmp = self.varname()
 			bits = tmp, self.word, size.var
 			self.writeline('%s = call i8* @Runa.rt.malloc(%s %s)' % bits)
 			
 			full = self.varname()
-			self.writeline('%s = bitcast i8* %s to %%str*' % (full, tmp))
+			self.writeline('%s = bitcast i8* %s to %%Str*' % (full, tmp))
 			full = Value(types.owner(t), full)
 			
 			data = self.varname()
@@ -945,21 +945,21 @@ class CodeGen(object):
 		self.label('L0', 'entry')
 		if node.irname == 'main' and node.args:
 			
-			strt = self.mod.type('&str')
+			strt = self.mod.type('&Str')
 			addrp = self.gep(('i8**', '%argv'), 0)
 			addr = self.load(Value(self.mod.type('&&byte'), addrp))
 			name = self.alloca(strt.over)
 			
-			wrapfun = '@Runa.core.str.__init__$Rstr.Obyte'
+			wrapfun = '@Runa.core.Str.__init__$RStr.Obyte'
 			bits = wrapfun, strt.ir, name.var, addr.var
 			self.writeline('call void %s(%s %s, i8* %s)' % bits)
 			frame['name'] = name
 			
-			args = self.alloca(self.mod.type('$array[str]'))
+			args = self.alloca(self.mod.type('$array[Str]'))
 			direct = self.varname()
-			call = '%s = call %%array$str* @Runa.rt.args(i32 %%argc, i8** %%argv)'
+			call = '%s = call %%array$Str* @Runa.rt.args(i32 %%argc, i8** %%argv)'
 			self.writeline(call % direct)
-			self.store(('%array$str*', direct), args.var)
+			self.store(('%array$Str*', direct), args.var)
 			frame['args'] = args
 		
 		elif node.args and ctxt is None:
@@ -984,7 +984,7 @@ class CodeGen(object):
 	
 	def const(self, name, val, frame):
 		
-		if types.unwrap(val.type) != self.mod.type('str'):
+		if types.unwrap(val.type) != self.mod.type('Str'):
 			bits = name, types.unwrap(val.type).ir, val.val
 			self.writeline('@%s = constant %s %s' % bits)
 			frame[name] = Value(val.type, '@%s' % name)
@@ -1000,7 +1000,7 @@ class CodeGen(object):
 		self.writeline('@%s.data = constant %s c"%s"' % bits)
 		cast = 'i8* bitcast (%s* @%s.data to i8*)' % (dtype, name)
 		bits = name, self.word, slen, cast
-		self.writeline('@%s = constant %%str { %s %s, %s }' % bits)
+		self.writeline('@%s = constant %%Str { %s %s, %s }' % bits)
 		frame[name] = Value(val.type, '@%s' % name)
 	
 	def declare(self, ref):

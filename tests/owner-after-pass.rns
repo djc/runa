@@ -1,4 +1,4 @@
-def foo(s: $str):
+def foo(s: $Str):
 	pass
 
 def main():

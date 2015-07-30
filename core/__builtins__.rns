@@ -22,15 +22,15 @@ class Exception:
 	switch_value: i32
 	lsda: &byte
 	lpad: &byte
-	msg: $str
+	msg: $Str
 	
-	def __init__(self, msg: $str):
+	def __init__(self, msg: $Str):
 		self.msg = msg
 
 # bool
 
 class bool:
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		return 'True' if self else 'False'
 
 # ints
@@ -39,54 +39,54 @@ class byte:
 	pass
 
 class u8:
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		data = __malloc__(3)
 		len = snprintf(data, 3, '%hhu\0'.data, self)
-		return str(len as uint, data)
+		return Str(len as uint, data)
 
 class i8:
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		data = __malloc__(4)
 		len = snprintf(data, 4, '%hhi\0'.data, self)
-		return str(len as uint, data)
+		return Str(len as uint, data)
 
 class i32:
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		data = __malloc__(20)
 		len = snprintf(data, 20, '%i\0'.data, self)
-		return str(len as uint, data)
+		return Str(len as uint, data)
 
 class u32:
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		data = __malloc__(20)
 		len = snprintf(data, 20, '%u\0'.data, self)
-		return str(len as uint, data)
+		return Str(len as uint, data)
 
 class u64:
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		data = __malloc__(20)
 		len = snprintf(data, 20, '%lu\0'.data, self)
-		return str(len as uint, data)
+		return Str(len as uint, data)
 
 class int:
 	
 	def __bool__(self) -> bool:
 		return self != 0
 	
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		data = __malloc__(20)
 		len = snprintf(data, 20, '%ld\0'.data, self)
-		return str(len as uint, data)
+		return Str(len as uint, data)
 
 class uint:
 	
 	def __bool__(self) -> bool:
 		return self != 0
 	
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		data = __malloc__(20)
 		len = snprintf(data, 20, '%lu\0'.data, self)
-		return str(len as uint, data)
+		return Str(len as uint, data)
 
 # float
 
@@ -95,19 +95,19 @@ class float:
 	def __bool__(self) -> bool:
 		return self != 0.0
 	
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		data = __malloc__(20)
 		len = snprintf(data, 20, '%lf\0'.data, self)
-		return str(len as uint, data)
+		return Str(len as uint, data)
 
-# str
+# Str
 
-class str:
+class Str:
 	
 	len: uint
 	data: $byte
 	
-	def __new__(src: &ToStr) -> $str:
+	def __new__(src: &ToStr) -> $Str:
 		return src.__str__()
 	
 	def __init__(self, len: uint, data: $byte):
@@ -118,25 +118,25 @@ class str:
 		self.len = strlen(data)
 		self.data = data
 	
-	def __copy__(self) -> $str:
+	def __copy__(self) -> $Str:
 		data = __malloc__(self.len)
 		__memcpy__(data, self.data, self.len)
-		return str(self.len, data)
+		return Str(self.len, data)
 	
 	def __bool__(self) -> bool:
 		return self.len > 0
 	
-	def __str__(self) -> $str:
+	def __str__(self) -> $Str:
 		return self.__copy__()
 	
-	def __eq__(self, other: &str) -> bool:
+	def __eq__(self, other: &Str) -> bool:
 		if self.len != other.len:
 			return False
 		len = self.len if self.len < other.len else other.len
 		cmp = strncmp(self.data, other.data, len)
 		return cmp == 0
 	
-	def __lt__(self, other: &str) -> bool:
+	def __lt__(self, other: &Str) -> bool:
 		len = self.len if self.len < other.len else other.len
 		cmp = strncmp(self.data, other.data, len)
 		if cmp < 0:
@@ -146,13 +146,13 @@ class str:
 		else:
 			return self.len < other.len
 	
-	def __add__(self, other: &str) -> $str:
+	def __add__(self, other: &Str) -> $Str:
 		sum = self.len + other.len
 		data = __malloc__(sum)
 		__memcpy__(data, self.data, self.len)
 		rest = __offset__(data, self.len)
 		__memcpy__(rest, other.data, other.len)
-		return str(sum, data)
+		return Str(sum, data)
 
 # array
 
@@ -163,7 +163,7 @@ class array[T]:
 # traits
 
 trait ToStr:
-	def __str__(self) -> $str
+	def __str__(self) -> $Str
 
 trait ToBool:
 	def __bool__(self) -> bool
@@ -171,6 +171,6 @@ trait ToBool:
 # functions
 
 def print(src: &ToStr):
-	s = str(src)
+	s = Str(src)
 	write(1, s.data, s.len)
 	write(1, "\n".data, 1)

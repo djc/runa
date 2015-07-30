@@ -33,24 +33,24 @@ define void @Runa.rt.memcpy(i8* %dst, i8* %src, {{ WORD }} %len) alwaysinline {
 	ret void
 }
 
-%str = type { {{ WORD }}, i8* }
-@str.size = external constant {{ WORD }}
-%array$str = type { {{ WORD }}, [0 x %str] }
-declare void @Runa.core.str.__init__$Rstr.Obyte(%str* %self, i8* %data) uwtable
+%Str = type { {{ WORD }}, i8* }
+@Str.size = external constant {{ WORD }}
+%array$Str = type { {{ WORD }}, [0 x %Str] }
+declare void @Runa.core.Str.__init__$RStr.Obyte(%Str* %self, i8* %data) uwtable
 
-define %array$str* @Runa.rt.args(i32 %argc, i8** %argv) {
+define %array$Str* @Runa.rt.args(i32 %argc, i8** %argv) {
 	
 	%c64 = sext i32 %argc to {{ WORD }}
 	%num = sub {{ WORD }} %c64, 1
 	
-	%str.size = load {{ WORD }}* @str.size
+	%str.size = load {{ WORD }}* @Str.size
 	%arsz = mul {{ WORD }} %num, %str.size
 	%objsz = add {{ WORD }} {{ BYTES }}, %arsz
 	%array.raw = call i8* @Runa.rt.malloc({{ WORD }} %objsz)
-	%array = bitcast i8* %array.raw to %array$str*
+	%array = bitcast i8* %array.raw to %array$Str*
 	
-	%array.data = getelementptr %array$str* %array, i32 0, i32 1
-	%array.len = getelementptr %array$str* %array, i32 0, i32 0
+	%array.data = getelementptr %array$Str* %array, i32 0, i32 1
+	%array.len = getelementptr %array$Str* %array, i32 0, i32 0
 	store {{ WORD }} %num, {{ WORD }}* %array.len
 	
 	%itervar = alloca {{ WORD }}
@@ -65,8 +65,8 @@ Body:
 	%arg.ptr = getelementptr inbounds i8** %argv, {{ WORD }} %orig.idx
 	%arg = load i8** %arg.ptr
 	
-	%obj = getelementptr [0 x %str]* %array.data, i32 0, {{ WORD }} %idx
-	call void @Runa.core.str.__init__$Rstr.Obyte(%str* %obj, i8* %arg)
+	%obj = getelementptr [0 x %Str]* %array.data, i32 0, {{ WORD }} %idx
+	call void @Runa.core.Str.__init__$RStr.Obyte(%Str* %obj, i8* %arg)
 	
 	%next = add {{ WORD }} %idx, 1
 	store {{ WORD }} %next, {{ WORD }}* %itervar
@@ -74,12 +74,12 @@ Body:
 	br i1 %more, label %Body, label %Done
 	
 Done:
-	ret %array$str* %array
+	ret %array$Str* %array
 	
 }
 
 %UnwEx = type { i64, i8*, i64, i64 }
-%Exception = type { %UnwEx, i32, i8*, i8*, %str* }
+%Exception = type { %UnwEx, i32, i8*, i8*, %Str* }
 %UnwExClean = type void (i32, %UnwEx*)*
 
 declare i32 @_Unwind_RaiseException(%UnwEx*)
@@ -93,10 +93,10 @@ define void @Runa.rt.unhandled(%Exception* %exc) {
 	%prefix = getelementptr inbounds [21 x i8]* @Unhandled, i32 0, i32 0
 	call {{ WORD }} @write(i32 2, i8* %prefix, {{ WORD }} 21)
 	%msg.slot = getelementptr %Exception* %exc, i32 0, i32 4
-	%msg = load %str** %msg.slot
-	%msg.data.slot = getelementptr %str* %msg, i32 0, i32 1
+	%msg = load %Str** %msg.slot
+	%msg.data.slot = getelementptr %Str* %msg, i32 0, i32 1
 	%msg.data = load i8** %msg.data.slot
-	%msg.len.slot = getelementptr %str* %msg, i32 0, i32 0
+	%msg.len.slot = getelementptr %Str* %msg, i32 0, i32 0
 	%msg.len = load {{ WORD }}* %msg.len.slot
 	call {{ WORD }} @write(i32 2, i8* %msg.data, {{ WORD }} %msg.len)
 	%nl = getelementptr inbounds [1 x i8]* @NL, i32 0, i32 0

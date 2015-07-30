@@ -73,7 +73,7 @@ ROOT = Declarations('', {
 		'__offset__': declare('Runa.rt.offset', '&byte', ('&byte', 'uint')),
 		'__raise__': declare('Runa.rt.raise', 'void', ('$Exception',)),
 		'__typeid__': declare('llvm.eh.typeid.for', 'i32', ('&byte',)),
-		'__args__': declare('Runa.rt.args', '&array[str]', ('i32', '&&byte')),
+		'__args__': declare('Runa.rt.args', '&array[Str]', ('i32', '&&byte')),
 	}),
 	'libc': Declarations('libc', {
 		'stdlib': Declarations('libc.stdlib', {
@@ -200,7 +200,7 @@ class TypeChecker(object):
 		node.type = types.anyfloat()
 	
 	def String(self, node):
-		node.type = types.owner(self.mod.type('str'))
+		node.type = types.owner(self.mod.type('Str'))
 	
 	def Tuple(self, node):
 		for v in node.values:
@@ -735,7 +735,7 @@ def typer(mod):
 		if not isinstance(v, blocks.Constant):
 			continue
 		if isinstance(v.node, ast.String):
-			v.type = v.node.type = mod.type('&str')
+			v.type = v.node.type = mod.type('&Str')
 		elif isinstance(v.node, ast.Int):
 			v.type = v.node.type = mod.type('&int')
 		else:
@@ -773,13 +773,13 @@ def typer(mod):
 		if k == 'main':
 			
 			rtype, atypes = mod.scope[fun.name.name].type.over
-			if fun.args and atypes[0] != types.ref(mod.scope['str']):
-				msg = '1st argument to main() must be of type &str'
+			if fun.args and atypes[0] != types.ref(mod.scope['Str']):
+				msg = '1st argument to main() must be of type &Str'
 				raise util.Error(fun.args[0].type, msg)
 			
-			compare = mod.type('&array[str]')
+			compare = mod.type('&array[Str]')
 			if fun.args and atypes[1] != compare:
-				msg = '2nd argument to main() must be of type &array[str]'
+				msg = '2nd argument to main() must be of type &array[Str]'
 				raise util.Error(fun.args[1].type, msg)
 			
 			if rtype not in {types.void(), mod.scope['i32']}:
