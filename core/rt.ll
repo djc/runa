@@ -35,10 +35,10 @@ define void @Runa.rt.memcpy(i8* %dst, i8* %src, {{ WORD }} %len) alwaysinline {
 
 %Str = type { {{ WORD }}, i8* }
 @Str.size = external constant {{ WORD }}
-%array$Str = type { {{ WORD }}, [0 x %Str] }
+%Array$Str = type { {{ WORD }}, [0 x %Str] }
 declare void @Runa.core.Str.__init__$RStr.Obyte(%Str* %self, i8* %data) uwtable
 
-define %array$Str* @Runa.rt.args(i32 %argc, i8** %argv) {
+define %Array$Str* @Runa.rt.args(i32 %argc, i8** %argv) {
 	
 	%c64 = sext i32 %argc to {{ WORD }}
 	%num = sub {{ WORD }} %c64, 1
@@ -47,10 +47,10 @@ define %array$Str* @Runa.rt.args(i32 %argc, i8** %argv) {
 	%arsz = mul {{ WORD }} %num, %str.size
 	%objsz = add {{ WORD }} {{ BYTES }}, %arsz
 	%array.raw = call i8* @Runa.rt.malloc({{ WORD }} %objsz)
-	%array = bitcast i8* %array.raw to %array$Str*
+	%array = bitcast i8* %array.raw to %Array$Str*
 	
-	%array.data = getelementptr %array$Str* %array, i32 0, i32 1
-	%array.len = getelementptr %array$Str* %array, i32 0, i32 0
+	%array.data = getelementptr %Array$Str* %array, i32 0, i32 1
+	%array.len = getelementptr %Array$Str* %array, i32 0, i32 0
 	store {{ WORD }} %num, {{ WORD }}* %array.len
 	
 	%itervar = alloca {{ WORD }}
@@ -74,7 +74,7 @@ Body:
 	br i1 %more, label %Body, label %Done
 	
 Done:
-	ret %array$Str* %array
+	ret %Array$Str* %array
 	
 }
 

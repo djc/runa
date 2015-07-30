@@ -1,2 +1,2 @@
-def main(name: &Str, args: &array[Str]) -> float:
+def main(name: &Str, args: &Array[Str]) -> float:
 	print(x)

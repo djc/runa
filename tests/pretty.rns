@@ -62,7 +62,7 @@ def range(end: int) -> iter[int]:
 		yield i
 		i += 1
 
-def loop(args: array[Str]):
+def loop(args: Array[Str]):
 	print(args[0])
 	for i in range(3):
 		print(i)

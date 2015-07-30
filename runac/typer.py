@@ -73,7 +73,7 @@ ROOT = Declarations('', {
 		'__offset__': declare('Runa.rt.offset', '&byte', ('&byte', 'uint')),
 		'__raise__': declare('Runa.rt.raise', 'void', ('$Exception',)),
 		'__typeid__': declare('llvm.eh.typeid.for', 'i32', ('&byte',)),
-		'__args__': declare('Runa.rt.args', '&array[Str]', ('i32', '&&byte')),
+		'__args__': declare('Runa.rt.args', '&Array[Str]', ('i32', '&&byte')),
 	}),
 	'libc': Declarations('libc', {
 		'stdlib': Declarations('libc.stdlib', {
@@ -418,7 +418,7 @@ class TypeChecker(object):
 		self.checkopt(node, node.obj)
 		
 		objt = types.unwrap(node.obj.type)
-		if not objt.name.startswith('array['):
+		if not objt.name.startswith('Array['):
 			msg = 'incorrect type for element protocol: %s'
 			raise util.Error(node, msg % objt.name)
 		
@@ -777,9 +777,9 @@ def typer(mod):
 				msg = '1st argument to main() must be of type &Str'
 				raise util.Error(fun.args[0].type, msg)
 			
-			compare = mod.type('&array[Str]')
+			compare = mod.type('&Array[Str]')
 			if fun.args and atypes[1] != compare:
-				msg = '2nd argument to main() must be of type &array[Str]'
+				msg = '2nd argument to main() must be of type &Array[Str]'
 				raise util.Error(fun.args[1].type, msg)
 			
 			if rtype not in {types.void(), mod.scope['i32']}:

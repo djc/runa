@@ -136,9 +136,9 @@ def range(end [int]) -> iter[int]:
    4: [while-exit]
  {00} Return
 
-def loop(args [array[Str]]) -> void:
+def loop(args [Array[Str]]) -> void:
    0: [entry]
- {00} $0 [Str] = Elem(args [array[Str]], 0 [int]) [Str]
+ {00} $0 [Str] = Elem(args [Array[Str]], 0 [int]) [Str]
  {01} Runa.core.print($0 [Str]) [void]
  {02} $1 [Runa.__main__.range$ctx] = LoopSetup i [int] <- Runa.__main__.range(3 [int]) [iter[int]]
  {03} Branch 1

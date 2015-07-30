@@ -154,9 +154,9 @@ class Str:
 		__memcpy__(rest, other.data, other.len)
 		return Str(sum, data)
 
-# array
+# Array
 
-class array[T]:
+class Array[T]:
 	len: uint
 	data: $T
 

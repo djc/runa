@@ -738,7 +738,7 @@ class CodeGen(object):
 		
 		obj = self.visit(node.obj, frame)
 		t = types.unwrap(obj.type)
-		assert t.name.startswith('array[')
+		assert t.name.startswith('Array[')
 		et = t.attribs['data'][1].over
 		
 		key = self.visit(node.key, frame)
@@ -835,7 +835,7 @@ class CodeGen(object):
 			if not isinstance(atype, types.owner):
 				continue
 			
-			if t.name.startswith('array[') and idx == 1:
+			if t.name.startswith('Array[') and idx == 1:
 				continue
 			
 			slot = Value(types.ref(atype), self.gep(val, 0, idx))
@@ -955,11 +955,11 @@ class CodeGen(object):
 			self.writeline('call void %s(%s %s, i8* %s)' % bits)
 			frame['name'] = name
 			
-			args = self.alloca(self.mod.type('$array[Str]'))
+			args = self.alloca(self.mod.type('$Array[Str]'))
 			direct = self.varname()
-			call = '%s = call %%array$Str* @Runa.rt.args(i32 %%argc, i8** %%argv)'
+			call = '%s = call %%Array$Str* @Runa.rt.args(i32 %%argc, i8** %%argv)'
 			self.writeline(call % direct)
-			self.store(('%array$Str*', direct), args.var)
+			self.store(('%Array$Str*', direct), args.var)
 			frame['args'] = args
 		
 		elif node.args and ctxt is None:
@@ -1020,7 +1020,7 @@ class CodeGen(object):
 		if isinstance(type, types.opt):
 			return
 		
-		if type.name.startswith('array['):
+		if type.name.startswith('Array['):
 			s = self.word + ', [0 x %s]' % type.attribs['data'][1].over.ir
 			self.writeline('%s = type { %s }' % (type.ir, s))
 			return
