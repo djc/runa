@@ -318,7 +318,7 @@ def compat(a, f, mode='default'):
 		return True
 	elif isinstance(a, ref) and isinstance(f, owner):
 		return False
-	elif isinstance(f, opt) and not isinstance(a, opt):
+	elif not isinstance(a, opt) and isinstance(f, opt):
 		return compat(a, f.over, mode)
 	elif a in UINTS and f in UINTS:
 		return a.bits < f.bits
