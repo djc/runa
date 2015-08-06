@@ -113,6 +113,9 @@ class Ref(Expr):
 class Opt(Expr):
 	fields = 'value'
 
+class Mut(Expr):
+	fields = 'value'
+
 class In(Expr):
 	fields = 'left', 'right'
 

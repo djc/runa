@@ -30,6 +30,7 @@ def lexer():
 	lg.add('DOLLAR', '\$')
 	lg.add('PIPE', '\|')
 	lg.add('CARET', '\^')
+	lg.add('TILDE', '~')
 	lg.add('MOD', '%')
 	lg.add('LPAR', '\(')
 	lg.add('RPAR', '\)')
@@ -117,7 +118,7 @@ pg = rply.ParserGenerator([
 		'QM',
 		'RAISE', 'RBRA', 'RETURN', 'RPAR',
 		'STR',
-		'TRAIT', 'TRY',
+		'TILDE', 'TRAIT', 'TRY',
 		'WHILE',
 		'YIELD',
 	], precedence=[
@@ -504,6 +505,12 @@ def type_tuple(s, p):
 def two_type_tuple(s, p):
 	res = ast.Tuple(s.pos(p[1]))
 	res.values = [p[0], p[2]]
+	return res
+
+@pg.production('type : TILDE type')
+def mut_type(s, p):
+	res = ast.Mut(s.pos(p[0]))
+	res.value = p[1]
 	return res
 
 @pg.production('type : QM type')
