@@ -92,7 +92,7 @@ class ReprId(object):
 			
 			score = 0
 			for at, ft in zip(tmp, fun.type.over[1]):
-				if not compat(at, ft):
+				if not compat(at, ft, 'args'):
 					score -= 1000
 					break
 				elif at == ft:
@@ -300,17 +300,17 @@ def wrangle(s):
 
 def compat(a, f, mode='default'):
 	
-	assert mode in {'default', 'strict'}
+	assert mode in {'default', 'args'}
 	if isinstance(a, concrete) and isinstance(f, concrete):
 		pairs = zip(a.params, f.params)
-		return all(compat(i[0], i[1], 'strict') for i in pairs)
+		return all(compat(i[0], i[1], mode) for i in pairs)
 	
 	if isinstance(a, (tuple, list)) and isinstance(f, (tuple, list)):
 		if len(a) != len(f):
 			return False
 		if f and f[-1] == VarArgs():
-			return all(compat(i[0], i[1]) for i in zip(a, f[:-1]))
-		return all(compat(i[0], i[1]) for i in zip(a, f))
+			return all(compat(i[0], i[1], mode) for i in zip(a, f[:-1]))
+		return all(compat(i[0], i[1], mode) for i in zip(a, f))
 	
 	if a == f:
 		return True
@@ -319,15 +319,14 @@ def compat(a, f, mode='default'):
 	elif isinstance(a, ref) and isinstance(f, owner):
 		return False
 	elif isinstance(f, opt) and not isinstance(a, opt):
-		return compat(a, f.over)
+		return compat(a, f.over, mode)
 	elif a in UINTS and f in UINTS:
 		return a.bits < f.bits
 	
-	strict = mode == 'strict'
-	if not strict and (wrapped(a) or wrapped(f)):
-		return compat(unwrap(a), unwrap(f))
-	elif strict and wrapped(a) and wrapped(f):
-		return compat(unwrap(a), unwrap(f))
+	if wrapped(a) and wrapped(f):
+		return compat(unwrap(a), unwrap(f), mode)
+	elif mode == 'args' and (wrapped(a) or wrapped(f)):
+		return compat(unwrap(a), unwrap(f), mode)
 	
 	if not isinstance(f, trait):
 		return False
@@ -339,7 +338,7 @@ def compat(a, f, mode='default'):
 		
 		art = a.methods[k][0].type.over[0]
 		frt = malts[0].type.over[0]
-		rc = compat(art, frt)
+		rc = compat(art, frt, mode)
 		if not rc:
 			return False
 		

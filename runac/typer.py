@@ -511,7 +511,7 @@ class TypeChecker(object):
 		# Check that the actual types match the function's formal types
 		
 		actual = [a.type for a in node.args]
-		if not types.compat(actual, node.fun.type.over[1]):
+		if not types.compat(actual, node.fun.type.over[1], 'args'):
 			astr = ', '.join(t.name for t in actual)
 			fstr = ', '.join(t.name for t in node.fun.type.over[1])
 			msg = 'arguments (%s) cannot be passed as (%s)'
