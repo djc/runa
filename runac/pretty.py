@@ -49,7 +49,7 @@ class PrettyPrinter(object):
 		self.newline()
 		
 		for i, bl in sorted(util.items(fun.flow.blocks)):
-			self.writeline('  %2i: [%s]' % (i, bl.anno))
+			self.writeline('  %2i: # %s' % (i, bl.anno))
 			for sid, step in enumerate(bl.steps):
 				self.write(' {%02i} ' % sid)
 				self.visit(step)

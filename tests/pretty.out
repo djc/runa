@@ -1,60 +1,60 @@
 def test.__init__(self [&test], v [uint]) -> void:
-   0: [entry]
+   0: # entry
  {00} self [&test] . val [uint] = v [uint]
  {01} Return
 
 def maybe(i [int]) -> ?$test:
-   0: [entry]
+   0: # entry
  {00} $1 [int] = BWAnd i [int] 2 [int]
  {01} CondBranch $1 [int] ? 1 : 2
-   1: [ternary-left]
+   1: # ternary-left
  {00} $2 [$test] = Runa.__main__.test.__init__(Init $test, 1 [uint]) [$test]
  {01} Branch 3
-   2: [ternary-right]
+   2: # ternary-right
  {00} Branch 3
-   3: [ternary-exit]
+   3: # ternary-exit
  {00} $0 [?$test] = Phi 1:$2 [$test], 2:NoneVal [?$test]
  {01} Return $0 [?$test]
 
 def multi() -> tuple[uint, uint]:
-   0: [entry]
+   0: # entry
  {00} $0 [tuple[uint, uint]] = (4 [int], 5 [int])
  {01} Return $0 [tuple[uint, uint]]
 
 def cast(a [&byte]) -> void:
-   0: [entry]
+   0: # entry
  {00} p [&i8] = As a [&byte] &i8
  {01} Return
 
 def opt_check() -> void:
-   0: [entry]
+   0: # entry
  {00} obj [?$test] = Runa.__main__.maybe(1 [int]) [?$test]
  {01} $0 [bool] = Is obj [?$test] NoneVal [NoType]
  {02} CondBranch $0 [bool] ? 1 : 2
-   1: [if-suite]
+   1: # if-suite
  {00} $1 [$Str] = 'no val' [&Str]
  {01} Runa.core.print($1 [$Str]) [void]
  {02} Branch 3
-   2: [if-suite]
+   2: # if-suite
  {00} Runa.core.print(False [bool]) [void]
  {01} Branch 3
-   3: [if-exit]
+   3: # if-exit
  {00} obj [?$test] = Runa.__main__.maybe(3 [int]) [?$test]
  {01} $2 [bool] = Is obj [?$test] NoneVal [NoType]
  {02} CondBranch $2 [bool] ? 4 : 5
-   4: [if-suite]
+   4: # if-suite
  {00} $3 [$Str] = 'no val' [&Str]
  {01} Runa.core.print($3 [$Str]) [void]
  {02} Branch 6
-   5: [if-suite]
+   5: # if-suite
  {00} $4 [uint] = obj [$test] . val [uint]
  {01} Runa.core.print($4 [uint]) [void]
  {02} Branch 6
-   6: [if-exit]
+   6: # if-exit
  {00} Raise Runa.core.Exception.__init__(Init $Exception, 'fail!' [$Str:E]) [$Exception]
 
 def math() -> void:
-   0: [entry]
+   0: # entry
  {00} $1 [int] = Add 3 [int] 4 [int]
  {01} $3 [int] = Mul 5 [int] 6 [int]
  {02} $2 [int] = Div $3 [int] 7 [int]
@@ -68,19 +68,19 @@ def math() -> void:
  {10} $6 [int] = Mod 4 [int] 3 [int]
  {11} Runa.core.print($6 [int]) [void]
  {12} Runa.__main__.opt_check() [void] => 4, 1
-   1: [landing-pad]
+   1: # landing-pad
  {00} LPad: $8 {Exception: 2}
-   2: [catch]
+   2: # catch
  {00} $7 [$Str] = 'caught' [&Str]
  {01} Runa.core.print($7 [$Str]) [void]
  {02} Branch 4
-   3: [caught-no-match]
+   3: # caught-no-match
  {00} Resume: $8
-   4: [try-exit]
+   4: # try-exit
  {00} Return
 
 def binary() -> void:
-   0: [entry]
+   0: # entry
  {00} $0 [int] = BWAnd 3 [int] 1 [int]
  {01} Runa.core.print($0 [int]) [void]
  {02} $1 [int] = BWOr 2 [int] 6 [int]
@@ -105,52 +105,52 @@ def binary() -> void:
  {21} $14 [bool] = Not $15 [$Str]
  {22} Runa.core.print($14 [bool]) [void]
  {23} CondBranch 7 [int] ? 1 : 2
-   1: [if-suite]
+   1: # if-suite
  {00} Pass
  {01} Branch 5
-   2: [if-cond]
+   2: # if-cond
  {00} CondBranch 0 [int] ? 3 : 4
-   3: [if-suite]
+   3: # if-suite
  {00} Pass
  {01} Branch 5
-   4: [if-suite]
+   4: # if-suite
  {00} Pass
  {01} Branch 5
-   5: [if-exit]
+   5: # if-exit
  {00} Free($3 [$Str])
  {01} Free($4 [$Str])
  {02} Return
 
 def range(end [int]) -> iter[int]:
-   0: [entry]
+   0: # entry
  {00} i [int] = As 0 [int] int
  {01} Branch 1
-   1: [while-head]
+   1: # while-head
  {00} $0 [bool] = LT i [int] end [int]
  {01} CondBranch $0 [bool] ? 2 : 4
-   2: [while-body]
+   2: # while-body
  {00} Yield i [int]
-   3: [yield-to]
+   3: # yield-to
  {00} IAdd i [int] 1 [int]
  {01} Branch 1
-   4: [while-exit]
+   4: # while-exit
  {00} Return
 
 def loop(args [Array[Str]]) -> void:
-   0: [entry]
+   0: # entry
  {00} $0 [Str] = Elem(args [Array[Str]], 0 [int]) [Str]
  {01} Runa.core.print($0 [Str]) [void]
  {02} $1 [Runa.__main__.range$ctx] = LoopSetup i [int] <- Runa.__main__.range(3 [int]) [iter[int]]
  {03} Branch 1
-   1: [for-head]
+   1: # for-head
  {00} LoopHeader ctx:$1 [Runa.__main__.range$ctx] lvar:i [int] 2:3
-   2: [for-body]
+   2: # for-body
  {00} Runa.core.print(i [int]) [void]
  {01} Branch 1
-   3: [for-exit]
+   3: # for-exit
  {00} Return
 
 def raises() -> void:
-   0: [entry]
+   0: # entry
  {00} Raise Runa.core.Exception.__init__(Init $Exception, 'foo' [$Str:E]) [$Exception]
 
