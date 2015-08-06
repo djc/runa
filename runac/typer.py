@@ -121,6 +121,17 @@ class TypeChecker(object):
 			msg = "opt type '%s' not allowed here"
 			raise util.Error(posnode, msg % val.type.name)
 	
+	def checkmut(self, posnode, val):
+		
+		name = self.fun.irname.split('$', 1)[0]
+		if name.endswith(('__init__', '__new__')):
+			return
+		
+		if isinstance(val.type, types.ref):
+			self.fun.irname
+			msg = "immutable type '%s' may not be mutated"
+			raise util.Error(posnode, msg % val.type.name)
+	
 	def settype(self, name, type):
 		bid, sid = self.cur[0].id, self.cur[1]
 		sets = self.flow.vars[name]['sets']
@@ -395,6 +406,7 @@ class TypeChecker(object):
 		
 		self.visit(node.obj)
 		self.checkopt(node, node.obj)
+		self.checkmut(node, node.obj)
 		
 		t = node.obj.type
 		if types.wrapped(t):
@@ -570,6 +582,7 @@ class TypeChecker(object):
 		node.left.type = node.right.type
 	
 	def IAdd(self, node):
+		self.checkmut(node, node.left)
 		self.visit(node.left)
 		self.visit(node.right)
 		if not types.compat(node.right.type, node.left.type):
