@@ -579,7 +579,7 @@ class TypeChecker(object):
 		
 		if var:
 			self.settype(node.left.name, node.right.type)
-		node.left.type = node.right.type
+			node.left.type = node.right.type
 	
 	def IAdd(self, node):
 		self.checkmut(node, node.left)
