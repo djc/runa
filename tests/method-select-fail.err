@@ -1,3 +1,4 @@
-method-select-fail.rns [2.20]: (anyint) does not fit any of ()
+method-select-fail.rns [2.20]: no matching method found, candidates tried:
+    (anyint, anyint) -> Runa.core.i32.__str__(&i32)
     print(9.__str__(4))
                    ^

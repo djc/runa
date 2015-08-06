@@ -79,15 +79,14 @@ class ReprId(object):
 		if named:
 			assert False, named
 		
-		res = []
-		formals = []
+		res, candidates = [], []
 		for fun in opts:
 			
-			formals.append([t.name for t in fun.type.over[1]][1:])
 			tmp = positional
 			if '__init__' in fun.decl:
 				tmp = [ref(self)] + positional
 			
+			candidates.append((fun.name, tmp, fun.type.over[1]))
 			if len(fun.type.over[1]) != len(tmp) + len(named):
 				continue
 			
@@ -105,10 +104,13 @@ class ReprId(object):
 				res.append(fun)
 			
 		if not res:
-			astr = ', '.join([t.name for t in positional][1:])
-			bits = astr, '), ('.join(', '.join(f) for f in formals)
-			msg = '(%s) does not fit any of (%s)'
-			raise util.Error(node, msg % bits)
+			msg = ['no matching method found, candidates tried:']
+			for name, atypes, ftypes in candidates:
+				anames = ', '.join(t.name for t in atypes)
+				fnames = ', '.join(t.name for t in ftypes)
+				display = name.split('$', 1)[0]
+				msg.append('    (%s) -> %s(%s)' % (anames, display, fnames))
+			raise util.Error(node, '\n'.join(msg))
 		
 		assert len(res) == 1, res
 		return res[0]
