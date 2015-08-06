@@ -293,10 +293,12 @@ def wrangle(s):
 	s = s.replace(']', 'ET')
 	return s
 
-def compat(a, f, strict=False):
+def compat(a, f, mode='default'):
 	
+	assert mode in {'default', 'strict'}
 	if isinstance(a, concrete) and isinstance(f, concrete):
-		return all(compat(i[0], i[1], True) for i in zip(a.params, f.params))
+		pairs = zip(a.params, f.params)
+		return all(compat(i[0], i[1], 'strict') for i in pairs)
 	
 	if isinstance(a, (tuple, list)) and isinstance(f, (tuple, list)):
 		if len(a) != len(f):
@@ -313,40 +315,41 @@ def compat(a, f, strict=False):
 		return False
 	elif isinstance(f, opt) and not isinstance(a, opt):
 		return compat(a, f.over)
-	elif not strict and (isinstance(a, WRAPPERS) or isinstance(f, WRAPPERS)):
+	elif a in UINTS and f in UINTS:
+		return a.bits < f.bits
+	
+	strict = mode == 'strict'
+	if not strict and (isinstance(a, WRAPPERS) or isinstance(f, WRAPPERS)):
 		return compat(unwrap(a), unwrap(f))
 	elif strict and (isinstance(a, WRAPPERS) and isinstance(f, WRAPPERS)):
 		return compat(unwrap(a), unwrap(f))
-	elif a in UINTS and f in UINTS:
-		return a.bits < f.bits
-	elif isinstance(f, trait):
-		
-		for k, malts in util.items(f.methods):
-			
-			if k not in a.methods:
-				return False
-			
-			art = a.methods[k][0].type.over[0]
-			frt = malts[0].type.over[0]
-			rc = compat(art, frt)
-			if not rc:
-				return False
-			
-			tmalts = set()
-			for fun in malts:
-				tmalts.add(tuple(at for at in fun.type.over[1][1:]))
-			
-			amalts = set()
-			for fun in a.methods[k]:
-				amalts.add(tuple(at for at in fun.type.over[1][1:]))
-			
-			if tmalts != amalts:
-				return False
-		
-		return True
-		
-	else:
+	
+	if not isinstance(f, trait):
 		return False
+	
+	for k, malts in util.items(f.methods):
+		
+		if k not in a.methods:
+			return False
+		
+		art = a.methods[k][0].type.over[0]
+		frt = malts[0].type.over[0]
+		rc = compat(art, frt)
+		if not rc:
+			return False
+		
+		tmalts = set()
+		for fun in malts:
+			tmalts.add(tuple(at for at in fun.type.over[1][1:]))
+		
+		amalts = set()
+		for fun in a.methods[k]:
+			amalts.add(tuple(at for at in fun.type.over[1][1:]))
+		
+		if tmalts != amalts:
+			return False
+	
+	return True
 
 class Stub(object):
 	def __init__(self, name):
