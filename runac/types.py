@@ -300,7 +300,7 @@ def wrangle(s):
 
 def compat(a, f, mode='default'):
 	
-	assert mode in {'default', 'args'}
+	assert mode in {'default', 'args', 'return'}
 	if isinstance(a, concrete) and isinstance(f, concrete):
 		pairs = zip(a.params, f.params)
 		return all(compat(i[0], i[1], mode) for i in pairs)
@@ -317,6 +317,8 @@ def compat(a, f, mode='default'):
 	elif isinstance(a, anyint) and f in INTS:
 		return True
 	elif isinstance(a, ref) and isinstance(f, owner):
+		return False
+	elif mode == 'return' and isinstance(a, owner) and isinstance(f, ref):
 		return False
 	elif not isinstance(a, opt) and isinstance(f, opt):
 		return compat(a, f.over, mode)

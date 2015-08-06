@@ -619,10 +619,11 @@ class TypeChecker(object):
 	
 	def Yield(self, node):
 		self.visit(node.value)
-		if not types.compat(node.value.type, self.fun.rtype.params[0]):
+		rtype = self.fun.rtype.params[0]
+		if not types.compat(node.value.type, rtype, 'return'):
 			msg = 'yield value type does not match declared type\n'
 			msg += "    '%s' vs '%s'"
-			bits = node.value.type.name, self.fun.rtype.params[0].name
+			bits = node.value.type.name, rtype.name
 			raise util.Error(node.value, msg % bits)
 	
 	def Return(self, node):
@@ -642,7 +643,7 @@ class TypeChecker(object):
 			return
 		
 		self.visit(node.value)
-		if not types.compat(node.value.type, self.fun.rtype):
+		if not types.compat(node.value.type, self.fun.rtype, 'return'):
 			msg = "return value type does not match declared return type\n"
 			msg += "    '%s' vs '%s'"
 			bits = node.value.type.name, self.fun.rtype.name
