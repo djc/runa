@@ -1,0 +1,3 @@
+immutable-ref.rns [7.8]: immutable type '&Test' may not be mutated
+    obj.i = 2
+       ^
