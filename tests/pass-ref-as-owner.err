@@ -1,0 +1,3 @@
+pass-ref-as-owner.rns [11.9]: arguments (&Str) cannot be passed as ($Str)
+    test(t.s)
+        ^

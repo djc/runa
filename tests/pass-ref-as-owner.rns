@@ -1,0 +1,11 @@
+class Test:
+	s: $Str
+	def __init__(self, s: $Str):
+		self.s = s
+
+def test(s: $Str):
+	print(s)
+
+def main():
+	t = Test('a')
+	test(t.s)
