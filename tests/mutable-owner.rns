@@ -1,0 +1,12 @@
+class Test:
+	i: int
+	def __init__(self, i: int):
+		self.i = i
+
+def test(obj: $Test) -> $Test:
+	obj.i = 2
+	return obj
+
+def main():
+	t = Test(1)
+	print(test(t).i)
