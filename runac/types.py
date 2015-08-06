@@ -278,6 +278,9 @@ class function(base):
 		args = ', '.join(a.ir for a in self.over[1])
 		return '%s (%s)*' % (self.over[0].ir, args)
 
+def wrapped(t):
+	return isinstance(t, WRAPPERS)
+
 def unwrap(t):
 	while isinstance(t, WRAPPERS):
 		t = t.over
@@ -319,9 +322,9 @@ def compat(a, f, mode='default'):
 		return a.bits < f.bits
 	
 	strict = mode == 'strict'
-	if not strict and (isinstance(a, WRAPPERS) or isinstance(f, WRAPPERS)):
+	if not strict and (wrapped(a) or wrapped(f)):
 		return compat(unwrap(a), unwrap(f))
-	elif strict and (isinstance(a, WRAPPERS) and isinstance(f, WRAPPERS)):
+	elif strict and wrapped(a) and wrapped(f):
 		return compat(unwrap(a), unwrap(f))
 	
 	if not isinstance(f, trait):

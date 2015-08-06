@@ -240,7 +240,7 @@ class TypeChecker(object):
 		assert isinstance(node.right, ast.NoneVal), node.right
 		
 		if not isinstance(node.left.type, types.opt):
-			assert isinstance(node.left.type, types.WRAPPERS), node.left
+			assert types.wrapped(node.left.type), node.left
 		
 		node.type = self.mod.type('bool')
 	
@@ -391,7 +391,7 @@ class TypeChecker(object):
 		self.checkopt(node, node.obj)
 		
 		t = node.obj.type
-		if isinstance(t, types.WRAPPERS):
+		if types.wrapped(t):
 			t = t.over
 		
 		node.type = t.attribs[node.attrib][1]
@@ -405,7 +405,7 @@ class TypeChecker(object):
 		self.checkopt(node, node.obj)
 		
 		t = node.obj.type
-		if isinstance(t, types.WRAPPERS):
+		if types.wrapped(t):
 			t = t.over
 		
 		node.type = t.attribs[node.attrib][1]

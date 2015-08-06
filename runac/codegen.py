@@ -174,11 +174,11 @@ class CodeGen(object):
 	def coerce(self, val, dst):
 		
 		vt = val.type, 0
-		while isinstance(vt[0], types.WRAPPERS):
+		while types.wrapped(vt[0]):
 			vt = vt[0].over, vt[1] + 1
 		
 		dt = dst, 0
-		while isinstance(dt[0], types.WRAPPERS):
+		while types.wrapped(dt[0]):
 			dt = dt[0].over, dt[1] + 1
 		
 		boolt = self.mod.type('bool')
@@ -224,13 +224,13 @@ class CodeGen(object):
 	
 	def traitwrap(self, val, trait):
 		
-		if not isinstance(val.type, types.WRAPPERS):
+		if not types.wrapped(val.type):
 			tmp = self.alloca(val.type)
 			self.store(val, tmp.var)
 			val = tmp
 		
-		assert isinstance(val.type, types.WRAPPERS)
-		assert isinstance(trait, types.WRAPPERS)
+		assert types.wrapped(val.type)
+		assert types.wrapped(trait)
 		
 		ptrt = self.mod.type('&byte')
 		wrap = self.alloca(types.unwrap(trait))
@@ -304,7 +304,7 @@ class CodeGen(object):
 	
 	def NoneVal(self, node, frame):
 		assert isinstance(node.type, types.opt)
-		assert isinstance(node.type.over, types.WRAPPERS)
+		assert types.wrapped(node.type.over)
 		return Value(self.mod.type('NoType'), 'null')
 	
 	def Bool(self, node, frame):
@@ -390,7 +390,7 @@ class CodeGen(object):
 		assert left.type == right.type
 		
 		t = left.type
-		if isinstance(t, types.WRAPPERS):
+		if types.wrapped(t):
 			t = left.type.over
 		
 		bool = left.var
@@ -444,9 +444,9 @@ class CodeGen(object):
 		vtypes = {self.mod.type('bool')} | types.INTS | types.FLOATS
 		if types.unwrap(left.type) in vtypes:
 			
-			if isinstance(left.type, types.WRAPPERS):
+			if types.wrapped(left.type):
 				left = self.load(left)
-			if isinstance(right.type, types.WRAPPERS):
+			if types.wrapped(right.type):
 				right = self.load(right)
 			
 			assert left.type == right.type, (left.type, right.type)
@@ -501,9 +501,9 @@ class CodeGen(object):
 		right = self.visit(node.right, frame)
 		if types.unwrap(left.type) in types.INTS:
 			
-			if isinstance(left.type, types.WRAPPERS):
+			if types.wrapped(left.type):
 				left = self.load(left)
-			if isinstance(right.type, types.WRAPPERS):
+			if types.wrapped(right.type):
 				right = self.load(right)
 			
 			assert left.type == right.type, (left.type, right.type)
@@ -513,8 +513,8 @@ class CodeGen(object):
 			self.writeline('%s = %s %s %s, %s' % bits)
 			return Value(left.type, res)
 		
-		assert isinstance(left.type, types.WRAPPERS)
-		assert isinstance(right.type, types.WRAPPERS)
+		assert types.wrapped(left.type)
+		assert types.wrapped(right.type)
 		
 		t = types.unwrap(left.type)
 		fun = t.select(left, '__%s__' % op, (left.type, right.type), {})
@@ -699,7 +699,7 @@ class CodeGen(object):
 			self.store(val, target.var)
 			return
 		
-		w = lambda t: isinstance(t.type, types.WRAPPERS)
+		w = lambda t: types.wrapped(t.type)
 		if w(val) and w(target) and val.type.over == target.type.over:
 			self.store(self.load(val), target.var)
 			return
@@ -818,7 +818,7 @@ class CodeGen(object):
 			return
 		
 		value = self.visit(node.value, frame)
-		if isinstance(value.type, types.WRAPPERS):
+		if types.wrapped(value.type):
 			if value.type.over.byval:
 				value = self.load(value)
 		self.writeline('ret %s %s' % (value.type.ir, value.var))
@@ -1015,7 +1015,7 @@ class CodeGen(object):
 	
 	def type(self, type, external=False):
 		
-		if isinstance(type, types.WRAPPERS):
+		if types.wrapped(type):
 			return
 		if isinstance(type, types.opt):
 			return
