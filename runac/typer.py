@@ -337,14 +337,6 @@ class TypeChecker(object):
 	
 	# Iteration-related nodes
 	
-	def Yield(self, node):
-		self.visit(node.value)
-		if not types.compat(node.value.type, self.fun.rtype.params[0]):
-			msg = 'yield value type does not match declared type\n'
-			msg += "    '%s' vs '%s'"
-			bits = node.value.type.name, self.fun.rtype.params[0].name
-			raise util.Error(node.value, msg % bits)
-
 	def LoopSetup(self, node):
 		
 		self.visit(node.loop.source)
@@ -624,6 +616,14 @@ class TypeChecker(object):
 	
 	def Pass(self, node):
 		return
+	
+	def Yield(self, node):
+		self.visit(node.value)
+		if not types.compat(node.value.type, self.fun.rtype.params[0]):
+			msg = 'yield value type does not match declared type\n'
+			msg += "    '%s' vs '%s'"
+			bits = node.value.type.name, self.fun.rtype.params[0].name
+			raise util.Error(node.value, msg % bits)
 	
 	def Return(self, node):
 		
