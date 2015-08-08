@@ -50,6 +50,8 @@ However, the Python language also has some clear drawbacks.
    most errors in Python code are only caught at run-time.
    This makes it harder to catch mistakes like typos or type errors,
    especially in large or legacy projects.
+   Automated tests can be a good way to make these easier to find,
+   but generating enough coverage is a significant investment.
 
 3. **Implicit types** -- while explicit type annotations are mostly superfluous
    in small projects, research has shown that explicit type annotations can
