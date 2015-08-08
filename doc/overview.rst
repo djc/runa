@@ -67,3 +67,18 @@ while avoiding the stated drawbacks.
 .. _this subject: http://nedbatchelder.com/text/exceptions-in-the-rainforest.html
 .. _PyPy: http://pypy.org/
 .. _Pyston: http://blog.pyston.org/
+
+
+Roadmap
+=======
+
+I'm currently working to build an initial release of the Runa compiler.
+Here are some things left to do that should be done before such a release:
+
+* **Type system** -- immmutability, correct handling of owner types
+* **Memory/resource management** -- make sure cleanup works correctly
+* **Fill out core types** -- number types, ``Str`` and ``Array``
+* **Add collection types** -- ``List``, ``Dict`` and ``Set``
+* **Argument handling** -- default args, ``*args``, ``**kwargs``
+* **I/O interactions** -- reading from and writing to files and network
+* **Documentation** -- some tutorial materials, API reference, etc
