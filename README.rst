@@ -17,7 +17,7 @@ The most important design goals for Runa are developer ergonomics
 and performance.
 The compiler is written in Python and targets LLVM IR;
 there's no run-time.
-More information can be found on the project `website`_.
+More information, including a project rationale, can be found on the project `website`_.
 
 Note: this is pre-alpha quality software. Use at your own peril.
 
