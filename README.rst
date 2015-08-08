@@ -74,14 +74,3 @@ Now, run the compiler to generate a binary, then run it:
    hello, world
 
 Review the test cases in ``tests/`` for other code that should work.
-
-
-To do before 0.1
-----------------
-
-- Core types: str, array
-- Collections: list, dict, set
-- Memory management
-- Error handling/exceptions
-- Argument handling: default args, *args, **kwargs
-- Basic documentation
