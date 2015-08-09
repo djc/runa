@@ -721,6 +721,10 @@ class Module(object):
 			params = (self.type(t.key, stubs),)
 			obj = self.scope[tpl.name, params] = types.apply(tpl, params)
 			return obj
+		elif isinstance(t, ast.Mut):
+			t = self.type(t.value, stubs)
+			t.mut = True
+			return t
 		elif isinstance(t, ast.Owner):
 			return types.owner(self.type(t.value, stubs))
 		elif isinstance(t, ast.Ref):
