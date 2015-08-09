@@ -118,6 +118,7 @@ class ReprId(object):
 class base(ReprId):
 	
 	byval = False
+	mut = False
 	attribs = {}
 	methods = {}
 	type = Type()
@@ -211,6 +212,7 @@ class owner(base):
 	
 	def __init__(self, over):
 		self.over = over
+		self.mut = True
 	
 	@property
 	def name(self):
@@ -225,12 +227,13 @@ class owner(base):
 
 class ref(base):
 	
-	def __init__(self, over):
+	def __init__(self, over, mut=False):
 		self.over = over
+		self.mut = mut
 	
 	@property
 	def name(self):
-		return '&%s' % self.over.name
+		return '%s&%s' % ('~' if self.mut else '', self.over.name)
 	
 	@property
 	def ir(self):
