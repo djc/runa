@@ -127,7 +127,7 @@ class TypeChecker(object):
 		if name.endswith(('__init__', '__new__')):
 			return
 		
-		if isinstance(val.type, types.ref):
+		if isinstance(val.type, types.ref) and not val.type.mut:
 			self.fun.irname
 			msg = "immutable type '%s' may not be mutated"
 			raise util.Error(posnode, msg % val.type.name)
