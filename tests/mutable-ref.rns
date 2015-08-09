@@ -1,0 +1,12 @@
+class Test:
+	i: int
+	def __init__(self, i: int):
+		self.i = i
+
+def test(obj: ~&Test):
+	obj.i = 2
+
+def main():
+	t = Test(1)
+	test(t)
+	print(t.i)
