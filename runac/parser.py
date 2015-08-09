@@ -507,25 +507,29 @@ def two_type_tuple(s, p):
 	res.values = [p[0], p[2]]
 	return res
 
-@pg.production('type : TILDE type')
-def mut_type(s, p):
-	res = ast.Mut(s.pos(p[0]))
-	res.value = p[1]
-	return res
-
 @pg.production('type : QM type')
 def opt_type(s, p):
 	res = ast.Opt(s.pos(p[0]))
 	res.value = p[1]
 	return res
 
-@pg.production('type : DOLLAR vtype')
+@pg.production('type : ptr-type')
+def ptr_type_type(s, p):
+	return p[0]
+
+@pg.production('type : TILDE ptr-type')
+def mut_type(s, p):
+	res = ast.Mut(s.pos(p[0]))
+	res.value = p[1]
+	return res
+
+@pg.production('ptr-type : DOLLAR vtype')
 def owner_type(s, p):
 	res = ast.Owner(s.pos(p[0]))
 	res.value = p[1]
 	return res
 
-@pg.production('type : AMP vtype')
+@pg.production('ptr-type : AMP vtype')
 def ref_type(s, p):
 	res = ast.Ref(s.pos(p[0]))
 	res.value = p[1]
