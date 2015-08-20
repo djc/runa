@@ -203,3 +203,7 @@ expansion of the language design (e.g. concurrency):
 * `Programmatic access to the call stack in C++
   <http://eli.thegreenplace.net/2015/programmatic-access-to-the-call-stack-in-c/>`_
   Eli Bendersky
+
+* `Sharp Regrets: Top 10 Worst C# Features
+  <http://www.informit.com/articles/article.aspx?p=2425867>`_
+  Eric Lippert
