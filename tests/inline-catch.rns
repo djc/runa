@@ -1,0 +1,5 @@
+def main():
+	try:
+		raise Exception('error')
+	except Exception:
+		print('CAUGHT')
