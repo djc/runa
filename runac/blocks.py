@@ -417,6 +417,7 @@ class FlowFinder(object):
 	def Raise(self, node):
 		self.cur.push(node)
 		self.cur.raises = True
+		self.redirect(node)
 	
 	def If(self, node):
 		

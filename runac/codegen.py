@@ -750,9 +750,16 @@ class CodeGen(object):
 		return Value(types.ref(et), elm)
 	
 	def Raise(self, node, frame):
+		
 		val = self.visit(node.value, frame)
-		bits = val.type.ir, val.var
-		self.writeline('call void @Runa.rt.raise(%s %s) noreturn' % bits)
+		instr, targets = 'call', ''
+		if hasattr(node, 'callbr') and node.callbr:
+			instr = 'invoke'
+			targets = ' to label %%L%i unwind label %%L%i' % node.callbr
+		
+		res = self.varname() # allocate index for result, for LLVM's benefit
+		bits = instr, val.type.ir, val.var, targets
+		self.writeline('%s void @Runa.rt.raise(%s %s) noreturn %s' % bits)
 		self.writeline('unreachable')
 	
 	def LPad(self, node, frame):
