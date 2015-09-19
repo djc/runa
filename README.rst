@@ -42,11 +42,6 @@ Dependencies:
 
 The compiler is being tested on 64-bits OS X and Linux and 32-bits Linux.
 
-On OS X, the generated LLVM IR targets Yosemite;
-this causes warnings on older versions.
-Look at the final lines of ``runac/codegen.py`` to change the target triple
-(just change 10.10 to 10.9).
-
 Preliminary testing has been done on 64-bit Windows 7 as well. This seems
 to work okay when compiling against mingw-w64, although the test suite fails
 because newlines get rewritten to ``\r\n`` when using ``write()`` with
