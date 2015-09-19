@@ -1208,7 +1208,7 @@ class CodeGen(object):
 			self.visit(v, frame)
 
 TRIPLES = {
-	('64bit', 'darwin'): 'x86_64-apple-macosx10.10.0',
+	('64bit', 'darwin'): 'x86_64-apple-macosx{os_version}.0',
 	('64bit', 'linux'): 'x86_64-pc-linux-gnu',
 	('32bit', 'linux'): 'i386-pc-linux-gnu',
 	('64bit', 'win32'): 'x86_64-pc-windows-gnu',
@@ -1217,9 +1217,16 @@ TRIPLES = {
 TRIPLE_FMT = 'target triple = "%s"\n\n'
 
 def triple():
+	
 	arch, os_key = platform.architecture()[0], sys.platform
 	os_key = 'linux' if os_key.startswith('linux') else os_key
-	return TRIPLES[arch, os_key]
+	triple = TRIPLES[arch, os_key]
+	
+	if os_key == 'darwin':
+	    version = '.'.join(platform.mac_ver()[0].split('.')[:2])
+	    triple = triple.replace('{os_version}', version)
+	
+	return triple
 
 def rt():
 	arch = platform.architecture()[0]
