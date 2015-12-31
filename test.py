@@ -24,6 +24,8 @@ class RunaTest(unittest.TestCase):
 				return {}
 	
 	def compile(self):
+		if self.opts.get('type', 'test') == 'show':
+			return '\n'.join(runac.show(self.fn, None)) + '\n'
 		try:
 			runac.compile(self.fn, self.bin)
 			return None
@@ -34,12 +36,7 @@ class RunaTest(unittest.TestCase):
 	
 	def runTest(self):
 		
-		type = self.opts.get('type', 'test')
-		if type == 'show':
-			out = '\n'.join(runac.show(self.fn, None)) + '\n'
-		else:
-			out = self.compile()
-		
+		out = self.compile()
 		if out and sys.version_info[0] > 2:
 			out = out.encode('utf-8')
 		
@@ -50,7 +47,7 @@ class RunaTest(unittest.TestCase):
 			res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
 			proc.stdout.close()
 			proc.stderr.close()
-		elif type == 'show':
+		elif self.opts.get('type', 'test') == 'show':
 			res = [0, out, bytes()]
 		else:
 			res = [0, bytes(), out]
