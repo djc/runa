@@ -25,22 +25,21 @@ def compile(fn, bin):
 
 class RunaTest(unittest.TestCase):
 
-	def __init__(self, key):
+	def __init__(self, fn):
 		unittest.TestCase.__init__(self)
-		self.key = key
+		self.fn = fn
 	
 	def runTest(self):
 		
-		fullname = os.path.join(TEST_DIR, self.key + '.rns')
-		base = fullname.rsplit('.rns', 1)[0]
+		base = self.fn.rsplit('.rns', 1)[0]
 		bin = base + '.test'
 		
-		spec = getspec(fullname)
+		spec = getspec(self.fn)
 		type = spec.get('type', 'test')
 		if type == 'show':
-			out = '\n'.join(runac.show(fullname, None)) + '\n'
+			out = '\n'.join(runac.show(self.fn, None)) + '\n'
 		else:
-			out = compile(fullname, bin)
+			out = compile(self.fn, bin)
 		
 		if out and sys.version_info[0] > 2:
 			out = out.encode('utf-8')
@@ -77,8 +76,9 @@ class RunaTest(unittest.TestCase):
 def suite():
 	suite = unittest.TestSuite()
 	for fn in os.listdir(TEST_DIR):
+		fn = os.path.join(TEST_DIR, fn)
 		if fn.endswith('.rns'):
-			suite.addTest(RunaTest(fn[:-4]))
+			suite.addTest(RunaTest(fn))
 	return suite
 
 IGNORE = [
