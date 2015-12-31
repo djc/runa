@@ -66,12 +66,17 @@ class RunaTest(unittest.TestCase):
 			self.assertEqual(expected[1], res[1])
 			self.assertEqual(expected[0], res[0])
 
-def suite():
-	suite = unittest.TestSuite()
+def tests():
+	tests = []
 	for fn in os.listdir(TEST_DIR):
 		fn = os.path.join(TEST_DIR, fn)
 		if fn.endswith('.rns'):
-			suite.addTest(RunaTest(fn))
+			tests.append(RunaTest(fn))
+	return tests
+
+def suite():
+	suite = unittest.TestSuite()
+	suite.addTests(tests())
 	return suite
 
 IGNORE = [
