@@ -25,32 +25,29 @@ class RunaTest(unittest.TestCase):
 	
 	def compile(self):
 		if self.opts.get('type', 'test') == 'show':
-			return '\n'.join(runac.show(self.fn, None)) + '\n'
+			return [0, '\n'.join(runac.show(self.fn, None)) + '\n', bytes()]
 		try:
 			runac.compile(self.fn, self.bin)
-			return None
+			return [0, bytes(), bytes()]
 		except util.Error as e:
-			return e.show()
+			return [0, bytes(), e.show()]
 		except util.ParseError as e:
-			return e.show()
+			return [0, bytes(), e.show()]
 	
 	def runTest(self):
 		
-		out = self.compile()
-		if out and sys.version_info[0] > 2:
-			out = out.encode('utf-8')
+		res = self.compile()
+		if any(res) and sys.version_info[0] > 2:
+			for i, s in enumerate(res[1:]):
+				res[i + 1] = s.encode('utf-8')
 		
-		if not out:
+		if not any(res):
 			cmd = [self.bin] + self.opts.get('args', [])
 			opts = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
 			proc = subprocess.Popen(cmd, **opts)
 			res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
 			proc.stdout.close()
 			proc.stderr.close()
-		elif self.opts.get('type', 'test') == 'show':
-			res = [0, out, bytes()]
-		else:
-			res = [0, bytes(), out]
 		
 		expected = [self.opts.get('ret', 0), bytes(), bytes()]
 		for i, ext in enumerate(('.out', '.err')):
