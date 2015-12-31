@@ -5,7 +5,6 @@ import runac
 
 DIR = os.path.dirname(__file__)
 TEST_DIR = os.path.join(DIR, 'tests')
-TESTS = [i[:-4] for i in os.listdir(TEST_DIR) if i.endswith('.rns')]
 
 def getspec(src):
 	with open(src) as f:
@@ -77,8 +76,9 @@ class RunaTest(unittest.TestCase):
 
 def suite():
 	suite = unittest.TestSuite()
-	for key in TESTS:
-		suite.addTest(RunaTest(key))
+	for fn in os.listdir(TEST_DIR):
+		if fn.endswith('.rns'):
+			suite.addTest(RunaTest(fn[:-4]))
 	return suite
 
 IGNORE = [
