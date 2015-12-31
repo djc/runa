@@ -84,9 +84,10 @@ IGNORE = [
 	'All heap blocks', 'For counts',
 ]
 
-def valgrind(bin, spec):
+def valgrind(test):
 	
-	cmd = ['valgrind', '--leak-check=full', bin] + spec.get('args', [])
+	args = test.opts.get('args', [])
+	cmd = ['valgrind', '--leak-check=full', test.bin] + args
 	streams = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
 	proc = subprocess.Popen(cmd, **streams)
 	proc.wait()
@@ -116,22 +117,17 @@ def valgrind(bin, spec):
 
 def leaks():
 	
-	for fn in sorted(os.listdir('tests')):
+	for test in tests():
 		
-		if not fn.endswith('.rns'):
-			continue
-		
-		test = os.path.join('tests', fn)
-		bin = test[:-4] + '.test'
-		compiled = os.path.exists(bin)
-		if not compiled or os.stat(test).st_mtime >= os.stat(bin).st_mtime:
-			out = compile(test, bin)
-			if out is not None:
+		compiled = os.path.exists(test.bin)
+		if not compiled or os.stat(test.fn).st_mtime >= os.stat(test.bin).st_mtime:
+			res = test.compile()
+			if res[2] is not None:
 				continue
 		
-		print('Running %s...' % bin, end=' ')
-		count = valgrind(bin, getspec(test))
-		print(' ' * (40 - len(bin)), '%3i' % count)
+		print('Running %s...' % test.bin, end=' ')
+		count = valgrind(test)
+		print(' ' * (40 - len(test.bin)), '%3i' % count)
 
 if __name__ == '__main__':
 	if len(sys.argv) > 1 and sys.argv[1] == '--leaks':
