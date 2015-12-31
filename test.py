@@ -6,14 +6,6 @@ import runac
 DIR = os.path.dirname(__file__)
 TEST_DIR = os.path.join(DIR, 'tests')
 
-def getspec(src):
-	with open(src) as f:
-		h = f.readline()
-		if h.startswith('# test: '):
-			return json.loads(h[8:])
-		else:
-			return {}
-
 def compile(fn, bin):
 	try:
 		runac.compile(fn, bin)
@@ -28,13 +20,21 @@ class RunaTest(unittest.TestCase):
 	def __init__(self, fn):
 		unittest.TestCase.__init__(self)
 		self.fn = fn
+
+	def getspec(self):
+		with open(self.fn) as f:
+			h = f.readline()
+			if h.startswith('# test: '):
+				return json.loads(h[8:])
+			else:
+				return {}
 	
 	def runTest(self):
 		
 		base = self.fn.rsplit('.rns', 1)[0]
 		bin = base + '.test'
 		
-		spec = getspec(self.fn)
+		spec = self.getspec()
 		type = spec.get('type', 'test')
 		if type == 'show':
 			out = '\n'.join(runac.show(self.fn, None)) + '\n'
