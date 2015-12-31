@@ -20,6 +20,7 @@ class RunaTest(unittest.TestCase):
 	def __init__(self, fn):
 		unittest.TestCase.__init__(self)
 		self.fn = fn
+		self.opts = self.getspec()
 
 	def getspec(self):
 		with open(self.fn) as f:
@@ -34,8 +35,7 @@ class RunaTest(unittest.TestCase):
 		base = self.fn.rsplit('.rns', 1)[0]
 		bin = base + '.test'
 		
-		spec = self.getspec()
-		type = spec.get('type', 'test')
+		type = self.opts.get('type', 'test')
 		if type == 'show':
 			out = '\n'.join(runac.show(self.fn, None)) + '\n'
 		else:
@@ -45,7 +45,7 @@ class RunaTest(unittest.TestCase):
 			out = out.encode('utf-8')
 		
 		if not out:
-			cmd = [bin] + spec.get('args', [])
+			cmd = [bin] + self.opts.get('args', [])
 			opts = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
 			proc = subprocess.Popen(cmd, **opts)
 			res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
@@ -56,7 +56,7 @@ class RunaTest(unittest.TestCase):
 		else:
 			res = [0, bytes(), out]
 		
-		expected = [spec.get('ret', 0), bytes(), bytes()]
+		expected = [self.opts.get('ret', 0), bytes(), bytes()]
 		for i, ext in enumerate(('.out', '.err')):
 			if os.path.exists(base + ext):
 				with open(base + ext, 'rb') as f:
