@@ -20,6 +20,8 @@ class RunaTest(unittest.TestCase):
 	def __init__(self, fn):
 		unittest.TestCase.__init__(self)
 		self.fn = fn
+		self.base = self.fn.rsplit('.rns', 1)[0]
+		self.bin = self.base + '.test'
 		self.opts = self.getspec()
 
 	def getspec(self):
@@ -32,20 +34,17 @@ class RunaTest(unittest.TestCase):
 	
 	def runTest(self):
 		
-		base = self.fn.rsplit('.rns', 1)[0]
-		bin = base + '.test'
-		
 		type = self.opts.get('type', 'test')
 		if type == 'show':
 			out = '\n'.join(runac.show(self.fn, None)) + '\n'
 		else:
-			out = compile(self.fn, bin)
+			out = compile(self.fn, self.bin)
 		
 		if out and sys.version_info[0] > 2:
 			out = out.encode('utf-8')
 		
 		if not out:
-			cmd = [bin] + self.opts.get('args', [])
+			cmd = [self.bin] + self.opts.get('args', [])
 			opts = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
 			proc = subprocess.Popen(cmd, **opts)
 			res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
@@ -58,8 +57,8 @@ class RunaTest(unittest.TestCase):
 		
 		expected = [self.opts.get('ret', 0), bytes(), bytes()]
 		for i, ext in enumerate(('.out', '.err')):
-			if os.path.exists(base + ext):
-				with open(base + ext, 'rb') as f:
+			if os.path.exists(self.base + ext):
+				with open(self.base + ext, 'rb') as f:
 					expected[i + 1] = f.read()
 		
 		if self is None:
