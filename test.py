@@ -6,15 +6,6 @@ import runac
 DIR = os.path.dirname(__file__)
 TEST_DIR = os.path.join(DIR, 'tests')
 
-def compile(fn, bin):
-	try:
-		runac.compile(fn, bin)
-		return None
-	except util.Error as e:
-		return e.show()
-	except util.ParseError as e:
-		return e.show()
-
 class RunaTest(unittest.TestCase):
 
 	def __init__(self, fn):
@@ -32,13 +23,22 @@ class RunaTest(unittest.TestCase):
 			else:
 				return {}
 	
+	def compile(self):
+		try:
+			runac.compile(self.fn, self.bin)
+			return None
+		except util.Error as e:
+			return e.show()
+		except util.ParseError as e:
+			return e.show()
+	
 	def runTest(self):
 		
 		type = self.opts.get('type', 'test')
 		if type == 'show':
 			out = '\n'.join(runac.show(self.fn, None)) + '\n'
 		else:
-			out = compile(self.fn, self.bin)
+			out = self.compile()
 		
 		if out and sys.version_info[0] > 2:
 			out = out.encode('utf-8')
