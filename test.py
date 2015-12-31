@@ -24,66 +24,62 @@ def compile(fn, bin):
 	except util.ParseError as e:
 		return e.show()
 
-def run(self, key):
-	
-	fullname = os.path.join(TEST_DIR, key + '.rns')
-	base = fullname.rsplit('.rns', 1)[0]
-	bin = base + '.test'
-	
-	spec = getspec(fullname)
-	type = spec.get('type', 'test')
-	if type == 'show':
-		out = '\n'.join(runac.show(fullname, None)) + '\n'
-	else:
-		out = compile(fullname, bin)
-	
-	if out and sys.version_info[0] > 2:
-		out = out.encode('utf-8')
-	
-	if not out:
-		cmd = [bin] + spec.get('args', [])
-		opts = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
-		proc = subprocess.Popen(cmd, **opts)
-		res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
-		proc.stdout.close()
-		proc.stderr.close()
-	elif type == 'show':
-		res = [0, out, bytes()]
-	else:
-		res = [0, bytes(), out]
-	
-	expected = [spec.get('ret', 0), bytes(), bytes()]
-	for i, ext in enumerate(('.out', '.err')):
-		if os.path.exists(base + ext):
-			with open(base + ext, 'rb') as f:
-				expected[i + 1] = f.read()
-	
-	if self is None:
-		return res == expected
-	elif res[1]:
-		self.assertEqual(expected[0], res[0])
-		self.assertEqual(expected[1], res[1])
-		self.assertEqual(expected[2], res[2])
-	elif res[2]:
-		self.assertEqual(expected[2], res[2])
-		self.assertEqual(expected[1], res[1])
-		self.assertEqual(expected[0], res[0])
+class RunaTest(unittest.TestCase):
 
-def testfunc(key):
-	def do(self):
-		return self._do(key)
-	return do
-
-attrs = {'_do': run}
-for key in TESTS:
-	m = testfunc(key)
-	m.__name__ = 'test_%s' % key
-	attrs[m.__name__] = m
-
-LangTests = type('LangTests', (unittest.TestCase,), attrs)
+	def __init__(self, key):
+		unittest.TestCase.__init__(self)
+		self.key = key
+	
+	def runTest(self):
+		
+		fullname = os.path.join(TEST_DIR, self.key + '.rns')
+		base = fullname.rsplit('.rns', 1)[0]
+		bin = base + '.test'
+		
+		spec = getspec(fullname)
+		type = spec.get('type', 'test')
+		if type == 'show':
+			out = '\n'.join(runac.show(fullname, None)) + '\n'
+		else:
+			out = compile(fullname, bin)
+		
+		if out and sys.version_info[0] > 2:
+			out = out.encode('utf-8')
+		
+		if not out:
+			cmd = [bin] + spec.get('args', [])
+			opts = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE}
+			proc = subprocess.Popen(cmd, **opts)
+			res = [proc.wait(), proc.stdout.read(), proc.stderr.read()]
+			proc.stdout.close()
+			proc.stderr.close()
+		elif type == 'show':
+			res = [0, out, bytes()]
+		else:
+			res = [0, bytes(), out]
+		
+		expected = [spec.get('ret', 0), bytes(), bytes()]
+		for i, ext in enumerate(('.out', '.err')):
+			if os.path.exists(base + ext):
+				with open(base + ext, 'rb') as f:
+					expected[i + 1] = f.read()
+		
+		if self is None:
+			return res == expected
+		elif res[1]:
+			self.assertEqual(expected[0], res[0])
+			self.assertEqual(expected[1], res[1])
+			self.assertEqual(expected[2], res[2])
+		elif res[2]:
+			self.assertEqual(expected[2], res[2])
+			self.assertEqual(expected[1], res[1])
+			self.assertEqual(expected[0], res[0])
 
 def suite():
-    return unittest.makeSuite(LangTests, 'test')
+	suite = unittest.TestSuite()
+	for key in TESTS:
+		suite.addTest(RunaTest(key))
+	return suite
 
 IGNORE = [
 	'Memcheck', 'WARNING:', 'HEAP SUMMARY:', 'LEAK SUMMARY:',
