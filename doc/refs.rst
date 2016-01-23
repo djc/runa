@@ -207,3 +207,7 @@ expansion of the language design (e.g. concurrency):
 * `Sharp Regrets: Top 10 Worst C# Features
   <http://www.informit.com/articles/article.aspx?p=2425867>`_
   Eric Lippert
+
+* `Error Handling Rationale and Proposal
+  <https://github.com/apple/swift/blob/master/docs/ErrorHandlingRationale.rst>`_
+  Swift team
