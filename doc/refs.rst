@@ -211,3 +211,7 @@ expansion of the language design (e.g. concurrency):
 * `Error Handling Rationale and Proposal
   <https://github.com/apple/swift/blob/master/docs/ErrorHandlingRationale.rst>`_
   Swift team
+
+* `The Error Model
+  <http://joeduffyblog.com/2016/02/07/the-error-model/>`_
+  Joe Duffy
